@@ -1,0 +1,141 @@
+{
+  "code": "rest_api_success",
+  "message": "HPM Priority Homepage Story List",
+  "data": {
+    "articles": [
+      {
+        "id": 522791,
+        "title": "Bill to scrap STAAR test dies in the Texas Legislature",
+        "excerpt": "The state standardized test has long been criticized for taking instructional time away from teachers and putting unnecessary pressure on students.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2025/06/02081325/staar-tt-1000x663.webp",
+        "permalink": "http://localhost/articles/education/2025/06/02/522791/bill-to-scrap-staar-test-dies-in-the-texas-legislature/",
+        "date": "2025-06-02T08:20:11",
+        "date_gmt": "2025-06-02T13:20:11",
+        "primary_category": {"name": "Education", "slug": "education", "id": 10}
+      },
+      {
+        "id": 522776,
+        "title": "Use of potent synthetic opioid called nitazene on the rise in Houston, DEA agent warns",
+        "excerpt": "Fifteen people in the Houston area have died from nitazene overdoses during the last year, with the victims ranging in age from 17 to 59, according to the DEA, which says the drug is more potent than fentanyl.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2025/05/30190558/AP25119697326257-1000x667.jpg",
+        "permalink": "http://localhost/articles/news/local/2025/05/30/522776/use-of-potent-synthetic-opioid-called-nitazene-on-the-rise-in-houston-dea-agent-warns/",
+        "date": "2025-05-30T19:08:19",
+        "date_gmt": "2025-05-31T00:08:19",
+        "primary_category": {"name": "Local", "slug": "local", "id": 2113}
+      },
+      {
+        "id": 522764,
+        "title": "In major win for Mayor Whitmire, judge approves drainage settlement saving Houston $180 million over next year",
+        "excerpt": "Earlier this week, the City of Houston urged a court to make a decision quickly regarding a proposed agreement with the plaintiffs in a 2019 lawsuit over the city\u2019s spending on street and drainage projects. Some Houston residents and a nonprofit advocacy group asked the court to reject the settlement. ",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2025/03/12124233/IMG_2112-1000x667.jpg",
+        "permalink": "http://localhost/articles/news/city-of-houston/2025/05/30/522764/in-major-win-for-mayor-whitmire-judge-approves-drainage-settlement-saving-houston-180-million-over-next-year/",
+        "date": "2025-05-30T17:03:49",
+        "date_gmt": "2025-05-30T22:03:49",
+        "primary_category": {
+          "name": "City of Houston",
+          "slug": "city-of-houston",
+          "id": 32566
+        }
+      },
+      {
+        "id": 522773,
+        "title": "Amid federal funding cuts, Houston-area leaders advocate for preparedness ahead of hurricane season",
+        "excerpt": "The 2025 hurricane season, which spans from June through November, has been forecasted by researchers at Colorado State University and the National Oceanic and Atmospheric Administration to be above average.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2024/07/07122553/AP24189518966828-1000x667.jpg",
+        "permalink": "http://localhost/articles/news/hurricane/2025/05/30/522773/amid-federal-funding-cuts-houston-area-leaders-advocate-for-preparedness-ahead-of-hurricane-season/",
+        "date": "2025-05-30T18:16:39",
+        "date_gmt": "2025-05-30T23:16:39",
+        "primary_category": {
+          "name": "Hurricane",
+          "slug": "hurricane",
+          "id": 2370
+        }
+      },
+      {
+        "id": 522721,
+        "title": "Bill restricting Texas land sales to people from some foreign countries on verge of becoming law",
+        "excerpt": "Senate Bill 17 is headed to Gov. Greg Abbott's desk. If he signs it into law, legal challenges could soon follow.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2025/02/05092224/house-for-sale-1000x667.jpg",
+        "permalink": "http://localhost/articles/housing/2025/05/30/522721/bill-restricting-texas-land-sales-to-foreign-residents-approaches-finish-line/",
+        "date": "2025-05-30T15:54:47",
+        "date_gmt": "2025-05-30T20:54:47",
+        "primary_category": {"name": "Housing", "slug": "housing", "id": 51851}
+      },
+      {
+        "id": 522740,
+        "title": "It's stinging caterpillar season in the Houston area and across Texas, expert warns",
+        "excerpt": "The asp or puss caterpillar is the most common species of stinging caterpillar in the Houston area, according to the Texas A&M AgriLife Extension Service, which says they are typically encountered from April through June.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2025/05/30142738/saltmarsh-edit.jpg",
+        "permalink": "http://localhost/articles/news/energy-environment/animals/2025/05/30/522740/experts-warn-of-stinging-caterpillars-in-texas-houston/",
+        "date": "2025-05-30T16:23:18",
+        "date_gmt": "2025-05-30T21:23:18",
+        "primary_category": {"name": "Animals", "slug": "animals", "id": 58739}
+      },
+      {
+        "id": 522705,
+        "title": "Death of 52-year-old Harris County Jail inmate under investigation by Texas Rangers",
+        "excerpt": "Jose Jorge Cisneros, 52, arrested on a murder charge in November 2023, was transported from the Harris County Jail to LBJ Hospital with a pre-existing medical condition on Sunday. He was pronounced dead on Tuesday.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2023/12/19173921/173A4026-1-1000x667.jpg",
+        "permalink": "http://localhost/articles/news/criminal-justice/2025/05/30/522705/death-of-52-year-old-harris-county-jail-inmate-under-investigation-by-texas-rangers/",
+        "date": "2025-05-30T13:13:04",
+        "date_gmt": "2025-05-30T18:13:04",
+        "primary_category": {
+          "name": "Criminal Justice",
+          "slug": "criminal-justice",
+          "id": 42901
+        }
+      },
+      {
+        "id": 522706,
+        "title": "Federal grant cuts hit environmental justice and health equity projects in Houston",
+        "excerpt": "The city\u2019s health department lost about $62 million in grant funding, while $67 million in cuts affected 11 anti-pollution projects across 13 coastal counties.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2021/02/02173700/DSC01772-1-1000x667.jpg",
+        "permalink": "http://localhost/articles/news/houston/2025/05/30/522706/federal-grant-cuts-hit-environmental-justice-and-health-equity-projects-in-houston/",
+        "date": "2025-05-30T12:33:02",
+        "date_gmt": "2025-05-30T17:33:02",
+        "primary_category": {"name": "Houston", "slug": "houston", "id": 36052}
+      },
+      {
+        "id": 522648,
+        "title": "Civil liberties groups set to sue Texas over bill requiring Ten Commandments display in public schools",
+        "excerpt": "Four civil liberties groups, some of which already are suing Louisiana over its law requiring the Ten Commandments to be displayed in public-school classrooms, plan to file a lawsuit against Texas as soon as Gov. Greg Abbott signs Senate Bill 10.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2024/11/08154148/AP24172656506678-1000x750.jpg",
+        "permalink": "http://localhost/articles/news/religion/2025/05/30/522648/civil-liberties-groups-set-to-sue-texas-over-ten-commandments-bill/",
+        "date": "2025-05-30T10:49:45",
+        "date_gmt": "2025-05-30T15:49:45",
+        "primary_category": {
+          "name": "Religion",
+          "slug": "religion",
+          "id": 43101
+        }
+      }
+    ],
+    "breaking": {
+      "id": 522764,
+      "title": "In major win for Mayor Whitmire, judge approves drainage settlement saving Houston $180 million over next year",
+      "type": "developingstory"
+    },
+    "talkshow": {
+          "houstonmatters": {
+            "live": true,
+            "id": "VjUUpyT6NU8",
+            "title": "Houston Matters Full Episode - September 15, 2025",
+            "embed": "\u003Ciframe id=\"VjUUpyT6NU8\" width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/VjUUpyT6NU8?enablejsapi=1\" title=\"Houston Matters Full Episode - September 15, 2025\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen\u003E\u003C/iframe\u003E",
+            "description": "Today on Houston Matters, we preview this week’s vote on the Harris County budget, which has been contentious this year as tensions rise over funding cuts. Dr. Peter Hotez of Baylor College of Medicine discusses his book, Science Under Siege, which examines growing opposition to science and the threat it poses. Veterinarian Dr. Lori Teller answers your pet questions. Plus, Jeff Balke host of the Bleav in Astros podcast shares the latest in Houston sports."
+          },
+          "hellohouston": {
+            "live": false,
+            "id": "4b1e2NFdPjI",
+            "title": "Hello Houston Full Episode - September 15, 2025",
+            "embed": "\u003Ciframe id=\"4b1e2NFdPjI\" width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/4b1e2NFdPjI?enablejsapi=1\" title=\"Hello Houston Full Episode - September 15, 2025\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen\u003E\u003C/iframe\u003E",
+            "description": "Hello Houston is your connection to the heart of the Bayou City. We dive deep into the stories that matter to Houstonians – from breaking local news to cultural happenings, community voices, and the everyday joys and challenges of life in our vibrant city."
+          }
+        },
+    "weather": {
+      "icon": "https://cdn.houstonpublicmedia.org/assets/images/weather/04d.png.webp",
+      "description": "broken clouds",
+      "temperature": "83 &deg;F"
+    },
+    "status": 200
+  }
+}

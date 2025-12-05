@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "36181167607",
+    "project_id": "hpm-expo-app",
+    "storage_bucket": "hpm-expo-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:36181167607:android:5c00bfafd8e799208932f2",
+        "android_client_info": {
+          "package_name": "com.houstonpublicmedia.hpm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwHuBh7L_u6cQFIdjIF-HnTw9EdtQF5GA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

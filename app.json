@@ -1,0 +1,78 @@
+{
+  "expo": {
+    "name": "HPM",
+    "slug": "hpm",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.houstonpublicmedia.hpm",
+      "googleServicesFile": "./GoogleService-Info.plist"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.houstonpublicmedia.hpm",
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff"
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-2797448917961410~9781974870",
+          "iosAppId": "ca-app-pub-2797448917961410~9781974870",
+          "userTrackingDescription": "This identifier will be used to deliver personalized ads to you."
+        }
+      ],
+      "expo-audio",
+      "expo-video"
+    ],
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#ffffff",
+      "iosDisplayInForeground": true,
+      "androidMode": "default",
+      "androidCollapsedTitle": "New Notification"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cf763f1a-eb2d-47d1-a581-bc42dc2e6b55"
+      }
+    },
+    "owner": "smitapatel",
+    "updates": {
+      "url": "https://u.expo.dev/cf763f1a-eb2d-47d1-a581-bc42dc2e6b55",
+      "fallbackToCacheTimeout": 0
+    }
+  },
+
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-2797448917961410~9781974870"
+  }
+}

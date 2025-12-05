@@ -1,0 +1,176 @@
+{
+  "code": "rest_api_success",
+  "message": "HPM Priority Homepage Story List",
+  "data": {
+    "articles": [
+      {
+        "id": 536121,
+        "title": "Cracking, packing and power: How Texas' congressional redistricting could reshape Houston",
+        "excerpt": "The congressional redistricting Texas Republicans pushed forward this summer didn't just reshape two of Houston's most historically diverse districts: It also changed which voters there have the power to choose who will represent them in Washington.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2025/11/14081207/houston-35801000806-o-1000x667.webp",
+        "permalink": "https://www.houstonpublicmedia.org/articles/news/politics/2025/11/14/536121/cracking-packing-and-power-how-texas-congressional-redistricting-could-reshape-houston/",
+        "date": "2025-11-14T08:26:44",
+        "date_gmt": "2025-11-14T14:26:44",
+        "primary_category": {
+          "name": "Politics",
+          "slug": "politics",
+          "id": 20
+        }
+      },
+      {
+        "id": 536095,
+        "title": "Houston Ballet’s Nutcracker Market is back. Here’s what you need to know",
+        "excerpt": "The market is expected to draw more than 100,000 shoppers and bring in millions of dollars in revenue. It runs through Sunday at the NRG Center.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2025/11/13154713/Image-37-1000x750.jpg",
+        "permalink": "https://www.houstonpublicmedia.org/articles/events/2025/11/14/536095/nutcracker-market-houston-ballet-nrg-center/",
+        "date": "2025-11-14T08:50:22",
+        "date_gmt": "2025-11-14T14:50:22",
+        "primary_category": {
+          "name": "Events",
+          "slug": "events",
+          "id": 8
+        }
+      },
+      {
+        "id": 536041,
+        "title": "Texas A&M system approves new policy that could limit 'race or gender ideology' courses",
+        "excerpt": "The new race and gender policy has garnered condemnation from educational rights advocates, including the Foundation for Individual Rights and Expression, which sent a letter to the board of regents earlier this week arguing that the policy amounted to censorship.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2017/08/15174953/AcademicBuilding-TAMU.jpg",
+        "permalink": "https://www.houstonpublicmedia.org/articles/education/2025/11/13/536041/texas-am-system-approves-new-policy-that-could-limit-race-or-gender-ideology-courses/",
+        "date": "2025-11-13T14:25:36",
+        "date_gmt": "2025-11-13T20:25:36",
+        "primary_category": {
+          "name": "Education",
+          "slug": "education",
+          "id": 10
+        }
+      },
+      {
+        "id": 536118,
+        "title": "Texas oil and gas regulators win new power to approve projects that shoot carbon underground",
+        "excerpt": "The EPA handed over power to the Railroad Commission after a two-year review. Critics say the commission has been too lax with the industry.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2025/11/14080227/CarbonCapture-TT-1000x664.jpg",
+        "permalink": "https://www.houstonpublicmedia.org/articles/news/energy-environment/2025/11/14/536118/texas-oil-and-gas-regulators-win-new-power-to-approve-projects-that-shoot-carbon-underground/",
+        "date": "2025-11-14T08:09:17",
+        "date_gmt": "2025-11-14T14:09:17",
+        "primary_category": {
+          "name": "Energy &amp; Environment",
+          "slug": "energy-environment",
+          "id": 14
+        }
+      },
+      {
+        "id": 536085,
+        "title": "THC ban is 'an extinction-level event' for Texas hemp industry, economist says",
+        "excerpt": "Beau Whitney, a consultant to the hemp and cannabis industries, said, at a minimum, the new federal ban on THC-containing hemp products will displace more than 40,000 Texas workers and shutter more than 6,300 Texas businesses.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2019/03/06120418/AP_18131780296541.jpg",
+        "permalink": "https://www.houstonpublicmedia.org/articles/news/2025/11/13/536085/thc-ban-is-an-extinction-level-event-for-texas-hemp-industry-economist-says/",
+        "date": "2025-11-13T15:50:30",
+        "date_gmt": "2025-11-13T21:50:30",
+        "primary_category": {
+          "name": "",
+          "slug": "",
+          "id": 0
+        }
+      },
+      {
+        "id": 536066,
+        "title": "Harris County Jail inmate dies after contracting bacterial meningitis, sheriff's office says",
+        "excerpt": "The Harris County Sheriff's Office said local public health departments identified several inmates and employees who have come into recent contact with the 53-year-old man who died.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2023/12/19181046/173A4064-1-1000x667.jpg",
+        "permalink": "https://www.houstonpublicmedia.org/articles/news/criminal-justice/2025/11/13/536066/harris-county-jail-death-bacterial-meningitis/",
+        "date": "2025-11-13T15:14:20",
+        "date_gmt": "2025-11-13T21:14:20",
+        "primary_category": {
+          "name": "Criminal Justice",
+          "slug": "criminal-justice",
+          "id": 42901
+        }
+      },
+      {
+        "id": 535995,
+        "title": "State-ordered investigation into Texas Southern University finances draws scrutiny from local leaders",
+        "excerpt": "The school in Houston’s Third Ward is one of the largest historically Black universities in the United States, with more than 8,000 students.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2024/09/27163709/TSUWalkway-1000x750.jpg",
+        "permalink": "https://www.houstonpublicmedia.org/articles/education/2025/11/13/535995/tsu-patrick-abbott-texas-southern-hbcu/",
+        "date": "2025-11-13T11:57:13",
+        "date_gmt": "2025-11-13T17:57:13",
+        "primary_category": {
+          "name": "Education",
+          "slug": "education",
+          "id": 10
+        }
+      },
+      {
+        "id": 536003,
+        "title": "Judge opens door for Texas AG to argue why Harris County's misdemeanor bail reform should end",
+        "excerpt": "Texas Attorney General Ken Paxton filed a motion in August to vacate the ODonnell Consent Decree, a first-of-its-kind bail reform implemented in 2019.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2019/10/17153450/20191017-IMG_1741-1000x667.jpg",
+        "permalink": "https://www.houstonpublicmedia.org/articles/court/2025/11/13/536003/harris-county-bail-reform-odonnell-consent-decree-ken-paxton/",
+        "date": "2025-11-13T15:26:29",
+        "date_gmt": "2025-11-13T21:26:29",
+        "primary_category": {
+          "name": "Court",
+          "slug": "court",
+          "id": 51718
+        }
+      },
+      {
+        "id": 535957,
+        "title": "Houston residents criticize plan to seize Hermann Park land for hospital expansion",
+        "excerpt": "Harris Health wants to acquire 8 acres of land from the beloved city park in order to expand Ben Taub Hospital.",
+        "picture": "https://cdn.houstonpublicmedia.org/wp-content/uploads/2025/11/13071524/IMG_0396-1000x667.jpg",
+        "permalink": "https://www.houstonpublicmedia.org/articles/news/houston/2025/11/13/535957/harris-health-hermann-park-land-ben-taub-eminent-domain/",
+        "date": "2025-11-13T08:45:36",
+        "date_gmt": "2025-11-13T14:45:36",
+        "primary_category": {
+          "name": "Houston",
+          "slug": "houston",
+          "id": 36052
+        }
+      }
+    ],
+    "breaking": {
+      "id": 0,
+      "title": "",
+      "type": "",
+      "link": ""
+    },
+    "talkshow": [
+      {
+        "live": false,
+        "id": "VySog4LFMYI",
+        "title": "Houston Matters Full Episode - November 14, 2025",
+        "embed": "\u003Ciframe id=\"VySog4LFMYI\" width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/VySog4LFMYI?enablejsapi=1\" title=\"Houston Matters Full Episode - November 14, 2025\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen\u003E\u003C/iframe\u003E",
+        "description": "Today on Houston Matters, filmmaker Ken Burns says the thirteen colonies uniting in rebellion to win their independence from England might be the most important moment in world history since the birth of Christ. Burns talks about his new series “The American Revolution” and explains why he feels the revolution was so pivotal in human history. “The American Revolution” debuts November 16 on Houston Public Media, TV 8, and PBS stations across the country. Also, a new survey from Texas Southern University examines which racial and socioeconomic groups are most aware of the new school voucher program and which are most in support of it, with some surprising results. We learn more from Michael Adams, TSU professor of public affairs and founding director of the Barbara Jordan Public Policy Research and Survey Center. Plus, Aryn Ward tells us about The Good Medicine Indigenous Music Festival. And, we break down The Good, The Bad, and The Ugly of the Week with Raúl Ramos, Joy Sewing, and Natalie Arceneaux.",
+        "showName": "Houston Matters",
+        "showSlug": "houston-matters",
+        "email": "talk@houstonmatters.org",
+        "phone": "7134408870",
+        "accentColor": "#05095e",
+        "backgroundColor": "#7ffbad",
+        "textColor": "#000000"
+      },
+      {
+        "live": true,
+        "id": "1J8yPa6WXrE",
+        "title": "Hello Houston Full Episode - November 14, 2025",
+        "embed": "\u003Ciframe id=\"1J8yPa6WXrE\" width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/1J8yPa6WXrE?enablejsapi=1\" title=\"Hello Houston Full Episode - November 14, 2025\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen\u003E\u003C/iframe\u003E",
+        "description": "On today’s Hello Houston, we talk with Houston City Council At-Large 4 candidate Dwight Boykins about the upcoming runoff election against Alejandra Salinas. Kendra Camarena and Lesley Guilmart, two of the recently elected members of the Cy-Fair ISD board, discuss the changes ahead for Texas’ third largest school district. Texas Standard host David Brown talks about the show’s tenth anniversary. We also share Last Minute Plans for the weekend. Doris Childress co-hosts today’s show with Ernie Manouse.",
+        "showName": "Hello Houston",
+        "showSlug": "hello-houston",
+        "email": "hello@hellohouston.org",
+        "phone": "7134408870",
+        "accentColor": "#c8102e",
+        "backgroundColor": "#7787f7",
+        "textColor": "#000000"
+      }
+    ],
+    "weather": {
+      "icon": "https://cdn.houstonpublicmedia.org/assets/images/weather/02d.png.webp",
+      "description": "few clouds",
+      "temperature": "78 &deg;F"
+    },
+    "status": 200
+  }
+}

@@ -1,0 +1,105 @@
+{
+	"audio": [
+		{
+			"id": 0,
+			"name": "News 88.7",
+			"type": "audio",
+			"artwork": "https://cdn.houstonpublicmedia.org/assets/images/ListenLive_News.png.webp",
+			"aacSource": "https://stream.houstonpublicmedia.org/news-aac",
+			"mp3Source": "https://stream.houstonpublicmedia.org/news-mp3",
+			"hlsSource": "https://hls.houstonpublicmedia.org/hpmnews/playlist.m3u8",
+			"dashSource": "",
+			"fairplayLicense": "",
+			"fairplayCertificate": "",
+			"widevineLicense": "",
+			"widevineCertificate": ""
+		},
+		{
+			"id": 1,
+			"name": "Classical",
+			"type": "audio",
+			"artwork": "https://cdn.houstonpublicmedia.org/assets/images/ListenLive_Classical.png.webp",
+			"aacSource": "https://stream.houstonpublicmedia.org/classical-aac",
+			"mp3Source": "https://stream.houstonpublicmedia.org/classical-mp3",
+			"hlsSource": "https://hls.houstonpublicmedia.org/classical/playlist.m3u8",
+			"dashSource": "",
+			"fairplayLicense": "",
+			"fairplayCertificate": "",
+			"widevineLicense": "",
+			"widevineCertificate": ""
+		},
+		{
+			"id": 2,
+			"name": "The Vibe",
+			"type": "audio",
+			"artwork": "https://cdn.houstonpublicmedia.org/assets/images/ListenLive_TheVibe.jpg.webp",
+			"aacSource": "https://stream.houstonpublicmedia.org/thevibe-aac",
+			"mp3Source": "https://stream.houstonpublicmedia.org/thevibe-mp3",
+			"hlsSource": "https://hls.houstonpublicmedia.org/thevibe/playlist.m3u8",
+			"dashSource": "",
+			"fairplayLicense": "",
+			"fairplayCertificate": "",
+			"widevineLicense": "",
+			"widevineCertificate": ""
+		}
+	],
+	"video": [
+		{
+			"id": 0,
+			"name": "TV 8",
+			"type": "video",
+			"artwork": "https://cdn.houstonpublicmedia.org/assets/images/watch-pbs-main.png.webp",
+			"aacSource": "",
+			"mp3Source": "",
+			"hlsSource": "https://urs-anonymous-detect.pbs.org/redirect/630ecd724ee34204b2a55fa1a4e74f7c/",
+			"dashSource": "https://urs-anonymous-detect.pbs.org/redirect/29e52d125db9409ca8090d7c590d7950/",
+			"fairplayLicense": "https://proxy.drm.pbs.org/license/fairplay/623006be-27ab-40ab-aea7-208777d02ab1-hls",
+			"fairplayCertificate": "https://static.drm.pbs.org/fairplay-cert",
+			"widevineLicense": "https://proxy.drm.pbs.org/license/widevine/623006be-27ab-40ab-aea7-208777d02ab1-dash",
+			"widevineCertificate": "https://proxy.drm.pbs.org/license/playready/623006be-27ab-40ab-aea7-208777d02ab1-dash"
+		},
+		{
+			"id": 1,
+			"name": "PBS Kids",
+			"type": "video",
+			"artwork": "https://cdn.houstonpublicmedia.org/assets/images/watch-pbs-kids.png.webp",
+			"aacSource": "",
+			"mp3Source": "",
+			"hlsSource": "https://urs-anonymous-detect.pbs.org/redirect/10db90c781b240f2a3ea78656bfe914a/",
+			"dashSource": "https://urs-anonymous-detect.pbs.org/redirect/10db90c781b240f2a3ea78656bfe914a/",
+			"fairplayLicense": "https://proxy.drm.pbs.org/license/fairplay/est-hls",
+			"fairplayCertificate": "https://static.drm.pbs.org/fairplay-cert",
+			"widevineLicense": "https://proxy.drm.pbs.org/license/widevine/est-dash",
+			"widevineCertificate": "https://proxy.drm.pbs.org/license/playready/est-dash"
+		},
+		{
+			"id": 2,
+			"name": "World",
+			"type": "video",
+			"artwork": "https://cdn.houstonpublicmedia.org/assets/images/watch-world-tv.png.webp",
+			"aacSource": "",
+			"mp3Source": "",
+			"hlsSource": "https://urs.pbs.org/redirect/186af0c44ec24ace9b8b908abf93e0f4/",
+			"dashSource": "",
+			"fairplayLicense": "",
+			"fairplayCertificate": "",
+			"widevineLicense": "",
+			"widevineCertificate": ""
+		},
+		{
+			"id": 3,
+			"name": "NHK World Japan",
+			"type": "video",
+			"artwork": "https://cdn.houstonpublicmedia.org/assets/images/watch-nhk-world-japan.png.webp",
+			"aacSource": "",
+			"mp3Source": "",
+			"hlsSource": "https://urs.pbs.org/redirect/3dee3319e51d49828a2a2a5f05e6c449/",
+			"dashSource": "",
+			"fairplayLicense": "",
+			"fairplayCertificate": "",
+			"widevineLicense": "",
+			"widevineCertificate": ""
+		}
+	],
+	"nowPlayingFeed": "https://hpmwebv2.s3-us-west-2.amazonaws.com/assets/nowplay/all.json"
+}
