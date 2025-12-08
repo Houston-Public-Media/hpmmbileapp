@@ -1,6 +1,6 @@
 # HPM Mobile App
 
-A React Native mobile application for Houston Public Media with news, podcasts, music, and weather features.
+Cross platform Houston Public Media mobile application using React Native framework
 
 ## 🚀 Quick Start
 
