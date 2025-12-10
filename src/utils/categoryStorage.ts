@@ -18,6 +18,7 @@ export const defaultCategories: Category[] = [
   { id: '3', name: 'Arts & Culture', selected: false },
   { id: '14', name: 'Energy & Environment', selected: false },
   { id: '58671', name: 'Fort Bend', selected: false },
+  { id: '59153', name: 'Galveston', selected: false },
   { id: '32567', name: 'Harris County', selected: false },
   { id: '16', name: 'Health & Science', selected: false },
   { id: '51851', name: 'Housing', selected: false },
