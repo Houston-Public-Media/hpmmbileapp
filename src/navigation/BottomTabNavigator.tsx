@@ -36,7 +36,7 @@ const BottomTabNavigator = () => (
           case 'Watch':
             iconName = 'videocam-outline';
             break;
-          case 'Shows':
+          case 'Podcast':
             iconName = 'book-outline';
             break;
           case 'Donate':
@@ -65,7 +65,7 @@ const BottomTabNavigator = () => (
     <Tab.Screen name="Today" component={HomeStack} />
     <Tab.Screen name="Listen" component={ListenLiveScreen} />
     <Tab.Screen name="Watch" component={WatchLiveScreen} />
-    <Tab.Screen name="Shows" component={PodcastStack} />
+    <Tab.Screen name="Podcast" component={PodcastStack} />
 
     {/* ✅ Updated Donate screen */}
     <Tab.Screen
