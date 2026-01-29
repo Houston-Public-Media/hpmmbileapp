@@ -8,10 +8,11 @@ import { decodeHtmlEntities } from '../utils/htmlUtils';
 
 interface PodcastEpisodeCardProps {
   episode: PodcastEpisode;
+  podName: string,
   onPress?: () => void;
 }
 
-const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, onPress }) => {
+const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podName, onPress }) => {
   const rotateAnim = useRef(new Animated.Value(0)).current;
   
   // Use universal audio context
@@ -125,11 +126,13 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, onPres
                 await pause();
               } else {
                 // Play the podcast episode
+                // Add podcast title as album to this function
                 await playPodcast(
                   episode.id.toString(),
                   episode.attachments.url,
                   decodeHtmlEntities(episode.title),
                   'Houston Public Media',
+                  podName,
                   episode.thumbnail,
                   episode.attachments?.duration_in_seconds ? parseInt(episode.attachments.duration_in_seconds) : undefined
                 );

@@ -10,21 +10,19 @@ import {
   Image,
   ScrollView
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import {
   fetchHPMPodcastDetails,
   fetchHPMPodcasts,
   PodcastDetails,
   Podcast
 } from '../services/podcastApi';
-import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import PodcastEpisodeCard from '../components/PodcastEpisodeCard';
 import { PodcastStackParamList } from '../navigation/PodcastStack';
-import { useUniversalAudio } from '../contexts/UniversalAudioContext';
 import { cleanText } from '../utils/htmlUtils';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
+import AudioFooter from '../components/AudioFooter';
 
 type PodcastDetailsRouteProp = RouteProp<PodcastStackParamList, 'PodcastDetails'>;
 
@@ -84,99 +82,95 @@ const PodcastDetailsScreen: React.FC = () => {
 
   const renderPlatformIcon = (platform: string, url: string) => {
     if (!url) return null;
-    
-    let iconName: keyof typeof MaterialIcons.glyphMap = 'link';
-    let iconColor: string = '#333';
-    
+    let imgSource;
+
     switch (platform) {
       case 'spotify':
-        iconName = 'music-note';
-        iconColor = '#1DB954';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/spotify.png.webp' };
         break;
       case 'npr':
-        iconName = 'radio';
-        iconColor = '#FF6B35';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/npr.png.webp' };
         break;
       case 'pcast':
-        iconName = 'headset';
-        iconColor = '#F43E37';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/pocketcasts.png.webp' };
         break;
       case 'amazon':
-        iconName = 'shopping-cart';
-        iconColor = '#FF9900';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/amazon.png.webp' };
         break;
       case 'itunes':
-        iconName = 'music-note';
-        iconColor = 'purple';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/apple.png.webp' };
         break;
       default:
-        iconName = 'link';
-        iconColor = '#333';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/rss.png.webp' };
     }
-
     return (
       <TouchableOpacity
         key={platform}
         style={styles.platformButton}
         onPress={() => Linking.openURL(url)}
       >
-        <MaterialIcons name={iconName} size={24} color={iconColor} />
+        <Image source={imgSource} style={styles.icon} />
       </TouchableOpacity>
     );
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <>
       <BreakingBanner />
       <TalkshowBanner />
-      {/* Podcast Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>
-          {podcastDetail?.data?.feed?.title || podcast.name}
-        </Text>
-        <Image 
-          source={{ uri: podcastDetail?.data?.feed?.icon || podcast.image.medium.url }} 
-          style={styles.podcastImage} 
-        />
+      <ScrollView style={styles.container}>
         
-        <Text style={styles.description}>
-          {(podcastDetail?.data?.feed?.description || podcast.description).replace(/<[^>]+>/g, '')}
-        </Text>
-        
-        {/* Platform Icons */}
-        <View style={styles.platformsContainer}>
-          {renderPlatformIcon('spotify', externalLinks?.spotify || podcast.external_links.spotify || '')}
-          {renderPlatformIcon('npr', externalLinks?.npr || podcast.external_links.npr || '')}
-          {renderPlatformIcon('pcast', externalLinks?.pcast || podcast.external_links.pcast || '')}
-          {renderPlatformIcon('amazon', externalLinks?.amazon || podcast.external_links.amazon || '')}
-          {renderPlatformIcon('itunes', externalLinks?.itunes || podcast.external_links.itunes || '')}
+        {/* Podcast Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>
+            {podcastDetail?.data?.feed?.title || podcast.name}
+          </Text>
+          <Image 
+            source={{ uri: podcastDetail?.data?.feed?.icon || podcast.image.medium.url }} 
+            style={styles.podcastImage} 
+          />
+          
+          <Text style={styles.description}>
+            {(podcastDetail?.data?.feed?.description || podcast.description).replace(/<[^>]+>/g, '')}
+          </Text>
+          
+          {/* Platform Icons */}
+          <View style={styles.platformsContainer}>
+            {renderPlatformIcon('itunes', externalLinks?.itunes || podcast.external_links.itunes || '')}
+            {renderPlatformIcon('spotify', externalLinks?.spotify || podcast.external_links.spotify || '')}
+            {renderPlatformIcon('npr', externalLinks?.npr || podcast.external_links.npr || '')}
+            {renderPlatformIcon('pcast', externalLinks?.pcast || podcast.external_links.pcast || '')}
+            {renderPlatformIcon('amazon', externalLinks?.amazon || podcast.external_links.amazon || '')}
+          </View>
+
+
         </View>
 
-
-      </View>
-
-      {/* Episodes List */}
-      <View style={styles.episodesSection}>        
-        {podcastDetail?.data?.feed?.items && podcastDetail.data.feed.items.length > 0 ? (
-          <FlatList
-            data={podcastDetail.data.feed.items}
-            keyExtractor={(item) => item.id.toString()}
-            scrollEnabled={false}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <PodcastEpisodeCard 
-                episode={item} 
-                onPress={() => handleEpisodePress(item.id, item.title)}
-              />
-            )}
-          />
-        ) : (
-          <View style={styles.noEpisodesContainer}>
-            <Text style={styles.noEpisodesText}>No episodes available</Text>
-          </View>
-        )}
-      </View>
-    </ScrollView>
+        {/* Episodes List */}
+        <View style={styles.episodesSection}>        
+          {podcastDetail?.data?.feed?.items && podcastDetail.data.feed.items.length > 0 ? (
+            <FlatList
+              data={podcastDetail.data.feed.items}
+              keyExtractor={(item) => item.id.toString()}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <PodcastEpisodeCard 
+                  episode={item}
+                  podName={podcast.name}
+                  onPress={() => handleEpisodePress(item.id, item.title)}
+                />
+              )}
+            />
+          ) : (
+            <View style={styles.noEpisodesContainer}>
+              <Text style={styles.noEpisodesText}>No episodes available</Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+      <AudioFooter />
+    </>
   );
 };
 
@@ -206,7 +200,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    color: '#666',
+    color: '#343434',
     textAlign: 'justify',
     lineHeight: 20,
     marginBottom: 20,
@@ -246,6 +240,10 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
+  icon: {
+    width: 50,
+    height: 50
+  }
 });
 
 export default PodcastDetailsScreen;

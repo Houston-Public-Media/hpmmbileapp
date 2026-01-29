@@ -262,22 +262,6 @@ const ProfileScreen = () => {
         <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/about/`)}>
           <Text style={styles.menuText}>About Us</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/contact-us/`)}>
-          <Text style={styles.menuText}>Contact Us</Text>
-        </TouchableOpacity>
-        <View style={styles.subMenu}>
-          <TouchableOpacity style={styles.subMenuItem}>
-            <Text style={styles.subMenuText} onPress={() => Linking.openURL(`tel://1-713-748-8888`)}>Call Houston Public Media</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subMenuItem}>
-            <Text style={styles.subMenuText} onPress={() => Linking.openURL(`tel://1-713-743-8483`)}>Call Membership Services</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subMenuItem}>
-            <Text style={styles.subMenuText} onPress={() => Linking.openURL(`mailto:membership@houstonpublicmedia.org?subject=HPM%20Member%20Services%20Query`)}>Email Membership Services</Text>
-          </TouchableOpacity>
-          
-       
-        </View>
         <TouchableOpacity style={styles.menuItem}>
             <Text style={styles.menuText} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/hellohouston/`)}>Hello Houston Newsletter</Text>
           </TouchableOpacity>

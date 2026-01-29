@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { Linking, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { Image } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { DrawerNavigationProp } from '@react-navigation/drawer'
@@ -44,6 +44,11 @@ const LogoBar: React.FC = () => {
       <TouchableOpacity onPress={handleLogoPress}>
         <Image source={{uri: `https://cdn.houstonpublicmedia.org/assets/images/houston-public-media-logo.png`}} style={styles.logo} />
       </TouchableOpacity>
+      <TouchableOpacity style={styles.donateButton}
+          onPress={() => Linking.openURL('https://www.houstonpublicmedia.org/donate')}
+        >
+          <Text style={styles.donateButtonText}>Donate</Text>
+        </TouchableOpacity>
       <View style={styles.textContainer}>
         <Text style={styles.dateText}>{currentDate}</Text>
         <View style={styles.weatherContainer}>
@@ -54,11 +59,7 @@ const LogoBar: React.FC = () => {
               alt={weather.description}
             />
           )}
-          <View style={styles.textContainer}>
-            <Text style={styles.tempText}>
-              {decodedTemperature}
-            </Text>
-          </View>
+          <Text style={styles.tempText}>{decodedTemperature}</Text>
         </View>
       </View>
     </View>
@@ -73,6 +74,7 @@ const styles = StyleSheet.create({
     padding: 10,
     height: 85,
     flexDirection: 'row',
+    flexWrap: 'wrap'
   },
   logo: {
     width: 270,
@@ -80,8 +82,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   textContainer: {
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
     alignItems: 'center',
+    width: '100%',
+    paddingBlockStart: 5
   },
   dateText: {
     color: '#fff',
@@ -103,6 +108,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
+  donateButton: {
+    padding: 10,
+    borderRadius: 14,
+    backgroundColor: '#C8102E'
+  },
+  donateButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  }
 })
 
 export default LogoBar

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { FlatList, ActivityIndicator, StyleSheet } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { fetchHPMPodcasts, Podcast } from '../services/podcastApi';
-import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { PodcastStackParamList } from '../navigation/PodcastStack';
 import PodcastCard from '../components/PodcastCard';

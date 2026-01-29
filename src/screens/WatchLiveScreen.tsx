@@ -4,6 +4,7 @@ import { WebView } from 'react-native-webview';
 import ScreenHeader from '../components/ScreenHeader';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
+import AudioFooter from '../components/AudioFooter';
 
 const WatchLiveScreen = () => {
   const userAgent =
@@ -42,6 +43,7 @@ const WatchLiveScreen = () => {
           userAgent={userAgent}
         />
       </View>
+      <AudioFooter />
 
 
       {/* <View style={styles.container}>

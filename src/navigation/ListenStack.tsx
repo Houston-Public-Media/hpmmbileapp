@@ -1,6 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import PodcastScreen from '../screens/PodcastScreen';
+import ListenScreen from '../screens/ListenScreen';
 import PodcastDetailsScreen from '../screens/PodcastDetailsScreen';
 import { Podcast } from '../services/podcastApi';
 import { color } from '../utils/colorUtils';
@@ -14,7 +14,7 @@ export type PodcastStackParamList = {
 	PodcastEpisode: { postId: number, title: string };
 };
 
-const PodcastStack = () => {
+const ListenStack = () => {
 	return (
 		<Stack.Navigator 
 			screenOptions={{ 
@@ -24,8 +24,8 @@ const PodcastStack = () => {
 			}}
 		>
 			<Stack.Screen
-				name="PodcastList"
-				component={PodcastScreen}
+				name="ListenList"
+				component={ListenScreen}
 				options={{ title: 'Shows', headerShown: false }}
 			/>
 			<Stack.Screen
@@ -45,4 +45,4 @@ const PodcastStack = () => {
 	);
 };
 
-export default PodcastStack;
+export default ListenStack;
