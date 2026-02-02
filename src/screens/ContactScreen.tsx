@@ -74,7 +74,7 @@ function ContactScreen(): JSX.Element {
 						<View style={styles.cardLayout}>
 							<View style={styles.rightSection}>
 								<View style={styles.trackInfo}>
-									<FontAwesome6 name="link" color="#C8102E" style={styles.icon} />
+									<FontAwesome6 name="link" color="#C8102E" style={styles.iconLink} />
 									<Text style={styles.title}>More Ways to Get in Touch</Text>
 								</View>
 							</View>
@@ -220,6 +220,12 @@ const styles = StyleSheet.create({
 	icon: {
 		width: 28,
 		fontSize: 28,
+		textAlign: 'center',
+		alignSelf: 'center'
+	},
+	iconLink: {
+		width: 32,
+		fontSize: 24,
 		textAlign: 'center',
 		alignSelf: 'center'
 	},

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, Linking, Alert, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { color } from '../utils/colorUtils';

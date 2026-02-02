@@ -15,7 +15,6 @@ import AdBanner from '../components/AdBanner';
 import { getSelectedCategories } from '../utils/categoryStorage';
 import SectionTitle from '../components/SectionTitle';
 import CategorySection from '../components/CategorySection';
-import SectionFooter from '../components/SectionFooter';
 import AudioFooter from '../components/AudioFooter';
 import { useAds } from '../hooks/useAds';
 import { listenLiveService } from '../services/ListenLiveServices';

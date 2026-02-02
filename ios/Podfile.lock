@@ -5,17 +5,14 @@ PODS:
     - ExpoModulesCore
   - EXApplication (6.1.5):
     - ExpoModulesCore
-  - EXAV (15.1.7):
-    - ExpoModulesCore
-    - ReactCommon/turbomodule/core
   - EXConstants (17.1.8):
     - ExpoModulesCore
   - EXJSONUtils (0.15.0)
   - EXManifests (0.16.6):
     - ExpoModulesCore
-  - EXNotifications (0.31.4):
+  - EXNotifications (0.31.5):
     - ExpoModulesCore
-  - Expo (53.0.25):
+  - Expo (53.0.26):
     - DoubleConversion
     - ExpoModulesCore
     - glog
@@ -285,7 +282,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFileSystem (18.1.11):
     - ExpoModulesCore
-  - ExpoFont (14.0.10):
+  - ExpoFont (14.0.11):
     - ExpoModulesCore
   - ExpoKeepAwake (14.1.4):
     - ExpoModulesCore
@@ -319,7 +316,7 @@ PODS:
   - ExpoWebBrowser (14.2.0):
     - ExpoModulesCore
   - EXStructuredHeaders (4.1.0)
-  - EXUpdates (0.28.17):
+  - EXUpdates (0.28.18):
     - DoubleConversion
     - EASClient
     - EXManifests
@@ -2419,7 +2416,6 @@ DEPENDENCIES:
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EASClient (from `../node_modules/expo-eas-client/ios`)
   - EXApplication (from `../node_modules/expo-application/ios`)
-  - EXAV (from `../node_modules/expo-av/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXJSONUtils (from `../node_modules/expo-json-utils/ios`)
   - EXManifests (from `../node_modules/expo-manifests/ios`)
@@ -2539,8 +2535,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-eas-client/ios"
   EXApplication:
     :path: "../node_modules/expo-application/ios"
-  EXAV:
-    :path: "../node_modules/expo-av/ios"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
   EXJSONUtils:
@@ -2746,12 +2740,11 @@ SPEC CHECKSUMS:
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EASClient: fe396f88189ce51edd819abe12df16c99e98bcd2
   EXApplication: 1e06972201838375ca1ec1ba34d586a98a5dc718
-  EXAV: ae28256069c4cdde93d185c007d8f68d92902c2e
   EXConstants: d3d551cb154718f5161c4247304e96aa59f6cca7
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: 691a779b04e4f2c96da46fb9bef4f86174fefcb5
-  EXNotifications: be5e949edf1d60b70e77178b81aa505298fadd07
-  Expo: a9aaba7e05fb1445c5605b2b1be1904efa2aaaff
+  EXNotifications: 6770976336aacdc7dc7aed7b538dd8f7ad2c55e8
+  Expo: 10d82752acfd62f067f3a2dc4a06f37ce11fc6e4
   expo-dev-client: 9b1e78baf0dd87b005f035d180bbb07c05917fad
   expo-dev-launcher: 35dc0269b5fc1f628abc00e08e5a969e7809eff4
   expo-dev-menu: 0771fa9c5c405e07aa15e55a699b8a4a984ea77a
@@ -2760,13 +2753,13 @@ SPEC CHECKSUMS:
   ExpoAudio: d98f922b17a945cd33f8462d086278dbd810c537
   ExpoDevice: 7082f03af1c588333ef1417d5aa8287081d94b24
   ExpoFileSystem: 7f92f7be2f5c5ed40a7c9efc8fa30821181d9d63
-  ExpoFont: 35ac6191ed86bbf56b3ebd2d9154eda9fad5b509
+  ExpoFont: f543ce20a228dd702813668b1a07b46f51878d47
   ExpoKeepAwake: bf0811570c8da182bfb879169437d4de298376e7
   ExpoModulesCore: 00a1b5c73248465bd0b93f59f8538c4573dac579
   ExpoVideo: ada534976cfd4a6bf082cc61aa1b17920a251e32
   ExpoWebBrowser: dc39a88485f007e61a3dff05d6a75f22ab4a2e92
   EXStructuredHeaders: 32bec6771c2db18c4cd47cecae530d1d06cdf972
-  EXUpdates: 004cca5223d04b5a0702b5712fbd5d9318024d47
+  EXUpdates: 7c4474372c5f02aa6e0854e7a464edb4faac6683
   EXUpdatesInterface: 7ff005b7af94ee63fa452ea7bb95d7a8ff40277a
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: d2a9cd223302b6c9aa4aa34c1a775e9db609eb52

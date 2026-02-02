@@ -1,23 +1,39 @@
 // src/services/PodcastAudioService.ts
 
-import { Audio } from 'expo-av';
+import { useEffect } from 'react';
+import { useAudioPlayer, useAudioPlayerStatus, AudioStatus, AudioPlayer, setAudioModeAsync, AudioSource } from 'expo-audio';
 
 export interface PodcastAudioState {
 	currentEpisodeId: string | null;
-	isPlaying: boolean;
-	isLoading: boolean;
-	sound: Audio.Sound | null;
+	player: AudioPlayer | null;
+	status: AudioStatus | null;
 	currentPosition: number;
 	duration: number;
-	loadedSounds: Map<string, Audio.Sound>;
+	loadedSounds: Map<string, AudioSource>;
+}
+
+function SetAudioPlayer(src: string) {
+	const player = useAudioPlayer({uri: src});
+	useEffect(() => {
+		setAudioModeAsync({
+			playsInSilentMode: true,
+			allowsRecording: false,
+			shouldPlayInBackground: true,
+			interruptionMode: 'doNotMix'
+		});
+	}, []);
+	return player;
+}
+
+function AudioPlayerStatus(player: AudioPlayer) {
+	return useAudioPlayerStatus(player);
 }
 
 class PodcastAudioService {
 	private state: PodcastAudioState = {
 		currentEpisodeId: null,
-		isPlaying: false,
-		isLoading: false,
-		sound: null,
+		player: null,
+		status: null,
 		currentPosition: 0,
 		duration: 0,
 		loadedSounds: new Map(),
@@ -31,15 +47,6 @@ class PodcastAudioService {
 		if (this.isInitialized) return true;
 
 		try {
-			// Configure audio mode for optimal podcast playback
-			await Audio.setAudioModeAsync({
-				allowsRecordingIOS: false,
-				staysActiveInBackground: true,
-				playsInSilentModeIOS: true,
-				shouldDuckAndroid: true,
-				playThroughEarpieceAndroid: false,
-			});
-
 			this.isInitialized = true;
 			return true;
 		} catch (error) {
@@ -54,14 +61,12 @@ class PodcastAudioService {
 
 	// Public method to pause current episode
 	async pauseCurrentEpisode(): Promise<void> {
-		if (this.state.sound && this.state.isPlaying) {
+		if (this.state.status && this.state.status.playing) {
 			try {
-				await this.state.sound.pauseAsync();
-				this.state.isPlaying = false;
+				this.state.player?.pause();
 				this.notifyStateChange();
 			} catch (error) {
 				//console.error('Error pausing current episode:', error);
-				this.state.isPlaying = false;
 				this.notifyStateChange();
 			}
 		}
@@ -70,8 +75,6 @@ class PodcastAudioService {
 	isEpisodeLoaded(episodeId: string): boolean {
 		return this.state.loadedSounds.has(episodeId);
 	}
-
-
 
 	// Event-driven state management
 	addStateChangeListener(callback: () => void): () => void {
@@ -101,14 +104,13 @@ class PodcastAudioService {
 				await this.loadAndPlayEpisode(episodeId, audioUrl);
 			} else {
 				// Same episode - toggle play/pause
-				if (this.state.isPlaying) {
+				if (this.state.status?.playing) {
 					await this.pauseEpisode();
 				} else {
 					await this.resumeEpisode();
 				}
 			}
 		} catch (error) {
-			this.state.isLoading = false;
 			this.notifyStateChange();
 			//console.error('Error toggling play/pause:', error);
 			throw error;
@@ -118,48 +120,15 @@ class PodcastAudioService {
 	private async loadAndPlayEpisode(episodeId: string, audioUrl: string): Promise<void> {
 		try {
 			this.state.currentEpisodeId = episodeId;
-			
-			// Check if episode is already loaded in cache
-			const cachedSound = this.state.loadedSounds.get(episodeId);
-			
-			if (cachedSound) {
-				//console.log(`Playing cached episode: ${episodeId}`);
-				
-				// Set up status callback for cached sound
-				cachedSound.setOnPlaybackStatusUpdate(this.onPlaybackStatusUpdate.bind(this));
-				
-				// Reset to beginning and play immediately
-				await cachedSound.setPositionAsync(0);
-				await cachedSound.playAsync();
-				
-				this.state.sound = cachedSound;
-				this.state.isPlaying = true;
-				this.notifyStateChange();
-				
-				//console.log(`Now playing cached episode: ${episodeId}`);
-			} else {
-				//console.log(`Loading new episode: ${episodeId}`);
-				
-				this.state.isLoading = true;
-				this.notifyStateChange();
-
-				const { sound } = await Audio.Sound.createAsync(
-					{ uri: audioUrl },
-					{ shouldPlay: true, progressUpdateIntervalMillis: 100 },
-					this.onPlaybackStatusUpdate.bind(this)
-				);
-
-				// Cache the loaded sound
-				this.state.loadedSounds.set(episodeId, sound);
-				this.state.sound = sound;
-				this.state.isPlaying = true;
-				this.state.isLoading = false;
-
-				this.notifyStateChange();
-				//console.log(`Now playing and cached episode: ${episodeId}`);
-			}
+			const player = SetAudioPlayer(audioUrl);
+			const status = AudioPlayerStatus(player);
+			this.state.player = player;
+			this.state.status = status;
+			this.notifyStateChange();
+			this.state.player.play();
 		} catch (error) {
-			this.state.isLoading = false;
+			this.state.player = null;
+			this.state.status = null;
 			this.state.currentEpisodeId = null;
 			this.notifyStateChange();
 			//console.error('Error loading episode:', error);
@@ -167,37 +136,30 @@ class PodcastAudioService {
 		}
 	}
 
-
-
 	private async pauseEpisode(): Promise<void> {
-		if (this.state.sound) {
-			await this.state.sound.pauseAsync();
-			this.state.isPlaying = false;
+		if (this.state.status) {
+			this.state.player?.pause();
 			this.notifyStateChange();
 		}
 	}
 
-
 	private async resumeEpisode(): Promise<void> {
-		if (this.state.sound) {
-			await this.state.sound.playAsync();
-			this.state.isPlaying = true;
+		if (this.state.status) {
+			this.state.player?.play();
 			this.notifyStateChange();
 		}
 	}
 
 	private async stopCurrentEpisode(): Promise<void> {
-		if (this.state.sound) {
+		if (this.state.status) {
 			try {
-				await this.state.sound.stopAsync();
-				await this.state.sound.unloadAsync();
+				this.state.player?.remove();
 			} catch (error) {
 				//console.error('Error stopping current episode:', error);
 			}
-			
-			this.state.sound = null;
+			this.state.status = null;
 			this.state.currentEpisodeId = null;
-			this.state.isPlaying = false;
+			this.state.player = null;
 			this.state.currentPosition = 0;
 			this.state.duration = 0;
 		}
@@ -207,11 +169,9 @@ class PodcastAudioService {
 		if (status.isLoaded) {
 			this.state.currentPosition = status.positionMillis || 0;
 			this.state.duration = status.durationMillis || 0;
-			this.state.isPlaying = status.isPlaying || false;
 
 			// If episode finished playing
 			if (status.didJustFinish) {
-				this.state.isPlaying = false;
 				this.state.currentPosition = 0;
 			}
 		}
@@ -223,8 +183,8 @@ class PodcastAudioService {
 	}
 
 	async seekToPosition(positionMillis: number): Promise<void> {
-		if (this.state.sound) {
-			await this.state.sound.setPositionAsync(positionMillis);
+		if (this.state.status) {
+			this.state.player?.seekTo(positionMillis);
 		}
 	}
 
@@ -251,18 +211,6 @@ class PodcastAudioService {
 
 	async cleanup(): Promise<void> {
 		await this.stopCurrentEpisode();
-		
-		// Clean up all cached sounds
-		for (const [episodeId, sound] of this.state.loadedSounds) {
-			try {
-				await sound.unloadAsync();
-				//console.log(`Cleaned up cached episode: ${episodeId}`);
-			} catch (error) {
-				//console.error(`Error cleaning up cached episode ${episodeId}:`, error);
-			}
-		}
-		this.state.loadedSounds.clear();
-		
 		this.stateChangeListeners.clear();
 		this.statusUpdateCallback = null;
 		this.isInitialized = false;

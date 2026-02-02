@@ -7,8 +7,7 @@ import {
 	View,
 	Text,
 	TouchableOpacity,
-	ScrollView,
-	FlatList
+	ScrollView
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import StreamPlayer from '../components/StreamPlayer';

@@ -42,7 +42,7 @@ const AudioFooter = () => {
 			Alert.alert('Playback Error', errorMessage);
 		}
 	};
-	if ( !actuallyPlaying ) {
+	if ( !isCurrentlyPlaying ) {
 		return;
 	}
 	if (currentTrack === null) {
@@ -50,59 +50,59 @@ const AudioFooter = () => {
 	}
 
 	return (
-			<View style={styles.trackItem}>
-				<View style={styles.cardLayout}>
-					{/* Left section: Artwork */}
-					<View style={styles.artworkContainer}>
-						{currentTrack?.artwork ? (
-							<Image source={{uri: currentTrack?.artwork}} style={styles.artwork} />
-						) : (
-							<View style={styles.placeholderArtwork}>
-								<MaterialIcons name="music-note" size={32} color="#666" />
-							</View>
-						)}
-					</View>
-					
-					{/* Right section: Content area */}
-					<View style={styles.rightSection}>
-						{/* Top of right: Track Info */}
-						<View style={styles.trackInfo}>
-							<Text style={[
-								styles.title, styles.currentTrackTitle
-							]} numberOfLines={1}>
-								{currentTrack?.album}
-							</Text>
-							<Text style={[
-								styles.artist, styles.currentTrackArtist
-							]} numberOfLines={2}>
-								{currentTrack?.artist} - {currentTrack?.title}
-							</Text>
-
+		<View style={styles.trackItem}>
+			<View style={styles.cardLayout}>
+				{/* Left section: Artwork */}
+				<View style={styles.artworkContainer}>
+					{currentTrack?.artwork ? (
+						<Image source={{uri: currentTrack?.artwork}} style={styles.artwork} />
+					) : (
+						<View style={styles.placeholderArtwork}>
+							<MaterialIcons name="music-note" size={32} color="#666" />
 						</View>
-					</View>	
-						{/* Bottom of right: Controls */}
-					<View style={styles.controlsSection}>
-						<TouchableOpacity
-							style={[
-								styles.mainPlayButton,
-								isCurrentlyPlaying && styles.pauseButton,
-							]}
-							onPress={() => onPlayPausePress(currentTrack.id)}
-						>
-							<View style={styles.buttonIconContainer}>
-								<View style={styles.iconWrapper}>
-									<MaterialIcons 
-										name={isCurrentlyPlaying ? 'pause' : 'play-arrow'} 
-										size={22} 
-										color="#fff" 
-									/>
-								</View>
-							</View>
-						</TouchableOpacity>
+					)}
+				</View>
+				
+				{/* Right section: Content area */}
+				<View style={styles.rightSection}>
+					{/* Top of right: Track Info */}
+					<View style={styles.trackInfo}>
+						<Text style={[
+							styles.title, styles.currentTrackTitle
+						]} numberOfLines={1}>
+							{currentTrack?.album}
+						</Text>
+						<Text style={[
+							styles.artist, styles.currentTrackArtist
+						]} numberOfLines={2}>
+							{currentTrack?.artist} - {currentTrack?.title}
+						</Text>
+
 					</View>
+				</View>	
+					{/* Bottom of right: Controls */}
+				<View style={styles.controlsSection}>
+					<TouchableOpacity
+						style={[
+							styles.mainPlayButton,
+							isCurrentlyPlaying && styles.pauseButton,
+						]}
+						onPress={() => onPlayPausePress(currentTrack.id)}
+					>
+						<View style={styles.buttonIconContainer}>
+							<View style={styles.iconWrapper}>
+								<MaterialIcons 
+									name={isCurrentlyPlaying ? 'pause' : 'play-arrow'} 
+									size={22} 
+									color="#fff" 
+								/>
+							</View>
+						</View>
+					</TouchableOpacity>
 				</View>
 			</View>
-		);
+		</View>
+	);
 };
 const styles = StyleSheet.create({
 	footerContainer: {

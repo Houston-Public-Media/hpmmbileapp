@@ -1,18 +1,28 @@
 // src/services/HtmlAudioService.ts
 
-import { Audio } from 'expo-av';
+import { useEffect } from 'react';
+import { useAudioPlayer, useAudioPlayerStatus, AudioStatus, AudioPlayer, setAudioModeAsync } from 'expo-audio';
 
 interface HtmlAudioState {
 	currentAudioId: string | null;
-	isPlaying: boolean;
-	sound: Audio.Sound | null;
+	status: AudioStatus | null;
+	player: AudioPlayer | null;
+}
+function SetAudioPlayer(src: string) {
+	const player = useAudioPlayer({uri: src});
+	useEffect(() => { setAudioModeAsync({ playsInSilentMode: true }); }, []);
+	return player;
+}
+
+function AudioPlayerStatus(player: AudioPlayer) {
+	return useAudioPlayerStatus(player);
 }
 
 class HtmlAudioService {
 	private state: HtmlAudioState = {
 		currentAudioId: null,
-		isPlaying: false,
-		sound: null,
+		status: null,
+		player: null
 	};
 
 	private stateChangeListeners: Set<() => void> = new Set();
@@ -40,43 +50,35 @@ class HtmlAudioService {
 			await this.stopCurrentAudio();
 
 			// Create new audio instance
-			const { sound } = await Audio.Sound.createAsync({ uri: src });
+			//const { sound } = await Audio.Sound.createAsync({ uri: src });
+			const player = SetAudioPlayer(src);
+			const status = AudioPlayerStatus(player);
 			
-			this.state.sound = sound;
+			this.state.player = player;
+			this.state.status = status;
 			this.state.currentAudioId = audioId;
-			this.state.isPlaying = true;
 			this.notifyStateChange();
 
 			// Start playing
-			await sound.playAsync();
-
-			// Set up status update listener
-			sound.setOnPlaybackStatusUpdate((status) => {
-				if (status.isLoaded) {
-					this.state.isPlaying = status.isPlaying || false;
-					this.notifyStateChange();
-				}
-			});
+			player.play();
 
 		} catch (error) {
 			console.error('Error playing HTML audio:', error);
-			this.state.isPlaying = false;
 			this.state.currentAudioId = null;
-			this.state.sound = null;
+			this.state.status = null;
+			this.state.player = null;
 			this.notifyStateChange();
 		}
 	}
 
 	// Pause current audio
 	async pauseCurrentAudio(): Promise<void> {
-		if (this.state.sound && this.state.isPlaying) {
+		if (this.state.player && this.state.status?.playing) {
 			try {
-				await this.state.sound.pauseAsync();
-				this.state.isPlaying = false;
+				this.state.player?.pause();
 				this.notifyStateChange();
 			} catch (error) {
 				console.error('Error pausing HTML audio:', error);
-				this.state.isPlaying = false;
 				this.notifyStateChange();
 			}
 		}
@@ -84,24 +86,26 @@ class HtmlAudioService {
 
 	// Stop current audio
 	async stopCurrentAudio(): Promise<void> {
-		if (this.state.sound) {
+		if (this.state.player) {
 			try {
-				await this.state.sound.stopAsync();
-				await this.state.sound.unloadAsync();
+				this.state.player?.remove();
 			} catch (error) {
 				console.error('Error stopping HTML audio:', error);
 			}
 			
-			this.state.sound = null;
+			this.state.status = null;
 			this.state.currentAudioId = null;
-			this.state.isPlaying = false;
+			this.state.player = null;
 			this.notifyStateChange();
 		}
 	}
 
 	// Check if specific audio is playing
 	isAudioPlaying(audioId: string): boolean {
-		return this.state.currentAudioId === audioId && this.state.isPlaying;
+		if (this.state.status === null) {
+			return false;
+		}
+		return this.state.currentAudioId === audioId && this.state.status?.playing;
 	}
 
 	// Cleanup all audio
