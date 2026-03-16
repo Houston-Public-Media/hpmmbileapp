@@ -1,6 +1,6 @@
 // src/services/newsApi.ts
 
-import { Weather, Breaking, TalkshowEntry, TalkshowResponse, NewsArticle, NewsDetail } from '../type';
+import { Weather, Breaking, TalkshowEntry, TalkshowResponse, NewsArticle, NewsDetail, BrightcoveVideo } from '../type';
 
 export async function fetchWeather(): Promise<Weather> {
   const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list');
@@ -9,33 +9,42 @@ export async function fetchWeather(): Promise<Weather> {
 }
 
 export async function fetchBreaking(): Promise<Breaking> {
-  //const json = require('../data/list.json');
   const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list');
   const json = await response.json();
   return json?.data?.breaking || {};
 }
 
-// export async function fetchTalkshow(): Promise<TalkshowResponse['talkshow']> {
-//   const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list'); //http://localhost//wp-json/hpm-priority/v1/list
-//   const json = await response.json();
-//   return json?.data?.talkshow ?? {};
-// }
-
 export async function fetchTalkshow(): Promise<TalkshowEntry[]> {
-  //const response = require('../data/list.json');
   const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list');
   const json = await response.json();
   return Array.isArray(json?.data?.talkshow) ? json.data.talkshow : [];
 }
 
-
 export async function fetchPriorityNews(): Promise<NewsArticle[]> {
   try {
-    const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list'); //https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list
+    const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list');
     const json = await response.json();
     return json?.data?.articles;
   } catch (error) {
-    //console.error('Error fetching news articles:', error);
+    return [];
+  }
+}
+
+export async function fetchBCVideos(): Promise<BrightcoveVideo[]> {
+  try {
+    const res = await fetch("http://localhost/wp-json/hpm-priority/v1/list"); //http://staging.hpm.io/wp-json/hpm-priority/v1/list
+    const json = await res.json();
+    const rawVideos = json?.data?.bcvideos ?? [];
+    const flattened = rawVideos.flat();
+    const formatted: BrightcoveVideo[] = flattened.map((video: any) => ({
+      id: video.id,
+      name: video.name,
+      poster: video.poster,
+    }));
+
+    return formatted;
+  } catch (error) {
+    console.log("Error fetching videos:", error);
     return [];
   }
 }
@@ -46,7 +55,6 @@ export async function fetchNewsArticle(id: number): Promise<NewsArticle | null> 
     const json = await response.json();
     return json?.data?.article || null;
   } catch (error) {
-    //console.error('Error fetching news article:', error);
     return null;
   }
 }
@@ -57,7 +65,6 @@ export async function fetchNewsArticleById(id: number): Promise<NewsDetail | nul
     const json = await response.json();
     return json || null;
   } catch (error) {
-    //console.error('Error fetching news article:', error);
     return null;
   }
 }

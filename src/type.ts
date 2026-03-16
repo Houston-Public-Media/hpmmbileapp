@@ -13,6 +13,23 @@ export interface NewsArticle {
   };
 }
 
+export interface BrightcoveVideo {
+  id: string;
+  name: string;
+  poster?: string;
+};
+
+export interface BrightCoveVideo {
+  id: string;  // string id for React keys
+  name: string; // video title
+  duration: number;
+  poster: string; 
+  sources: { src: string; type: string }[]; // HLS/mp4 sources
+  onPress?: () => void;
+}
+
+
+
 export interface MediaDetails {
   source_url: string;
   // Add other media properties as needed
