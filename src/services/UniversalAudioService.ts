@@ -267,7 +267,7 @@ class UniversalAudioService {
 		
 			// Fetch audio metadata with timeout
 			const audioResponse = await Promise.race([
-				fetch('https://s3-us-west-2.amazonaws.com/hpmwebv2/assets/nowplay/all.json'),
+				fetch('https://cdn.houstonpublicmedia.org/assets/nowplay/all.json'),
 				new Promise<never>((_, reject) => 
 					setTimeout(() => reject(new Error('Timeout fetching audio metadata')), 10000)
 				)
