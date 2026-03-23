@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchPriorityNews, fetchTalkshow } from '../services/newsApi';
 import NewsCard from '../components/NewsCard';
@@ -249,7 +249,11 @@ export default function HomeScreen({ navigation }: Props) {
         return (
         <View style={styles.section}>
           <BrightcoveVideo />
+          <TouchableOpacity onPress={() => navigation.navigate('VerticalVideosScreen', {})} style={styles.seeAllButton}>
+            <Text style={styles.seeAll}>View all</Text>
+          </TouchableOpacity> 
         </View>
+        
       );
 
       case 'selected_category':
@@ -292,4 +296,13 @@ const styles = StyleSheet.create({
   featuredImage: { width: '100%', height: 180, marginBottom: 16 },
   featuredSummary: { fontWeight: 'bold', fontSize: 18, marginTop: 4 },
   section: { paddingVertical: 8 },
+  seeAllButton: {
+    padding: 8,
+    alignSelf: 'flex-end',
+  },
+  seeAll: {
+    color: '#1976d2',
+    fontWeight: '500',
+    fontSize: 13,
+  },
 });

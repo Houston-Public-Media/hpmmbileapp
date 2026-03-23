@@ -8,6 +8,7 @@ import CategoryListScreen from '../screens/CategoryListScreen';
 import { color } from '../utils/colorUtils';
 import { Podcast } from '../services/podcastApi';
 import PodcastDetailsScreen from '../screens/PodcastDetailsScreen';
+import VerticalVideosScreen from '../screens/VerticalVideosScreen';
 
 const Stack = createStackNavigator();
 
@@ -16,6 +17,7 @@ export type RootStackParamList = {
   NewsDetail: { postId: number, title?: string };
   CategoryList: { categoryId: number; categorySlug?:string, title?: string };
   PodcastDetails: { podcast: Podcast };
+  VerticalVideosScreen:{};
 };
 
 function HomeStack(): JSX.Element {
@@ -36,6 +38,7 @@ function HomeStack(): JSX.Element {
           headerBackTitle: '' 
         })}
       />
+      <Stack.Screen name="VerticalVideosScreen" component={VerticalVideosScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

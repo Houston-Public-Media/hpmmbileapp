@@ -32,17 +32,22 @@ export async function fetchPriorityNews(): Promise<NewsArticle[]> {
 
 export async function fetchBCVideos(): Promise<BrightcoveVideo[]> {
   try {
-    const res = await fetch("http://localhost/wp-json/hpm-priority/v1/list"); //http://staging.hpm.io/wp-json/hpm-priority/v1/list
+    const res = await fetch(`http://localhost/wp-json/hpm-video/v1/list/?playlist=true`); //http://staging.hpm.io/wp-json/hpm-priority/v1/list
     const json = await res.json();
-    const rawVideos = json?.data?.bcvideos ?? [];
-    const flattened = rawVideos.flat();
-    const formatted: BrightcoveVideo[] = flattened.map((video: any) => ({
-      id: video.id,
-      name: video.name,
-      poster: video.poster,
-    }));
+    const videosList = json?.data?.videos ?? [];
+    return videosList;
+  } catch (error) {
+    console.log("Error fetching videos:", error);
+    return [];
+  }
+}
 
-    return formatted;
+export async function fetchBCVideoGrid(offset = 0): Promise<BrightcoveVideo[]> {
+  try {
+    const res = await fetch(`http://localhost/wp-json/hpm-video/v1/list/?playlist=false&offset=${offset}`);
+    const json = await res.json();
+    const videosList = json?.data?.videos ?? [];
+    return videosList;
   } catch (error) {
     console.log("Error fetching videos:", error);
     return [];

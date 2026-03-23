@@ -10,9 +10,6 @@ const CARD_WIDTH = width * 0.5;
 const CARD_HEIGHT = (CARD_WIDTH * 16) / 9;
 const ITEM_MARGIN = 16;
 
-const ACCOUNT_ID = "6416104539001";
-const PLAYER_ID = "gZ3ifBJ4r8";
-
 export default function BrightcoveVideo() {
   const [videos, setVideos] = useState<VideoType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,12 +39,10 @@ export default function BrightcoveVideo() {
   }
 
   const renderItem = ({ item }: { item: VideoType }) => {
-    const playerUrl = `https://players.brightcove.net/${ACCOUNT_ID}/${PLAYER_ID}_default/index.html?videoId=${item.id}`;
-
     return (
       <View style={[styles.card, { marginRight: ITEM_MARGIN }]}>
         <WebView
-          source={{ uri: playerUrl }}
+          source={{ uri: item.playerUrl }}
           style={{ width: "100%", height: "100%" }}
           javaScriptEnabled
           allowsFullscreenVideo
@@ -55,23 +50,16 @@ export default function BrightcoveVideo() {
           mediaPlaybackRequiresUserAction={false}
           scrollEnabled={false}
         />
-        <View style={styles.overlay}>
+        {/* <View style={styles.overlay}>
           <Text style={styles.title}>{item.name}</Text>
-        </View>
+        </View> */}
       </View>
     );
   };
 
   return (
     <View style={styles.container}>
-      <SectionTitle
-        title="HPM"
-        subtitle="Shorts"
-        line={true}
-        containerStyle={{ marginBottom: 16 }}
-        titleStyle={{ color: 'black' }}
-        subtitleStyle={{ color: '#c8102e' }}
-      />
+      <SectionTitle title="HPM" subtitle="Shorts" line={true} containerStyle={{ marginBottom: 16 }} titleStyle={{ color: 'black' }} subtitleStyle={{ color: '#c8102e' }} />
     <FlatList
       data={videos}
       horizontal
