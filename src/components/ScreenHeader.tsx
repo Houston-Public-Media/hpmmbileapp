@@ -10,9 +10,11 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({ title, description }) => {
   return (
     <View style={styles.headerSection}>
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description} numberOfLines={2}>
-        {description}
-      </Text>
+      {description ? (
+        <Text style={styles.description} numberOfLines={2}>
+          {description}
+        </Text>
+      ) : null}    
     </View>
   );
 };

@@ -32,7 +32,7 @@ export async function fetchPriorityNews(): Promise<NewsArticle[]> {
 
 export async function fetchBCVideos(): Promise<BrightcoveVideo[]> {
   try {
-    const res = await fetch(`http://localhost/wp-json/hpm-video/v1/list/?playlist=true`); //http://staging.hpm.io/wp-json/hpm-priority/v1/list
+    const res = await fetch(`https://www.houstonpublicmedia.org/wp-json/hpm-video/v1/list/?playlist=true`); //http://staging.hpm.io/wp-json/hpm-priority/v1/list
     const json = await res.json();
     const videosList = json?.data?.videos ?? [];
     return videosList;
@@ -44,7 +44,7 @@ export async function fetchBCVideos(): Promise<BrightcoveVideo[]> {
 
 export async function fetchBCVideoGrid(offset = 0): Promise<BrightcoveVideo[]> {
   try {
-    const res = await fetch(`http://localhost/wp-json/hpm-video/v1/list/?playlist=false&offset=${offset}`);
+    const res = await fetch(`https://www.houstonpublicmedia.org/wp-json/hpm-video/v1/list/?playlist=false&offset=${offset}`);
     const json = await res.json();
     const videosList = json?.data?.videos ?? [];
     return videosList;

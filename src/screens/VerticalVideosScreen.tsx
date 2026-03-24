@@ -45,9 +45,9 @@ const VerticalVideosScreen = () => {
           scrollEnabled={false}
           backgroundColor="transparent"
         />
-        <View style={styles.overlay}>
+        {/* <View style={styles.overlay}>
           <Text style={styles.title}>{item.name}</Text>
-        </View>
+        </View> */}
       </View>
     );
   };
