@@ -108,7 +108,7 @@ export class PushNotificationService {
         // Get the token that uniquely identifies this device
         // This works for both Android and iOS
         const tokenResponse = await Notifications.getExpoPushTokenAsync({
-          projectId: projectId || 'hpm-expo-app', // Fallback to the project ID from Firebase config
+          projectId: projectId || 'hpm-cross-platform-app', // Fallback to the project ID from Firebase config
         });
         
         token = tokenResponse.data;

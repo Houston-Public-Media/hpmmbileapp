@@ -20,6 +20,7 @@ import { useAds } from '../hooks/useAds';
 import { listenLiveService } from '../services/ListenLiveServices';
 import { podcastAudioService } from '../services/PodcastAudioService';
 import { htmlAudioService } from '../services/HtmlAudioService';
+import BrightcoveVideo from '../components/BrightcoveVideo';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -35,6 +36,7 @@ type SectionItem =
 	| { type: 'lastNewsList'; data: NewsArticle[] }
 	| { type: 'talkshow'; data: { showSlug: string; talkshow: TalkshowEntry }[] }
 	| { type: 'radio' }
+	| { type: 'brightcove' }
 	| { type: 'selected_category'; data:{id:string, name:string};}
 
 export default function HomeScreen({ navigation }: Props) {
@@ -77,6 +79,7 @@ export default function HomeScreen({ navigation }: Props) {
 			: [{ type: 'lastNewsList' as const, data: lastNewsList }]
 		),
 		{ type: 'radio' },
+		{ type: 'brightcove' },
 		...categoryList
 	].filter(Boolean) as SectionItem[];
 
@@ -239,6 +242,13 @@ export default function HomeScreen({ navigation }: Props) {
 				return (
 					<View style={styles.section}>
 						<RadioSection />
+					</View>
+				);
+
+			case 'brightcove':
+				return (
+					<View style={styles.section}>
+						<BrightcoveVideo />
 					</View>
 				);
 

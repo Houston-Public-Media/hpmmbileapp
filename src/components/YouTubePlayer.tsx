@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
-import { WebView } from 'react-native-webview';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import YoutubePlayerNew from 'react-native-youtube-iframe';
 
 interface YouTubePlayerProps {
   src: string;
@@ -8,69 +8,52 @@ interface YouTubePlayerProps {
   height?: number;
 }
 
-const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ 
-  src, 
-  width = Dimensions.get('window').width - 30, 
-  height = 200 
+const YoutubePlayer: React.FC<YouTubePlayerProps> = ({
+  src,
+  width = Dimensions.get('window').width - 30,
+  height,
 }) => {
-  // Extract YouTube video ID from various URL formats
+  const [videoId, setVideoId] = useState<string | null>(null);
+
+  // Extract YouTube ID from various URL formats
   const getYouTubeVideoId = (url: string): string | null => {
     const patterns = [
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/,
       /youtube\.com\/embed\/([^"&?\/\s]{11})/,
       /youtube\.com\/watch\?v=([^"&?\/\s]{11})/,
     ];
-
     for (const pattern of patterns) {
       const match = url.match(pattern);
-      if (match) {
-        return match[1];
-      }
+      if (match) return match[1];
     }
-
     return null;
   };
 
-  const videoId = getYouTubeVideoId(src);
+  useEffect(() => {
+    const id = getYouTubeVideoId(src);
+    setVideoId(id);
+  }, [src]);
 
   if (!videoId) {
-    console.log("IF");
-    // If it's not a YouTube URL, render as a general WebView
     return (
-      <View style={[styles.container, { width, height }]}>
-        <WebView
-          source={{ uri: src }}
-          style={styles.webview}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          allowsInlineMediaPlayback={true}
-          mediaPlaybackRequiresUserAction={false}
-          allowsFullscreenVideo={true}
-          mixedContentMode="always"
-          onShouldStartLoadWithRequest={() => true}
-          referrerpolicy={"*"}
-        />
+      <View style={[styles.loader, { width, height: height || (width * 9) / 16 }]}>
+        <ActivityIndicator size="large" color="red" />
       </View>
     );
   }
-console.log("Else");
-  // Create YouTube embed URL
-  const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=0&rel=0&modestbranding=1`;
 
   return (
-    <View style={[styles.container, { width, height }]}>
-      <WebView
-        source={{ uri: embedUrl }}
-        style={styles.webview}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        allowsInlineMediaPlayback={true}
-        mediaPlaybackRequiresUserAction={false}
-        allowsFullscreenVideo={true}
-        mixedContentMode="always"
-        onShouldStartLoadWithRequest={() => true}
-        originWhitelist={['*']}
-        referrerpolicy={"*"}
+    <View style={[styles.container, { width, height: height || (width * 9) / 16 }]}>
+      <YoutubePlayerNew
+        height={height || (width * 9) / 16}
+        width={width}
+        videoId={videoId}
+        play={false}
+        webViewProps={{
+          allowsInlineMediaPlayback: true,
+          javaScriptEnabled: true,
+          domStorageEnabled: true,
+        }}
       />
     </View>
   );
@@ -79,14 +62,16 @@ console.log("Else");
 const styles = StyleSheet.create({
   container: {
     marginVertical: 10,
-    backgroundColor: '#000',
     borderRadius: 8,
     overflow: 'hidden',
+    backgroundColor: '#000',
   },
-  webview: {
-    flex: 1,
-    backgroundColor: 'transparent',
+  loader: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+    borderRadius: 8,
   },
 });
 
-export default YouTubePlayer;
+export default YoutubePlayer;
