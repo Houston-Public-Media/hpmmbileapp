@@ -4,6 +4,7 @@
 node_modules/
 GoogleService-Info.plist
 google-services.json
+package-lock.json
 
 # Expo
 .expo/
