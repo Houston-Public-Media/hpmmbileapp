@@ -89,6 +89,7 @@ const ProfileScreen = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<'working' | 'pending' | 'error' | 'checking'>('checking');
 
   useEffect(() => {
     //dlog('useEffect init -> loading categories and push setting');
@@ -103,74 +104,223 @@ const ProfileScreen = () => {
     //dlog('loadCategories: done', { count: loadedCategories.length });
   };
 
-  const loadPushSetting = async () => {
+  // const loadPushSetting = async () => {
+  //   try {
+  //     //dlog('loadPushSetting: reading AsyncStorage');
+  //     const value = await AsyncStorage.getItem('push_notifications_enabled');
+  //     if (value !== null) {
+  //       const parsed = value === 'true';
+  //       //dlog('loadPushSetting: found stored value', { value, parsed });
+  //       setPushEnabled(parsed);
+  //       return;
+        
+  //     }
+  //     // No saved preference: infer from permissions/token
+  //     //dlog('loadPushSetting: no stored value, checking permissions/token');
+  //     const status = await withTimeout(
+  //       PushNotificationService.getPermissionsStatus(),
+  //       8000,
+  //       'getPermissionsStatus (initial)'
+  //     );
+  //     const hasToken = PushNotificationService.isPushTokenAvailable();
+  //     const inferred = status.status === 'granted' && hasToken;
+  //     //dlog('loadPushSetting: inferred from system', { status: status.status, hasToken, inferred });
+  //     setPushEnabled(inferred);
+  //   } catch (e) {
+  //     //console.warn('Failed to load push setting', e);
+  //   }
+  // };
+
+
+const loadPushSetting = async () => {
+  try {
+    const value = await AsyncStorage.getItem('push_notifications_enabled');
+    if (value !== null) {
+      const parsed = value === 'true';
+      setPushEnabled(parsed);
+      
+      // Check actual status for existing users
+      if (parsed) {
+        await checkNotificationStatus();
+      } else {
+        setNotificationStatus('pending');
+      }
+      return;
+    }
+    
+    // New user: default to enabled
+    setPushEnabled(true);
+    await AsyncStorage.setItem('push_notifications_enabled', 'true');
+    setNotificationStatus('checking');
+    
+    // Try to register for push notifications in the background
     try {
-      //dlog('loadPushSetting: reading AsyncStorage');
-      const value = await AsyncStorage.getItem('push_notifications_enabled');
-      if (value !== null) {
-        const parsed = value === 'true';
-        //dlog('loadPushSetting: found stored value', { value, parsed });
-        setPushEnabled(parsed);
+      if (!Device.isDevice) {
+        // Simulator: Keep enabled, show pending status
+        dlog('loadPushSetting: simulator detected, keeping UI enabled but skipping registration');
+        setNotificationStatus('pending');
+        await AsyncStorage.setItem('notifications_status', 'pending');
         return;
       }
-      // No saved preference: infer from permissions/token
-      //dlog('loadPushSetting: no stored value, checking permissions/token');
-      const status = await withTimeout(
+      
+      const perm = await withTimeout(
         PushNotificationService.getPermissionsStatus(),
         8000,
-        'getPermissionsStatus (initial)'
+        'getPermissionsStatus (initial default)'
       );
-      const hasToken = PushNotificationService.isPushTokenAvailable();
-      const inferred = status.status === 'granted' && hasToken;
-      //dlog('loadPushSetting: inferred from system', { status: status.status, hasToken, inferred });
-      setPushEnabled(inferred);
-    } catch (e) {
-      //console.warn('Failed to load push setting', e);
+      
+      let token: string | null = null;
+      if (perm.status === 'granted') {
+        const hasToken = PushNotificationService.isPushTokenAvailable();
+        token = hasToken
+          ? PushNotificationService.getPushToken?.() || 'cached-token'
+          : await withTimeout(
+              PushNotificationService.registerForPushNotifications(),
+              15000,
+              'registerForPushNotifications (granted default)'
+            );
+      } else {
+        // Request permissions for new user
+        token = await withTimeout(
+          PushNotificationService.registerForPushNotifications(),
+          20000,
+          'registerForPushNotifications (request default)'
+        );
+      }
+      
+      // Update status based on result
+      if (token) {
+        dlog('loadPushSetting: ✅ successfully registered for push notifications');
+        setNotificationStatus('working');
+        await AsyncStorage.setItem('notifications_status', 'working');
+      } else {
+        dlog('loadPushSetting: ⚠️ token registration failed, permission needed');
+        setNotificationStatus('pending');
+        await AsyncStorage.setItem('notifications_status', 'pending');
+      }
+    } catch (err) {
+      dlog('loadPushSetting: ⚠️ error during registration', err);
+      setNotificationStatus('error');
+      await AsyncStorage.setItem('notifications_status', 'error');
     }
-  };
+  } catch (e) {
+    // Fallback: enable by default even on error
+    setPushEnabled(true);
+    setNotificationStatus('error');
+  }
+};
+
+const checkNotificationStatus = async () => {
+  try {
+    if (!Device.isDevice) {
+      setNotificationStatus('pending');
+      return;
+    }
+
+    const perm = await withTimeout(
+      PushNotificationService.getPermissionsStatus(),
+      5000,
+      'getPermissionsStatus (check)'
+    );
+
+    const hasToken = PushNotificationService.isPushTokenAvailable();
+
+    if (perm.status === 'granted' && hasToken) {
+      setNotificationStatus('working');
+      await AsyncStorage.setItem('notifications_status', 'working');
+    } else if (perm.status === 'granted' && !hasToken) {
+      setNotificationStatus('error');
+      await AsyncStorage.setItem('notifications_status', 'error');
+    } else {
+      setNotificationStatus('pending');
+      await AsyncStorage.setItem('notifications_status', 'pending');
+    }
+  } catch (err) {
+    setNotificationStatus('error');
+  }
+};
 
   const handleCategoryToggle = async (id: string) => {
     const updatedCategories = await toggleCategory(id);
     setCategories(updatedCategories);
   };
 
-  const handlePushToggle = async (value: boolean) => {
-    //dlog('handlePushToggle: invoked', { value, pushLoading });
-    if (pushLoading) {
-      //dlog('handlePushToggle: early return due to pushLoading');
-      return; // Prevent double taps while processing
+  const getNotificationStatusMessage = () => {
+    if (!pushEnabled) {
+      return 'Receive breaking news alerts and updates';
     }
-    // Optimistic UI update first for smooth UX
+    
+    switch (notificationStatus) {
+      case 'working':
+        return '✅ Active and receiving notifications';
+      case 'pending':
+        return '⚠️ Permission needed - tap to enable';
+      case 'error':
+        return '⚠️ Setup incomplete - tap to retry';
+      case 'checking':
+        return '⏳ Checking status...';
+      default:
+        return 'Receive breaking news alerts and updates';
+    }
+  };
+
+  const getNotificationStatusColor = () => {
+    if (!pushEnabled) {
+      return 'rgba(255,255,255,0.75)';
+    }
+    
+    switch (notificationStatus) {
+      case 'working':
+        return '#4CAF50'; // Green
+      case 'pending':
+        return '#FFC107'; // Amber
+      case 'error':
+        return '#FF9800'; // Orange
+      case 'checking':
+        return 'rgba(255,255,255,0.75)';
+      default:
+        return 'rgba(255,255,255,0.75)';
+    }
+  };
+
+  const handlePushToggle = async (value: boolean) => {
+    if (pushLoading) {
+      return;
+    }
+
     setPushEnabled(value);
     setPushLoading(true);
-    //dlog('handlePushToggle: optimistic set', { pushEnabled: value });
+    
     try {
       if (value) {
-        // Enabling
+        // User wants to enable notifications
+        setNotificationStatus('checking');
+        
         if (!Device.isDevice) {
-          //dlog('handlePushToggle: not a physical device, abort enabling');
-          setPushEnabled(false);
-          await AsyncStorage.setItem('push_notifications_enabled', 'false');
-          Alert.alert('Physical Device Required', 'Push notifications require a physical device (not a simulator/emulator).');
+          // Simulator: Keep enabled but show pending status
+          await AsyncStorage.setItem('push_notifications_enabled', 'true');
+          setNotificationStatus('pending');
+          await AsyncStorage.setItem('notifications_status', 'pending');
+          Alert.alert(
+            'Simulator Detected', 
+            'Push notifications require a physical device. The toggle will stay enabled, but notifications won\'t work on simulator.',
+            [{ text: 'OK' }]
+          );
+          setPushLoading(false);
           return;
         }
-
-        // Check existing permissions first
+        
         const perm = await withTimeout(
           PushNotificationService.getPermissionsStatus(),
           8000,
           'getPermissionsStatus (toggle)'
         );
-        //dlog('handlePushToggle: permission status', { status: perm.status });
         let token: string | null = null;
 
         if (perm.status === 'granted') {
-          // Already granted, ensure token
           const hadToken = PushNotificationService.isPushTokenAvailable();
-          //dlog('handlePushToggle: permission granted, token available?', { hadToken });
           if (hadToken) {
             token = PushNotificationService.getPushToken?.() || 'cached-token';
-            //dlog('handlePushToggle: using cached token');
           } else {
             token = await withTimeout(
               PushNotificationService.registerForPushNotifications(),
@@ -179,56 +329,49 @@ const ProfileScreen = () => {
             );
           }
         } else {
-          // Request permission and token
-          //dlog('handlePushToggle: requesting permission and registering for token');
           token = await withTimeout(
             PushNotificationService.registerForPushNotifications(),
             20000,
             'registerForPushNotifications (request)'
           );
         }
-
-        //dlog('handlePushToggle: token result', { hasToken: !!token });
-        if (!token) {
-          // Offer to open settings if denied
+        
+        if (token) {
+          // Success: Notifications working
+          await AsyncStorage.setItem('push_notifications_enabled', 'true');
+          setNotificationStatus('working');
+          await AsyncStorage.setItem('notifications_status', 'working');
+          dlog('handlePushToggle: ✅ Notifications enabled and working');
+        } else {
+          // Permission denied: Keep toggle ON but show pending status
+          await AsyncStorage.setItem('push_notifications_enabled', 'true');
+          setNotificationStatus('pending');
+          await AsyncStorage.setItem('notifications_status', 'pending');
+          
           Alert.alert(
-            'Push Notifications Disabled',
+            'Permission Needed',
             Platform.select({
-              ios: 'To enable notifications, allow permissions in Settings > Notifications for this app.',
-              android: 'To enable notifications, allow permissions and notifications for this app in Settings.',
+              ios: 'Notifications are enabled but need permission. Go to Settings > Notifications to allow notifications for this app.',
+              android: 'Notifications are enabled but need permission. Go to Settings to allow notifications for this app.',
               default: 'Please enable notifications in system settings.'
             }) as string,
             [
-              { text: 'Cancel', style: 'cancel' },
+              { text: 'Later', style: 'cancel' },
               {
                 text: 'Open Settings',
                 onPress: () => Linking.openSettings?.(),
               },
             ]
           );
-          setPushEnabled(false);
-          await AsyncStorage.setItem('push_notifications_enabled', 'false');
-          //dlog('handlePushToggle: token missing, persisted false and prompted settings');
-          return;
+          dlog('handlePushToggle: ⚠️ Notifications enabled but permission needed');
         }
-
-        await AsyncStorage.setItem('push_notifications_enabled', 'true');
-        //dlog('handlePushToggle: enabled and persisted true');
-        // Optional success feedback kept subtle to avoid noisy alerts
       } else {
-        // Disabling: unregister/clear and persist
-        //dlog('handlePushToggle: disabling (instant UX)');
-        // UI already set to false optimistically above; persist immediately
-        try {
-          await AsyncStorage.setItem('push_notifications_enabled', 'false');
-          //dlog('handlePushToggle: persisted false immediately');
-        } catch (persistErr) {
-          //dlog('handlePushToggle: failed to persist false', persistErr);
-        }
-        // Release loading immediately for snappy UX
+        // User wants to disable notifications
+        await AsyncStorage.setItem('push_notifications_enabled', 'false');
+        setNotificationStatus('pending');
+        await AsyncStorage.setItem('notifications_status', 'pending');
+        
         setPushLoading(false);
-        //dlog('handlePushToggle: released loading for disable');
-        // Fire-and-forget background cleanup (no await)
         withTimeout(
           PushNotificationService.disablePushNotifications(),
           5000,
@@ -236,20 +379,19 @@ const ProfileScreen = () => {
         )
           .then(() => dlog('handlePushToggle: disable call completed (async)'))
           .catch((err) => dlog('handlePushToggle: disable async timeout/error', err));
-        return; // Exit early; nothing else to block UI
+        return;
       }
     } catch (e) {
-      //console.warn('Failed to update push setting', e);
-      // Revert UI to previously persisted state on error
+      dlog('handlePushToggle: error', e);
+      setNotificationStatus('error');
+      await AsyncStorage.setItem('notifications_status', 'error');
+      
       try {
         const persisted = await AsyncStorage.getItem('push_notifications_enabled');
         setPushEnabled(persisted === 'true');
       } catch {}
-      // Keep UX quiet; show subtle feedback only if needed
-      //dlog('handlePushToggle: error occurred, reverted to persisted state');
     } finally {
       setPushLoading(false);
-      //dlog('handlePushToggle: set pushLoading false');
     }
   };
 
@@ -308,21 +450,24 @@ const ProfileScreen = () => {
             style={[styles.settingsRow, pushLoading && { opacity: 0.6 }]}
             activeOpacity={0.7}
             onPress={() => {
-              dlog('UI: row pressed', { pushLoading, pushEnabled });
+              dlog('UI: row pressed', { pushLoading, pushEnabled, notificationStatus });
               if (pushLoading) return;
               handlePushToggle(!pushEnabled);
             }}
           >
             <View style={styles.settingsLeft}>
               <Text style={styles.settingsTitle}>Push Notifications</Text>
-              <Text style={styles.settingsSubtitle}>
-                Receive breaking news alerts and updates
+              <Text style={[
+                styles.settingsSubtitle,
+                { color: getNotificationStatusColor() }
+              ]}>
+                {getNotificationStatusMessage()}
               </Text>
             </View>
             <Switch
               value={pushEnabled}
               onValueChange={(v) => {
-                dlog('UI: switch toggled', { value: v, pushLoading, pushEnabled });
+                dlog('UI: switch toggled', { value: v, pushLoading, pushEnabled, notificationStatus });
                 handlePushToggle(v);
               }}
               disabled={pushLoading}
@@ -355,5 +500,4 @@ const ProfileScreen = () => {
     </View>
   );
 };
-
 export default ProfileScreen;

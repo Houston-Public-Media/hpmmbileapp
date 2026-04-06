@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, Linking } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { analyticsService } from '../services/AnalyticsService';
 
 import ProfileScreen from '../screens/ProfileScreen';
 import ListenLiveScreen from '../screens/ListenLiveScreen';
@@ -61,6 +62,13 @@ const BottomTabNavigator = () => (
         return <Text style={{ color, fontSize: 13 }}>{route.name}</Text>;
       },
     })}
+    screenListeners={{
+      tabPress: (e) => {
+        // Track tab changes
+        const tabName = e.target?.split('-')[0] || 'Unknown';
+        analyticsService.trackTabChanged(tabName);
+      },
+    }}
   >
     <Tab.Screen name="Today" component={HomeStack} />
     <Tab.Screen name="Listen" component={ListenLiveScreen} />
@@ -73,6 +81,7 @@ const BottomTabNavigator = () => (
       listeners={{
         tabPress: (e) => {
           e.preventDefault();
+          analyticsService.trackDonateButtonClicked('bottom_tab');
           Linking.openURL('https://www.houstonpublicmedia.org/donate');
         },
       }}

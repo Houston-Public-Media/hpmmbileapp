@@ -21,6 +21,7 @@ import { listenLiveService } from '../services/ListenLiveServices';
 import { podcastAudioService } from '../services/PodcastAudioService';
 import { htmlAudioService } from '../services/HtmlAudioService';
 import BrightcoveVideo from '../components/BrightcoveVideo';
+import { useScreenTracking } from '../hooks/useAnalytics';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -40,6 +41,9 @@ type SectionItem =
   | { type: 'selected_category'; data:{id:string, name:string};}
 
 export default function HomeScreen({ navigation }: Props) {
+  // Track screen view
+  useScreenTracking('Home');
+
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
