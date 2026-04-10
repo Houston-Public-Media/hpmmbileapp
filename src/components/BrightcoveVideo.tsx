@@ -50,9 +50,9 @@ export default function BrightcoveVideo() {
           mediaPlaybackRequiresUserAction={false}
           scrollEnabled={false}
         />
-        <View style={styles.overlay}>
+        {/* <View style={styles.overlay}>
           <Text style={styles.title}>{item.name}</Text>
-        </View>
+        </View> */}
       </View>
     );
   };

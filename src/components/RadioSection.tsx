@@ -116,7 +116,7 @@ const RadioSection = () => {
         line={true}
         containerStyle={{ marginBottom: 16 }}
         titleStyle={{ color: 'black' }}
-        subtitleStyle={{ color: 'red' }}
+        subtitleStyle={{ color: '#c8102e' }}
       />
       {radioList.map((item, idx) => (
         <RadioCard key={idx} id={item.id} title={item.title} image={item.image} json_feed={item.json_feed} podcast={item.podcast} />

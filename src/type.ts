@@ -14,30 +14,29 @@ export interface NewsArticle {
 }
 
 export interface BrightcoveVideo {
-  id: string;  // string id for React keys
-  name: string; // video title
+  id: string;
+  name: string;
+  poster?: string;
+  thumbnail?: string;
+  description: string;
   duration: number;
-  poster: string; 
-  playerUrl: string;
-  source: string; // HLS/mp4 sources
+  published: string;
+  source: string;
   type: string;
-  onPress?: () => void;
+  playerUrl: string;
 }
 
 export interface MediaDetails {
   source_url: string;
-  // Add other media properties as needed
 }
 
 export interface Author {
   name: string;
-  // Add other author properties as needed
 }
 
 export interface Embedded {
   'wp:featuredmedia'?: { source_url: string }[];
   author?: Author[];
-  // Add other embedded resources as needed
 }
 
 export interface NewsDetail {
@@ -48,7 +47,6 @@ export interface NewsDetail {
   date: string;
   featured_media?: number;
   _embedded?: Embedded;
-  // Keep the legacy property for backward compatibility
   featured_media_url?: string;
   coauthors?: Coauthor[];
 }
