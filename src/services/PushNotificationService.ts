@@ -3,14 +3,13 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-// Configure notification behavior for both foreground and background
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
+    shouldShowBanner: false,
+    shouldShowList: false,
   }),
 });
 
@@ -33,23 +32,16 @@ export class PushNotificationService {
     return PushNotificationService.instance;
   }
 
-  /**
-   * Register for push notifications and get the token
-   * Works for both Android and iOS
-   */
   async registerForPushNotifications(): Promise<string | null> {
     let token: string | null = null;
 
     if (Platform.OS === 'android') {
-      // Android 13+ (API 33+) requires POST_NOTIFICATIONS permission at runtime
       if (Platform.Version >= 33) {
         const { status: androidStatus } = await Notifications.requestPermissionsAsync();
         if (androidStatus !== 'granted') {
-          //console.log('Notification permission not granted on Android 13+!');
           return null;
         }
       }
-      // Android notification channel setup
       await Notifications.setNotificationChannelAsync('default', {
         name: 'Default',
         importance: Notifications.AndroidImportance.MAX,
@@ -59,8 +51,6 @@ export class PushNotificationService {
         enableVibrate: true,
         showBadge: true,
       });
-
-      // Additional channels for different notification types
       await Notifications.setNotificationChannelAsync('reminders', {
         name: 'Reminders',
         importance: Notifications.AndroidImportance.HIGH,
@@ -92,65 +82,40 @@ export class PushNotificationService {
       }
       
       if (finalStatus !== 'granted') {
-        //console.log('Failed to get push token for push notification!');
         return null;
       }
 
       try {
-        // Get the project ID from Constants
         const projectId = Constants.expoConfig?.extra?.eas?.projectId;
         
         if (!projectId) {
           console.warn('No EAS project ID found. Push tokens may not work for server notifications.');
           console.log('Available Constants:', JSON.stringify(Constants.expoConfig, null, 2));
         }
-
-        // Get the token that uniquely identifies this device
-        // This works for both Android and iOS
         const tokenResponse = await Notifications.getExpoPushTokenAsync({
-          projectId: projectId || 'hpm-cross-platform-app', // Fallback to the project ID from Firebase config
+          projectId: projectId || 'hpm-application', 
         });
         
         token = tokenResponse.data;
-        this.expoPushToken = token;
-        //console.log('Expo push token:', token);
-        
+        this.expoPushToken = token;       
         if (token) {
-          //console.log('✅ Push token generated successfully');
         } else {
-         // console.error('❌ Failed to generate push token');
         }
       } catch (error) {
-        //console.error('Error getting push token:', error);
-        //console.log('Constants.expoConfig:', Constants.expoConfig);
-       // console.log('Constants.expoConfig?.extra:', Constants.expoConfig?.extra);
-        //console.log('Constants.expoConfig?.extra?.eas:', Constants.expoConfig?.extra?.eas);
         return null;
       }
     } else {
-      //console.log('Must use physical device for Push Notifications');
     }
 
     return token;
   }
 
-  /**
-   * Get the current push token
-   */
   getPushToken(): string | null {
     return this.expoPushToken;
   }
-
-  /**
-   * Check if push token is available
-   */
   isPushTokenAvailable(): boolean {
     return !!this.expoPushToken;
   }
-
-  /**
-   * Get detailed push token status for debugging
-   */
   getPushTokenStatus(): {
     isAvailable: boolean;
     token: string | null;
@@ -173,29 +138,17 @@ export class PushNotificationService {
     };
   }
 
-  /**
-   * Add notification received listener (works in foreground)
-   */
   addNotificationReceivedListener(
     callback: (notification: Notifications.Notification) => void
   ): Notifications.Subscription {
     return Notifications.addNotificationReceivedListener(callback);
   }
-
-  /**
-   * Add notification response listener (when user taps notification)
-   * Works for both foreground and background notifications
-   */
   addNotificationResponseReceivedListener(
     callback: (response: Notifications.NotificationResponse) => void
   ): Notifications.Subscription {
     return Notifications.addNotificationResponseReceivedListener(callback);
   }
 
-  /**
-   * Schedule a local notification
-   * Works for both Android and iOS, including when app is closed
-   */
   async scheduleLocalNotification(
     title: string,
     body: string,
@@ -216,51 +169,30 @@ export class PushNotificationService {
     return identifier;
   }
 
-  /**
-   * Cancel a scheduled notification
-   */
   async cancelScheduledNotification(identifier: string): Promise<void> {
     await Notifications.cancelScheduledNotificationAsync(identifier);
   }
 
-  /**
-   * Cancel all scheduled notifications
-   */
   async cancelAllScheduledNotifications(): Promise<void> {
     await Notifications.cancelAllScheduledNotificationsAsync();
   }
 
-  /**
-   * Get all scheduled notifications
-   */
   async getScheduledNotifications(): Promise<Notifications.NotificationRequest[]> {
     return await Notifications.getAllScheduledNotificationsAsync();
   }
 
-  /**
-   * Get notification permissions status
-   */
   async getPermissionsStatus(): Promise<Notifications.NotificationPermissionsStatus> {
     return await Notifications.getPermissionsAsync();
   }
 
-  /**
-   * Request notification permissions
-   */
   async requestPermissions(): Promise<Notifications.NotificationPermissionsStatus> {
     return await Notifications.requestPermissionsAsync();
   }
 
-  /**
-   * Send a test notification immediately
-   */
   async sendTestNotification(title: string = 'Test Notification', body: string = 'This is a test notification'): Promise<string> {
     return await this.scheduleLocalNotification(title, body, { type: 'test' });
   }
 
-  /**
-   * Send a reminder notification (works in background)
-   */
   async sendReminderNotification(
     title: string,
     body: string,
@@ -276,9 +208,6 @@ export class PushNotificationService {
     );
   }
 
-  /**
-   * Send a message notification
-   */
   async sendMessageNotification(
     title: string,
     body: string,
@@ -293,10 +222,6 @@ export class PushNotificationService {
     );
   }
 
-  /**
-   * Disable push notifications locally: clear scheduled and delivered notifications
-   * and clear the in-memory token reference.
-   */
   async disablePushNotifications(): Promise<void> {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
