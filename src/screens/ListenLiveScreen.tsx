@@ -1,13 +1,5 @@
-// src\screens\ListenLiveScreen.tsx
-
-import React, { JSX } from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity
-} from 'react-native';
+import React, { JSX, useCallback } from 'react';
+import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ListenLivePlayer from '../components/ListenLivePlayer';
 import { useListenLive } from '../contexts/ListenLiveContext';
@@ -15,11 +7,16 @@ import { color } from '../utils/colorUtils';
 import ScreenHeader from '../components/ScreenHeader';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
+//import { analyticsService } from '../services/AnalyticsService';
+import { useFocusEffect } from '@react-navigation/native';
 
 function ListenLiveScreen(): JSX.Element {
+   useFocusEffect(
+    useCallback(() => {
+      //analyticsService.logScreenView('ListenLiveScreen', 'ListenLiveScreen');
+    }, [])
+  );
   const { isPlayerReady, tracks, error, isLoading, refreshListenLiveData } = useListenLive();
-  
-  // Note: No need to manually pause audio here - the universal service handles conflicts automatically
 
   if (isLoading) {
     return (

@@ -190,16 +190,16 @@ const loadPushSetting = async () => {
       
       // Update status based on result
       if (token) {
-        dlog('loadPushSetting: ✅ successfully registered for push notifications');
+        dlog('loadPushSetting: successfully registered for push notifications');
         setNotificationStatus('working');
         await AsyncStorage.setItem('notifications_status', 'working');
       } else {
-        dlog('loadPushSetting: ⚠️ token registration failed, permission needed');
+        dlog('loadPushSetting: token registration failed, permission needed');
         setNotificationStatus('pending');
         await AsyncStorage.setItem('notifications_status', 'pending');
       }
     } catch (err) {
-      dlog('loadPushSetting: ⚠️ error during registration', err);
+      dlog('loadPushSetting: error during registration', err);
       setNotificationStatus('error');
       await AsyncStorage.setItem('notifications_status', 'error');
     }
@@ -252,13 +252,13 @@ const checkNotificationStatus = async () => {
     
     switch (notificationStatus) {
       case 'working':
-        return '✅ Active and receiving notifications';
+        return 'Active and receiving notifications';
       case 'pending':
-        return '⚠️ Permission needed - tap to enable';
+        return 'Permission needed - tap to enable';
       case 'error':
-        return '⚠️ Setup incomplete - tap to retry';
+        return 'Setup incomplete - tap to retry';
       case 'checking':
-        return '⏳ Checking status...';
+        return 'Checking status...';
       default:
         return 'Receive breaking news alerts and updates';
     }
@@ -341,7 +341,7 @@ const checkNotificationStatus = async () => {
           await AsyncStorage.setItem('push_notifications_enabled', 'true');
           setNotificationStatus('working');
           await AsyncStorage.setItem('notifications_status', 'working');
-          dlog('handlePushToggle: ✅ Notifications enabled and working');
+          dlog('handlePushToggle: Notifications enabled and working');
         } else {
           // Permission denied: Keep toggle ON but show pending status
           await AsyncStorage.setItem('push_notifications_enabled', 'true');
@@ -363,7 +363,7 @@ const checkNotificationStatus = async () => {
               },
             ]
           );
-          dlog('handlePushToggle: ⚠️ Notifications enabled but permission needed');
+          dlog('handlePushToggle: Notifications enabled but permission needed');
         }
       } else {
         // User wants to disable notifications
