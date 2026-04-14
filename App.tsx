@@ -2,12 +2,14 @@ import React, { useRef, useEffect } from 'react';
 import { StatusBar, StyleSheet, LogBox, AppState } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
 import { color } from './src/utils/colorUtils';
 import DrawerNavigator from './src/navigation/DrawerNavigator';
 import AdManager from './src/components/AdManager';
 import { ListenLiveProvider } from './src/contexts/ListenLiveContext';
 import { UniversalAudioProvider } from './src/contexts/UniversalAudioContext';
 import { analyticsService } from './src/services/AnalyticsService';
+import PushNotificationService from './src/services/PushNotificationService';
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
@@ -17,40 +19,89 @@ LogBox.ignoreLogs([
 ]);
 
 function App() {
-  //const routeNameRef = useRef<string>();
   const routeNameRef = useRef<string | undefined>(undefined);
-  //const navigationRef = useRef<any>();
   const navigationRef = useRef<any>(null);
   const appStateRef = useRef(AppState.currentState);
   const sessionStartTime = useRef(Date.now());
 
-  // Track app open on mount
+  // ✅ Register push notifications (your existing logic kept)
   useEffect(() => {
-    analyticsService.trackAppOpen();
+    const initPushNotifications = async () => {
+      const token =
+        await PushNotificationService.registerForPushNotifications();
+      console.log('Push notification token:', token);
+    };
+
+    initPushNotifications();
   }, []);
 
-  // Track app state changes (background/foreground)
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (
-        appStateRef.current.match(/active/) &&
-        nextAppState === 'background'
-      ) {
-        // App went to background
-        const sessionDuration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
-        analyticsService.trackAppBackground(sessionDuration);
-      } else if (
-        appStateRef.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        // App came to foreground
-        analyticsService.trackAppOpen();
-        sessionStartTime.current = Date.now();
+    const subscription =
+      PushNotificationService.addNotificationResponseReceivedListener(
+        (response) => {
+          const data =
+            response.notification.request.content.data;
+
+          handleNotificationNavigation(data);
+        }
+      );
+
+    return () => subscription.remove();
+  }, []);
+  useEffect(() => {
+    const checkInitialNotification = async () => {
+      const response =
+        await Notifications.getLastNotificationResponseAsync();
+
+      if (!response) return;
+
+      const data =
+        response.notification.request.content.data;
+
+      handleNotificationNavigation(data);
+    };
+
+    checkInitialNotification();
+  }, []);
+
+  const handleNotificationNavigation = (data: any) => {
+    if (!navigationRef.current) return;
+
+    if (data?.screen === 'NewsDetail') {
+      navigationRef.current.navigate('NewsDetail', {
+        postId: Number(data.postId),
+        title: data.title,
+      });
+    }
+  };
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      'change',
+      (nextAppState) => {
+        if (
+          appStateRef.current.match(/active/) &&
+          nextAppState === 'background'
+        ) {
+          const sessionDuration = Math.floor(
+            (Date.now() - sessionStartTime.current) / 1000
+          );
+
+          analyticsService.trackAppBackground(
+            sessionDuration
+          );
+        } else if (
+          appStateRef.current.match(
+            /inactive|background/
+          ) &&
+          nextAppState === 'active'
+        ) {
+          analyticsService.trackAppOpen();
+          sessionStartTime.current = Date.now();
+        }
+
+        appStateRef.current = nextAppState;
       }
-
-      appStateRef.current = nextAppState;
-    });
-
+    );
     return () => {
       subscription.remove();
     };

@@ -9,8 +9,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
+    shouldShowBanner: false,
+    shouldShowList: false
   }),
 });
 
@@ -33,19 +33,13 @@ export class PushNotificationService {
     return PushNotificationService.instance;
   }
 
-  /**
-   * Register for push notifications and get the token
-   * Works for both Android and iOS
-   */
   async registerForPushNotifications(): Promise<string | null> {
     let token: string | null = null;
 
     if (Platform.OS === 'android') {
-      // Android 13+ (API 33+) requires POST_NOTIFICATIONS permission at runtime
       if (Platform.Version >= 33) {
         const { status: androidStatus } = await Notifications.requestPermissionsAsync();
         if (androidStatus !== 'granted') {
-          //console.log('Notification permission not granted on Android 13+!');
           return null;
         }
       }
@@ -59,8 +53,6 @@ export class PushNotificationService {
         enableVibrate: true,
         showBadge: true,
       });
-
-      // Additional channels for different notification types
       await Notifications.setNotificationChannelAsync('reminders', {
         name: 'Reminders',
         importance: Notifications.AndroidImportance.HIGH,
@@ -92,7 +84,6 @@ export class PushNotificationService {
       }
       
       if (finalStatus !== 'granted') {
-        //console.log('Failed to get push token for push notification!');
         return null;
       }
 
@@ -105,26 +96,18 @@ export class PushNotificationService {
           console.log('Available Constants:', JSON.stringify(Constants.expoConfig, null, 2));
         }
 
-        // Get the token that uniquely identifies this device
-        // This works for both Android and iOS
         const tokenResponse = await Notifications.getExpoPushTokenAsync({
-          projectId: projectId || 'hpm-cross-platform-app', // Fallback to the project ID from Firebase config
+          projectId: projectId || 'hpm-cross-platform-app'
         });
         
         token = tokenResponse.data;
         this.expoPushToken = token;
-        //console.log('Expo push token:', token);
         
         if (token) {
-          //console.log('✅ Push token generated successfully');
+
         } else {
-         // console.error('❌ Failed to generate push token');
         }
       } catch (error) {
-        //console.error('Error getting push token:', error);
-        //console.log('Constants.expoConfig:', Constants.expoConfig);
-       // console.log('Constants.expoConfig?.extra:', Constants.expoConfig?.extra);
-        //console.log('Constants.expoConfig?.extra?.eas:', Constants.expoConfig?.extra?.eas);
         return null;
       }
     } else {
