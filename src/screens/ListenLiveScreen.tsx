@@ -10,14 +10,14 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ListenLivePlayer from '../components/ListenLivePlayer';
-import { useListenLive } from '../contexts/ListenLiveContext';
+import { useHPMAudio } from '../contexts/HPMAudioContext';
 import { color } from '../utils/colorUtils';
 import ScreenHeader from '../components/ScreenHeader';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
 
 function ListenLiveScreen(): JSX.Element {
-  const { isPlayerReady, tracks, error, isLoading, refreshListenLiveData } = useListenLive();
+  const { isPlayerReady, tracks, error, isLoading, loadLiveStreams } = useHPMAudio();
   
   // Note: No need to manually pause audio here - the universal service handles conflicts automatically
 
@@ -37,7 +37,7 @@ function ListenLiveScreen(): JSX.Element {
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity 
           style={styles.retryButton}
-          onPress={refreshListenLiveData}
+          onPress={loadLiveStreams}
         >
           <MaterialIcons name="refresh" size={20} color="#fff" />
           <Text style={styles.retryButtonText}>Try Again</Text>
@@ -53,7 +53,7 @@ function ListenLiveScreen(): JSX.Element {
         <Text style={styles.errorText}>No audio streams available</Text>
         <TouchableOpacity 
           style={styles.retryButton}
-          onPress={refreshListenLiveData}
+          onPress={loadLiveStreams}
         >
           <MaterialIcons name="refresh" size={20} color="#fff" />
           <Text style={styles.retryButtonText}>Reload</Text>

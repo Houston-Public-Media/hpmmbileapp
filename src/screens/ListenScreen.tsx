@@ -11,8 +11,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import StreamPlayer from '../components/StreamPlayer';
-import { useListenLive } from '../contexts/ListenLiveContext';
-import { listenLiveService } from '../services/ListenLiveServices';
+import { useHPMAudio } from '../contexts/HPMAudioContext';
 import { color } from '../utils/colorUtils';
 import ScreenHeader from '../components/ScreenHeader';
 import BreakingBanner from '../components/BreakingBanner';
@@ -20,26 +19,17 @@ import TalkshowBanner from '../components/TalkshowBanner';
 import { PodcastStackParamList } from '../navigation/PodcastStack';
 import { fetchHPMPodcasts, Podcast } from '../services/podcastApi';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import PodcastCard from '../components/PodcastCard';
 import AudioFooter from '../components/AudioFooter';
 type PodcastScreenNavigationProp = StackNavigationProp<PodcastStackParamList, 'PodcastList'>;
 
 
 function ListenScreen(): JSX.Element {
-	const { isPlayerReady, tracks, error, isLoading, refreshListenLiveData } = useListenLive();
+	const { isPlayerReady, tracks, error, isLoading, loadLiveStreams } = useHPMAudio();
 	const navigation = useNavigation<PodcastScreenNavigationProp>();
 	const [podcasts, setPodcasts] = useState<Podcast[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
-	
-	// Note: No need to manually pause audio here - the universal service handles conflicts automatically
-	// Pause Listen Live audio when Shows screen comes into focus
-	useFocusEffect(
-		React.useCallback(() => {
-			// Pause any Listen Live audio that might be playing
-			listenLiveService.pauseTrack();
-		}, [])
-	);
 
 	useEffect(() => {
 		fetchHPMPodcasts()
@@ -63,7 +53,7 @@ function ListenScreen(): JSX.Element {
 				<Text style={styles.errorText}>{error}</Text>
 				<TouchableOpacity 
 					style={styles.retryButton}
-					onPress={refreshListenLiveData}
+					onPress={loadLiveStreams}
 				>
 					<MaterialIcons name="refresh" size={20} color="#fff" />
 					<Text style={styles.retryButtonText}>Try Again</Text>
@@ -79,7 +69,7 @@ function ListenScreen(): JSX.Element {
 				<Text style={styles.errorText}>No audio streams available</Text>
 				<TouchableOpacity 
 					style={styles.retryButton}
-					onPress={refreshListenLiveData}
+					onPress={loadLiveStreams}
 				>
 					<MaterialIcons name="refresh" size={20} color="#fff" />
 					<Text style={styles.retryButtonText}>Reload</Text>

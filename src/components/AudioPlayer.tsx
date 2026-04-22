@@ -2,7 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
-import { useUniversalAudio } from '../contexts/UniversalAudioContext';
+import { useHPMAudio } from '../contexts/HPMAudioContext';
+import { AudioState } from '../services/HPMAudioService'
 
 interface AudioPlayerProps {
 	src: string;
@@ -20,20 +21,19 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, subtitle, thumbna
 	
 	// Use universal audio context
 	const {
-		currentTrack,
-		isPlaying,
-		isLoading,
+		state,
 		position,
 		duration: trackDuration,
-		playHtmlAudio,
+		playPodcast,
 		pause,
 		seekTo,
 		isCurrentTrack,
-	} = useUniversalAudio();
+		resume,
+		stop,
+	} = useHPMAudio();
 
 	// Check if this is the current audio
 	const isThisAudio = isCurrentTrack(`html_${audioId}`);
-	const paused = !isThisAudio || !isPlaying;
 
 	// Update duration and position when playing
 	useEffect(() => {
@@ -45,12 +45,17 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, subtitle, thumbna
 
 	const onPlayPause = async () => {
 		try {
-			if (paused) {
-				// Play this HTML audio
-				await playHtmlAudio(audioId, src, title, subtitle);
+			if (isThisAudio) {
+				if (state === AudioState.PLAYING) {
+					await pause();
+				} else if (state === AudioState.PAUSED) {
+					await resume();
+				} else {
+					await playPodcast(audioId, src, title, subtitle, "Houston Public Media");
+				}
 			} else {
-				// Pause the current audio
-				await pause();
+				await stop();
+				await playPodcast(audioId, src, title, subtitle, "Houston Public Media");
 			}
 		} catch (error) {
 			console.error('Error toggling HTML audio:', error);
@@ -72,7 +77,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, subtitle, thumbna
 		<View style={styles.container}>
 			<View style={styles.content}>
 				<TouchableOpacity onPress={onPlayPause} style={styles.playButton}>
-					<MaterialIcons name={paused ? 'play-arrow' : 'pause'} size={24} color="black" />
+					<MaterialIcons name={state === AudioState.PLAYING ? 'play-arrow' : 'pause'} size={24} color="black" />
 				</TouchableOpacity>
 				<View style={styles.progressContainer}>
 					<Slider

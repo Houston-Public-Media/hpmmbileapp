@@ -1,4 +1,4 @@
-// src/services/UniversalAudioService.ts
+// src/services/HPMAudioService.ts
 
 import TrackPlayer, {
 	AppKilledPlaybackBehavior,
@@ -8,13 +8,18 @@ import TrackPlayer, {
 	Track as TPTrack,
 	RepeatMode,
 } from 'react-native-track-player';
-import { Platform } from 'react-native';
 
 // Audio source types
 export enum AudioType {
-	LIVE_STREAM = 'LIVE_STREAM',
-	PODCAST = 'PODCAST',
-	HTML_AUDIO = 'HTML_AUDIO',
+	LIVE_STREAM = 'hls',
+	PODCAST = 'default'
+}
+
+export enum AudioState {
+	STOPPED = 'STOPPED',
+	PLAYING = 'PLAYING',
+	PAUSED = 'PAUSED',
+	LOADING = 'LOADING'
 }
 
 // Track interface with extended metadata
@@ -27,18 +32,16 @@ export interface AudioTrack {
 	album?: string;
 	artwork?: string;
 	duration?: number;
-	isLiveStream?: boolean;
+	isLiveStream: boolean;
 	episodeId?: string; // For podcasts
 	podcastId?: string; // For podcasts
 	htmlElementId?: string; // For HTML audios
 }
 
 // Player state interface
-export interface UniversalAudioState {
+export interface HPMAudioState {
 	currentTrack: AudioTrack | null;
-	isPlaying: boolean;
-	isLoading: boolean;
-	actuallyPlaying: boolean;
+	state: AudioState;
 	position: number;
 	duration: number;
 	canSeek: boolean;
@@ -48,7 +51,7 @@ export interface UniversalAudioState {
 
 // Event callbacks interface
 export interface AudioEventCallbacks {
-	onStateChange?: (state: UniversalAudioState) => void;
+	onStateChange?: (state: HPMAudioState) => void;
 	onTrackChange?: (track: AudioTrack | null) => void;
 	onPlaybackError?: (error: any) => void;
 }
@@ -63,12 +66,10 @@ export interface Station {
 	hlsSource: string;
 }
 
-class UniversalAudioService {
-	private state: UniversalAudioState = {
+class HPMAudioService {
+	private state: HPMAudioState = {
 		currentTrack: null,
-		isPlaying: false,
-		isLoading: false,
-		actuallyPlaying: false,
+		state: AudioState.STOPPED,
 		position: 0,
 		duration: 0,
 		canSeek: false,
@@ -81,7 +82,6 @@ class UniversalAudioService {
 	private trackRegistry: Map<string, AudioTrack> = new Map();
 	private liveStreamTracks: AudioTrack[] = [];
 	private playListData: Station[] = [];
-	private isLoadingLiveStreams = false;
 	private liveStreamsPromise: Promise<AudioTrack[]> | null = null;
 
 	/**
@@ -89,26 +89,26 @@ class UniversalAudioService {
 	 */
 	async initialize(): Promise<boolean> {
 		if (this.isInitialized) {
-			console.log('Universal Audio Service already initialized');
+			console.log('HPM Audio Service already initialized');
 			return true;
 		}
 
-		console.log('Universal Audio Service: Starting initialization...');
+		console.log('HPM Audio Service: Starting initialization...');
 
 		try {
 			// Setup the player with background capabilities
-			console.log('Universal Audio Service: Setting up TrackPlayer...');
+			console.log('HPM Audio Service: Setting up TrackPlayer...');
 			await TrackPlayer.setupPlayer({
 				autoHandleInterruptions: true,
+				autoUpdateMetadata: true
 			});
-			console.log('Universal Audio Service: TrackPlayer setup complete');
+			console.log('HPM Audio Service: TrackPlayer setup complete');
 
 			// Configure capabilities for all audio types
-			console.log('Universal Audio Service: Configuring options...');
+			console.log('HPM Audio Service: Configuring options...');
 			await TrackPlayer.updateOptions({
 				android: {
-				appKilledPlaybackBehavior:
-					AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+					appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
 				},
 				capabilities: [
 					Capability.Play,
@@ -118,27 +118,29 @@ class UniversalAudioService {
 					Capability.JumpForward,
 					Capability.JumpBackward,
 				],
+				forwardJumpInterval: 15,
+				backwardJumpInterval: 15,
 				compactCapabilities: [Capability.Play, Capability.Pause, Capability.Stop],
-				progressUpdateEventInterval: 1,
+				progressUpdateEventInterval: 1
 			});
-			console.log('Universal Audio Service: Options configured');
+			console.log('HPM Audio Service: Options configured');
 
 			// Set up event listeners
-			console.log('Universal Audio Service: Setting up event listeners...');
+			console.log('HPM Audio Service: Setting up event listeners...');
 			this.setupEventListeners();
-			console.log('Universal Audio Service: Event listeners setup complete');
+			console.log('HPM Audio Service: Event listeners setup complete');
 
 			this.isInitialized = true;
-			console.log('Universal Audio Service initialized successfully');
+			console.log('HPM Audio Service initialized successfully');
 			return true;
 		} catch (error) {
 			// If already initialized, that's okay
 			if (error instanceof Error && error.message.includes('already been initialized')) {
-				console.log('Universal Audio Service was already initialized');
+				console.log('HPM Audio Service was already initialized');
 				this.isInitialized = true;
 				return true;
 			}
-			console.error('Error initializing Universal Audio Service:', error);
+			console.error('Error initializing HPM Audio Service:', error);
 			if (error instanceof Error) {
 				console.error('Error message:', error.message);
 				console.error('Error stack:', error.stack);
@@ -154,37 +156,16 @@ class UniversalAudioService {
 		// Listen to playback state changes
 		TrackPlayer.addEventListener(Event.PlaybackState, async (event) => {
 			const { state } = event;
-
-			let isPlayingOrBuffering = false;
-			let isActuallyPlaying = false;
-			let isBuffering = false;
-
 			if (state === State.Playing) {
-				isPlayingOrBuffering = true;
-				isActuallyPlaying = true;
-				isBuffering = false;
+				this.state.state = AudioState.PLAYING;
 			} else if (state === State.Buffering || state === State.Loading) {
-				isPlayingOrBuffering = true;
-				isActuallyPlaying = false;
-				isBuffering = true;
-			} else if (state === State.Paused || state === State.Stopped || state === State.Ready) {
-				isPlayingOrBuffering = false;
-				isActuallyPlaying = false;
-				isBuffering = false;
+				this.state.state = AudioState.LOADING;
+			} else if (state === State.Paused) {
+				this.state.state = AudioState.PAUSED;
+			} else if (state === State.Stopped || state === State.Ready) {
+				this.state.state = AudioState.STOPPED;
 			}
-
-			// Update state
-			if (
-				this.state.isPlaying !== isPlayingOrBuffering ||
-				this.state.actuallyPlaying !== isActuallyPlaying ||
-				this.state.isLoading !== isBuffering
-			) {
-				this.state.isPlaying = isPlayingOrBuffering;
-				this.state.actuallyPlaying = isActuallyPlaying;
-				this.state.isLoading = isBuffering;
-
-				this.notifyStateChange();
-			}
+			this.notifyStateChange();
 		});
 
 		// Listen to track changes
@@ -193,9 +174,9 @@ class UniversalAudioService {
 			if (index !== undefined && index !== null) {
 				const track = await TrackPlayer.getTrack(index);
 				if (track) {
-				const audioTrack = this.trackRegistry.get(track.id as string);
-				this.state.currentTrack = audioTrack || null;
-				this.notifyStateChange();
+					const audioTrack = this.trackRegistry.get(track.id as string);
+					this.state.currentTrack = audioTrack || null;
+					this.notifyStateChange();
 				}
 			} else {
 				this.state.currentTrack = null;
@@ -206,9 +187,7 @@ class UniversalAudioService {
 		// Listen to playback errors
 		TrackPlayer.addEventListener(Event.PlaybackError, (event) => {
 			console.error('Playback error:', event);
-			this.state.isPlaying = false;
-			this.state.actuallyPlaying = false;
-			this.state.isLoading = false;
+			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
 		});
 
@@ -226,8 +205,7 @@ class UniversalAudioService {
 
 		// Listen to queue end
 		TrackPlayer.addEventListener(Event.PlaybackQueueEnded, () => {
-			this.state.isPlaying = false;
-			this.state.actuallyPlaying = false;
+			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
 		});
 	}
@@ -263,7 +241,7 @@ class UniversalAudioService {
 	 */
 	private async _loadLiveStreamsInternal(): Promise<AudioTrack[]> {
 		try {
-			console.log('UniversalAudioService: Fetching audio metadata from S3...');
+			console.log('HPMAudioService: Fetching audio metadata from S3...');
 		
 			// Fetch audio metadata with timeout
 			const audioResponse = await Promise.race([
@@ -278,9 +256,9 @@ class UniversalAudioService {
 			}
 		
 			const audioData = await audioResponse.json();
-			console.log('UniversalAudioService: Audio metadata fetched successfully');
+			console.log('HPMAudioService: Audio metadata fetched successfully');
 
-			console.log('UniversalAudioService: Fetching streams list from CDN...');
+			console.log('HPMAudioService: Fetching streams list from CDN...');
 			if ( this.playListData.length === 0 ) {
 				// Fetch streams with timeout
 				const response = await Promise.race([
@@ -294,7 +272,7 @@ class UniversalAudioService {
 					throw new Error(`Failed to fetch streams list: ${response.status} ${response.statusText}`);
 				}
 				const playListDataPull: { audio: any[] } = await response.json();
-				console.log(`UniversalAudioService: Fetched ${playListDataPull.audio?.length || 0} stream(s) from CDN`);
+				console.log(`HPMAudioService: Fetched ${playListDataPull.audio?.length || 0} stream(s) from CDN`);
 
 				if (!playListDataPull.audio || playListDataPull.audio.length === 0) {
 					throw new Error('No audio streams found in playlist data');
@@ -313,15 +291,16 @@ class UniversalAudioService {
 					artist: audioData.radio?.[index]?.artist || 'Houston Public Media',
 					album: track.name || audioData.radio?.[index]?.album || '',
 					artwork: track.artwork,
-					url: Platform.OS === 'ios' ? track.hlsSource : track.aacSource,
-					isLiveStream: true,
+					//url: Platform.OS === 'ios' ? track.hlsSource : track.aacSource,
+					url: track.hlsSource,
+					isLiveStream: true
 				};
-				console.log(`UniversalAudioService: Track ${index + 1}: ${audioTrack.title} - URL: ${audioTrack.url ? 'Valid' : 'Missing'}`);
+				console.log(`HPMAudioService: Track ${index + 1}: ${audioTrack.title} - URL: ${audioTrack.url ? 'Valid' : 'Missing'}`);
 				return audioTrack;
 			})
 			.filter((track) => track.url && track.url.trim() !== '');
 
-			console.log(`UniversalAudioService: Filtered to ${tracks.length} valid tracks`);
+			console.log(`HPMAudioService: Filtered to ${tracks.length} valid tracks`);
 
 			if (tracks.length === 0) {
 				throw new Error('No valid live stream tracks found - all tracks missing URLs');
@@ -331,13 +310,13 @@ class UniversalAudioService {
 			this.liveStreamTracks = tracks;
 			tracks.forEach((track) => this.trackRegistry.set(track.id, track));
 
-			console.log(`UniversalAudioService: Successfully loaded ${tracks.length} live stream tracks`);
+			console.log(`HPMAudioService: Successfully loaded ${tracks.length} live stream tracks`);
 			return tracks;
 		} catch (error) {
-			console.error('UniversalAudioService: Error loading live stream tracks:', error);
+			console.error('HPMAudioService: Error loading live stream tracks:', error);
 			if (error instanceof Error) {
-				console.error('UniversalAudioService: Error message:', error.message);
-				console.error('UniversalAudioService: Error stack:', error.stack);
+				console.error('HPMAudioService: Error message:', error.message);
+				console.error('HPMAudioService: Error stack:', error.stack);
 			}
 			throw error;
 		}
@@ -370,7 +349,7 @@ class UniversalAudioService {
 			await this.initialize();
 
 			// Set loading state
-			this.state.isLoading = true;
+			this.state.state = AudioState.LOADING;
 			this.state.currentTrack = track;
 			this.notifyStateChange();
 
@@ -406,22 +385,19 @@ class UniversalAudioService {
 			}
 
 			// Update state
-			this.state.isPlaying = true;
-			this.state.actuallyPlaying = true;
+			this.state.state = AudioState.PLAYING;
 			this.state.currentTrack = track;
 
 			// Add timeout to clear loading state if playback doesn't start
 			setTimeout(() => {
-				if (this.state.isLoading && this.state.currentTrack?.id === track.id) {
-					this.state.isLoading = false;
+				if (this.state.state === AudioState.LOADING && this.state.currentTrack?.id === track.id) {
+					this.state.state = AudioState.PLAYING;
 					this.notifyStateChange();
 				}
 			}, 3000);
 		} catch (error) {
 			console.error('Error playing track:', error);
-			this.state.isLoading = false;
-			this.state.isPlaying = false;
-			this.state.actuallyPlaying = false;
+			this.state.state = AudioState.STOPPED;
 			this.state.currentTrack = null;
 			this.notifyStateChange();
 			throw error;
@@ -478,28 +454,6 @@ class UniversalAudioService {
 	}
 
 	/**
-	 * Play HTML audio
-	 */
-	async playHtmlAudio(
-		audioId: string,
-		audioUrl: string,
-		title: string = 'Audio',
-		artist: string = 'Houston Public Media'
-	): Promise<void> {
-		const track: AudioTrack = {
-			id: `html_${audioId}`,
-			type: AudioType.HTML_AUDIO,
-			url: audioUrl,
-			title,
-			artist,
-			isLiveStream: false,
-			htmlElementId: audioId,
-		};
-
-		await this.play(track);
-	}
-
-	/**
 	 * Toggle play/pause
 	 */
 	async togglePlayPause(trackId: string): Promise<void> {
@@ -510,7 +464,7 @@ class UniversalAudioService {
 			
 			// If same track, toggle play/pause
 			if (currentTrack && currentTrack.id === trackId) {
-				if (this.state.isPlaying) {
+				if (this.state.state = AudioState.PLAYING) {
 					await this.pause();
 				} else {
 					await this.resume();
@@ -540,15 +494,14 @@ class UniversalAudioService {
 	 */
 	async pause(): Promise<void> {
 		try {
-			if (this.state.isPlaying) {
+			if (this.state.state = AudioState.PLAYING) {
 				await TrackPlayer.pause();
-				this.state.isPlaying = false;
+				this.state.state = AudioState.PAUSED;
 				this.notifyStateChange();
 			}
 		} catch (error) {
 			console.error('Error pausing track:', error);
-			this.state.isPlaying = false;
-			this.state.actuallyPlaying = false;
+			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
 		}
 	}
@@ -559,13 +512,11 @@ class UniversalAudioService {
 	async resume(): Promise<void> {
 		try {
 			await TrackPlayer.play();
-			this.state.isPlaying = true;
-			this.state.actuallyPlaying = true;
+			this.state.state = AudioState.PLAYING;
 			this.notifyStateChange();
 		} catch (error) {
 			console.error('Error resuming track:', error);
-			this.state.isPlaying = false;
-			this.state.actuallyPlaying = false;
+			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
 			throw error;
 		}
@@ -576,19 +527,15 @@ class UniversalAudioService {
 	 */
 	async stop(): Promise<void> {
 		try {
-			if (this.state.isPlaying || this.state.actuallyPlaying) {
-				await TrackPlayer.pause();
-				this.state.isPlaying = false;
-				this.state.actuallyPlaying = false;
-				this.state.isLoading = false;
+			if (this.state.state === AudioState.PLAYING) {
+				await TrackPlayer.stop();
+				this.state.state = AudioState.STOPPED;
 				this.state.currentTrack = null;
 				this.notifyStateChange();
 			}
 		} catch (error) {
 			console.error('Error stopping track:', error);
-			this.state.isPlaying = false;
-			this.state.actuallyPlaying = false;
-			this.state.isLoading = false;
+			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
 		}
 	}
@@ -663,7 +610,8 @@ class UniversalAudioService {
 	 */
 	async getPosition(): Promise<number> {
 		try {
-			return await TrackPlayer.getPosition();
+			let progress = await TrackPlayer.getProgress();
+			return progress.position;
 		} catch (error) {
 			return 0;
 		}
@@ -674,7 +622,8 @@ class UniversalAudioService {
 	 */
 	async getDuration(): Promise<number> {
 		try {
-			return await TrackPlayer.getDuration();
+			let progress = await TrackPlayer.getProgress();
+			return progress.duration;
 		} catch (error) {
 			return 0;
 		}
@@ -685,8 +634,8 @@ class UniversalAudioService {
 	 */
 	async canSeek(): Promise<boolean> {
 		try {
-			const duration = await TrackPlayer.getDuration();
-			return duration > 0 && !this.state.currentTrack?.isLiveStream;
+			const duration = await TrackPlayer.getProgress();
+			return duration.duration > 0 && !this.state.currentTrack?.isLiveStream;
 		} catch (error) {
 			return false;
 		}
@@ -695,7 +644,7 @@ class UniversalAudioService {
 	/**
 	 * Get current state
 	 */
-	getCurrentState(): UniversalAudioState {
+	getCurrentState(): HPMAudioState {
 		return { ...this.state };
 	}
 
@@ -712,8 +661,7 @@ class UniversalAudioService {
 	isTrackPlaying(trackId: string): boolean {
 		return (
 			this.state.currentTrack?.id === trackId &&
-			this.state.isPlaying &&
-			!this.state.isLoading
+			this.state.state === AudioState.PLAYING
 		);
 	}
 
@@ -755,9 +703,7 @@ class UniversalAudioService {
 
 			this.state = {
 				currentTrack: null,
-				isPlaying: false,
-				isLoading: false,
-				actuallyPlaying: false,
+				state: AudioState.STOPPED,
 				position: 0,
 				duration: 0,
 				canSeek: false,
@@ -768,7 +714,7 @@ class UniversalAudioService {
 			this.stateChangeListeners.clear();
 			this.trackRegistry.clear();
 			
-			console.log('Universal Audio Service cleaned up');
+			console.log('HPM Audio Service cleaned up');
 		} catch (error) {
 			console.error('Error during cleanup:', error);
 		}
@@ -776,4 +722,4 @@ class UniversalAudioService {
 }
 
 // Export singleton instance
-export const universalAudioService = new UniversalAudioService();
+export const hpmAudioService = new HPMAudioService();

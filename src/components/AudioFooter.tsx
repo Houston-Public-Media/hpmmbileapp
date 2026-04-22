@@ -1,21 +1,19 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
-import { useUniversalAudio } from '../contexts/UniversalAudioContext';
+import { useHPMAudio } from '../contexts/HPMAudioContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { color } from '../utils/colorUtils';
+import { AudioState } from '../services/HPMAudioService'
 
 const AudioFooter = () => {
 	// Use universal audio context
 	const {
 		currentTrack,
-		isPlaying,
-		isLoading,
-		actuallyPlaying,
+		state,
 		canSeek: audioCanSeek,
 		togglePlayPause,
-	} = useUniversalAudio();
+	} = useHPMAudio();
 
-	const isCurrentlyPlaying = isPlaying && !isLoading;
 	const onPlayPausePress = async (trackId: string) => {
 		try {
 			await togglePlayPause(trackId);
@@ -42,7 +40,7 @@ const AudioFooter = () => {
 			Alert.alert('Playback Error', errorMessage);
 		}
 	};
-	if ( !isCurrentlyPlaying ) {
+	if ( state !== AudioState.PLAYING && state !== AudioState.PAUSED ) {
 		return;
 	}
 	if (currentTrack === null) {
@@ -85,14 +83,14 @@ const AudioFooter = () => {
 					<TouchableOpacity
 						style={[
 							styles.mainPlayButton,
-							isCurrentlyPlaying && styles.pauseButton,
+							state === AudioState.PLAYING && styles.pauseButton,
 						]}
 						onPress={() => onPlayPausePress(currentTrack.id)}
 					>
 						<View style={styles.buttonIconContainer}>
 							<View style={styles.iconWrapper}>
 								<MaterialIcons 
-									name={isCurrentlyPlaying ? 'pause' : 'play-arrow'} 
+									name={state === AudioState.PLAYING ? 'pause' : 'play-arrow'} 
 									size={22} 
 									color="#fff" 
 								/>

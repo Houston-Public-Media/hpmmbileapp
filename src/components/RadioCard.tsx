@@ -3,7 +3,6 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { fetchNewsByCategoryId } from '../services/newsApi';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
-import HtmlRenderer from './HtmlRenderer';
 import { Podcast } from '../services/podcastApi';
 import { RootStackParamList } from '../navigation/HomeStack';
 import { decodeHtmlEntities } from '../utils/htmlUtils';

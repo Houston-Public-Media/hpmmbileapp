@@ -3,7 +3,8 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, Linking, Alert, Animat
 import { MaterialIcons } from '@expo/vector-icons';
 import { color } from '../utils/colorUtils';
 import { PodcastEpisode } from '../services/podcastApi';
-import { useUniversalAudio } from '../contexts/UniversalAudioContext';
+import { useHPMAudio } from '../contexts/HPMAudioContext';
+import { AudioState } from '../services/HPMAudioService'
 import { decodeHtmlEntities } from '../utils/htmlUtils';
 
 interface PodcastEpisodeCardProps {
@@ -17,18 +18,17 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podNam
   
   // Use universal audio context
   const {
-    currentTrack,
-    isPlaying,
+    state,
     isLoading,
     playPodcast,
     pause,
     isCurrentTrack,
-  } = useUniversalAudio();
+  } = useHPMAudio();
 
   // Check if this is the current episode
   const podcastId = `podcast_${episode.id}`;
   const isCurrentEpisode = isCurrentTrack(podcastId);
-  const isPlayingNow = isCurrentEpisode && isPlaying;
+  const isPlayingNow = isCurrentEpisode && state === AudioState.PLAYING;
   const isLoadingAudio = isCurrentEpisode && isLoading;
 
   // Optimized rotation animation for loading spinner
@@ -86,7 +86,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podNam
     <TouchableOpacity 
       style={[
         styles.card,
-        isCurrentEpisode && isPlaying && styles.activeCard
+        isCurrentEpisode && state === AudioState.PLAYING && styles.activeCard
       ]}
       onPress={onPress ? onPress : () => Linking.openURL(episode.permalink)}
       activeOpacity={0.7}
@@ -121,7 +121,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podNam
           
           try {
             if (episode.attachments?.url) {
-              if (isCurrentEpisode && isPlaying) {
+              if (isCurrentEpisode && state === AudioState.PLAYING) {
                 // Pause if currently playing
                 await pause();
               } else {

@@ -29,13 +29,13 @@ export async function PlaybackService() {
 	});
 
 	TrackPlayer.addEventListener(Event.RemoteJumpForward, async (event) => {
-		const position = await TrackPlayer.getPosition();
-		await TrackPlayer.seekTo(position + (event.interval || 10));
+		const position = await TrackPlayer.getProgress();
+		await TrackPlayer.seekTo(position.position + (event.interval || 10));
 	});
 
 	TrackPlayer.addEventListener(Event.RemoteJumpBackward, async (event) => {
-		const position = await TrackPlayer.getPosition();
-		await TrackPlayer.seekTo(Math.max(0, position - (event.interval || 10)));
+		const position = await TrackPlayer.getProgress();
+		await TrackPlayer.seekTo(Math.max(0, position.position - (event.interval || 10)));
 	});
 }
 

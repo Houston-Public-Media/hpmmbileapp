@@ -1,14 +1,19 @@
-// src/contexts/UniversalAudioContext.tsx
+// [FIXME] There are 2 audio contexts (Universal & Listen Live), with 5 services (HTML Audio, Track Player, Universal Audio, Listen Live, and Playback)
+// Can we collapse these down to 1 context and 1 service? The app currently exists inside of the Universal Audio Context so using the Universal Service would make sense
+// Let's see if we can build one service off of the React Native Track Player to handle the 2 audio types we have (live stream and static MP3s) [FIXME]
+
+// src/contexts/HPMAudioContext.tsx
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
-	universalAudioService,
+	hpmAudioService,
 	AudioTrack,
 	AudioType,
-	UniversalAudioState,
-} from '../services/UniversalAudioService';
+	AudioState,
+	HPMAudioState,
+} from '../services/HPMAudioService';
 
-interface UniversalAudioContextType extends UniversalAudioState {
+interface HPMAudioContextType extends HPMAudioState {
 	// Live Stream methods
 	loadLiveStreams: () => Promise<AudioTrack[]>;
 	playLiveStream: (trackId: string) => Promise<void>;
@@ -23,14 +28,6 @@ interface UniversalAudioContextType extends UniversalAudioState {
 		album: string,
 		artwork?: string,
 		duration?: number
-	) => Promise<void>;
-
-	// HTML Audio methods
-	playHtmlAudio: (
-		audioId: string,
-		audioUrl: string,
-		title?: string,
-		artist?: string
 	) => Promise<void>;
 
 	// Common playback controls
@@ -57,40 +54,47 @@ interface UniversalAudioContextType extends UniversalAudioState {
 
 	// State
 	isInitialized: boolean;
+	isLoading: boolean;
+	isPlayerReady: boolean;
 	error: string | null;
+	tracks: AudioTrack[];
 }
 
-const UniversalAudioContext = createContext<UniversalAudioContextType | undefined>(undefined);
+const HPMAudioContext = createContext<HPMAudioContextType | undefined>(undefined);
 
-interface UniversalAudioProviderProps {
+interface HPMAudioProviderProps {
 	children: ReactNode;
 }
 
-export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ children }) => {
+export const HPMAudioProvider: React.FC<HPMAudioProviderProps> = ({ children }) => {
 	const [isInitialized, setIsInitialized] = useState(false);
+	const [isPlayerReady, setIsPlayerReady] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [audioState, setAudioState] = useState<UniversalAudioState>(
-		universalAudioService.getCurrentState()
+	const [audioState, setAudioState] = useState<HPMAudioState>(
+		hpmAudioService.getCurrentState()
 	);
+	const [tracks, setTracks] = useState<AudioTrack[]>([]);
 
 	// Initialize the audio service
 	useEffect(() => {
 		const initializeService = async () => {
 			try {
-				console.log('UniversalAudioContext: Initializing service...');
-				const success = await universalAudioService.initialize();
+				console.log('HPMAudioContext: Initializing service...');
+				const success = await hpmAudioService.initialize();
 				if (success) {
 					setIsInitialized(true);
-					console.log('UniversalAudioContext: Universal Audio Service initialized successfully');
+					setIsLoading(true);
+					console.log('HPMAudioContext: HPM Audio Service initialized successfully');
 				} else {
 					const errorMsg = 'Failed to initialize audio service';
-					console.error('UniversalAudioContext:', errorMsg);
+					console.error('HPMAudioContext:', errorMsg);
 					setError(errorMsg);
 				}
 			} catch (err) {
-				console.error('UniversalAudioContext: Error initializing audio service:', err);
+				console.error('HPMAudioContext: Error initializing audio service:', err);
 				if (err instanceof Error) {
-					console.error('UniversalAudioContext: Error details:', err.message);
+					console.error('HPMAudioContext: Error details:', err.message);
 				}
 				setError('Failed to initialize audio service');
 			}
@@ -99,20 +103,32 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 		initializeService();
 
 		// Subscribe to state changes
-		const unsubscribe = universalAudioService.addStateChangeListener(() => {
-			setAudioState(universalAudioService.getCurrentState());
+		const unsubscribe = hpmAudioService.addStateChangeListener(() => {
+			setAudioState(hpmAudioService.getCurrentState());
 		});
+
+		const fetchData = async () => {
+			const data = await hpmAudioService.updateLiveStreamTracks();
+			setTracks(data);
+			setIsPlayerReady(true);
+		}
+
+		fetchData();
+		const interval = setInterval(() => {
+			fetchData();
+		}, 60000);
 
 		// Cleanup on unmount
 		return () => {
 			unsubscribe();
+			clearInterval(interval);
 		};
 	}, []);
 
 	// Load live streams
 	const loadLiveStreams = async (): Promise<AudioTrack[]> => {
 		try {
-			return await universalAudioService.loadLiveStreams();
+			return await hpmAudioService.loadLiveStreams();
 		} catch (err) {
 			console.error('Error loading live streams:', err);
 			setError('Failed to load live streams');
@@ -122,13 +138,15 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 
 	// Get live stream tracks
 	const getLiveStreamTracks = (): AudioTrack[] => {
-		return universalAudioService.getLiveStreamTracks();
+		const tracks = hpmAudioService.getLiveStreamTracks();
+		setTracks(tracks);
+		return tracks;
 	};
 
 	// Play live stream
 	const playLiveStream = async (trackId: string): Promise<void> => {
 		try {
-			await universalAudioService.playLiveStream(trackId);
+			await hpmAudioService.playLiveStream(trackId);
 		} catch (err) {
 			console.error('Error playing live stream:', err);
 			throw err;
@@ -146,24 +164,9 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 		duration?: number
 	): Promise<void> => {
 		try {
-			await universalAudioService.playPodcast(episodeId, audioUrl, title, artist, album, artwork, duration);
+			await hpmAudioService.playPodcast(episodeId, audioUrl, title, artist, album, artwork, duration);
 		} catch (err) {
 			console.error('Error playing podcast:', err);
-			throw err;
-		}
-	};
-
-	// Play HTML audio
-	const playHtmlAudio = async (
-		audioId: string,
-		audioUrl: string,
-		title: string = 'Audio',
-		artist: string = 'Houston Public Media'
-	): Promise<void> => {
-		try {
-			await universalAudioService.playHtmlAudio(audioId, audioUrl, title, artist);
-		} catch (err) {
-			console.error('Error playing HTML audio:', err);
 			throw err;
 		}
 	};
@@ -171,7 +174,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Play track
 	const play = async (track: AudioTrack): Promise<void> => {
 		try {
-			await universalAudioService.play(track);
+			await hpmAudioService.play(track);
 		} catch (err) {
 			console.error('Error playing track:', err);
 			throw err;
@@ -181,7 +184,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Pause
 	const pause = async (): Promise<void> => {
 		try {
-			await universalAudioService.pause();
+			await hpmAudioService.pause();
 		} catch (err) {
 			console.error('Error pausing:', err);
 			throw err;
@@ -191,7 +194,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Resume
 	const resume = async (): Promise<void> => {
 		try {
-			await universalAudioService.resume();
+			await hpmAudioService.resume();
 		} catch (err) {
 			console.error('Error resuming:', err);
 			throw err;
@@ -201,7 +204,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Stop
 	const stop = async (): Promise<void> => {
 		try {
-			await universalAudioService.stop();
+			await hpmAudioService.stop();
 		} catch (err) {
 			console.error('Error stopping:', err);
 			throw err;
@@ -211,7 +214,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Toggle play/pause
 	const togglePlayPause = async (trackId: string): Promise<void> => {
 		try {
-			await universalAudioService.togglePlayPause(trackId);
+			await hpmAudioService.togglePlayPause(trackId);
 		} catch (err) {
 			console.error('Error toggling play/pause:', err);
 			throw err;
@@ -221,7 +224,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Seek to position
 	const seekTo = async (position: number): Promise<void> => {
 		try {
-			await universalAudioService.seekTo(position);
+			await hpmAudioService.seekTo(position);
 		} catch (err) {
 			console.error('Error seeking:', err);
 			throw err;
@@ -231,7 +234,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Seek forward
 	const seekForward = async (seconds: number = 10): Promise<void> => {
 		try {
-			await universalAudioService.seekForward(seconds);
+			await hpmAudioService.seekForward(seconds);
 		} catch (err) {
 			console.error('Error seeking forward:', err);
 			throw err;
@@ -241,7 +244,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Seek backward
 	const seekBackward = async (seconds: number = 10): Promise<void> => {
 		try {
-			await universalAudioService.seekBackward(seconds);
+			await hpmAudioService.seekBackward(seconds);
 		} catch (err) {
 			console.error('Error seeking backward:', err);
 			throw err;
@@ -251,7 +254,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Skip to next
 	const skipToNext = async (): Promise<void> => {
 		try {
-			await universalAudioService.skipToNext();
+			await hpmAudioService.skipToNext();
 		} catch (err) {
 			console.error('Error skipping to next:', err);
 			throw err;
@@ -261,7 +264,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Skip to previous
 	const skipToPrevious = async (): Promise<void> => {
 		try {
-			await universalAudioService.skipToPrevious();
+			await hpmAudioService.skipToPrevious();
 		} catch (err) {
 			console.error('Error skipping to previous:', err);
 			throw err;
@@ -270,18 +273,18 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 
 	// Check if track is playing
 	const isTrackPlaying = (trackId: string): boolean => {
-		return universalAudioService.isTrackPlaying(trackId);
+		return hpmAudioService.isTrackPlaying(trackId);
 	};
 
 	// Check if track is current
 	const isCurrentTrack = (trackId: string): boolean => {
-		return universalAudioService.isCurrentTrack(trackId);
+		return hpmAudioService.isCurrentTrack(trackId);
 	};
 
 	// Get position
 	const getPosition = async (): Promise<number> => {
 		try {
-			return await universalAudioService.getPosition();
+			return await hpmAudioService.getPosition();
 		} catch (err) {
 			return 0;
 		}
@@ -290,17 +293,20 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	// Get duration
 	const getDuration = async (): Promise<number> => {
 		try {
-			return await universalAudioService.getDuration();
+			return await hpmAudioService.getDuration();
 		} catch (err) {
 			return 0;
 		}
 	};
 
-	const value: UniversalAudioContextType = {
+	const value: HPMAudioContextType = {
 		// State
 		...audioState,
 		isInitialized,
 		error,
+		tracks,
+		isLoading,
+		isPlayerReady,
 
 		// Live Stream methods
 		loadLiveStreams,
@@ -309,9 +315,6 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 
 		// Podcast methods
 		playPodcast,
-
-		// HTML Audio methods
-		playHtmlAudio,
 
 		// Common playback controls
 		play,
@@ -337,17 +340,17 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
 	};
 
 	return (
-		<UniversalAudioContext.Provider value={value}>
+		<HPMAudioContext.Provider value={value}>
 			{children}
-		</UniversalAudioContext.Provider>
+		</HPMAudioContext.Provider>
 	);
 };
 
-// Hook to use the Universal Audio Context
-export const useUniversalAudio = (): UniversalAudioContextType => {
-	const context = useContext(UniversalAudioContext);
+// Hook to use the HPM Audio Context
+export const useHPMAudio = (): HPMAudioContextType => {
+	const context = useContext(HPMAudioContext);
 	if (context === undefined) {
-		throw new Error('useUniversalAudio must be used within a UniversalAudioProvider');
+		throw new Error('useHPMAudio must be used within a HPMAudioProvider');
 	}
 	return context;
 };

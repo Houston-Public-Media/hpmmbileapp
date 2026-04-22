@@ -4,8 +4,8 @@ import React, {useEffect, useState, useRef} from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { color } from '../utils/colorUtils';
-import { useUniversalAudio } from '../contexts/UniversalAudioContext';
-import { AudioTrack } from '../services/UniversalAudioService';
+import { useHPMAudio } from '../contexts/HPMAudioContext';
+import { AudioTrack, AudioState } from '../services/HPMAudioService';
 
 interface StreamPlayerProps {
 	track: AudioTrack;
@@ -18,11 +18,11 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 	// Use universal audio context
 	const {
 		currentTrack,
-		isPlaying,
+		state,
 		isLoading,
 		canSeek: audioCanSeek,
 		togglePlayPause,
-	} = useUniversalAudio();
+	} = useHPMAudio();
 
 	const currentTrackId = currentTrack?.id || null;
 	const tracksReady = true;
@@ -112,7 +112,7 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 
 	const renderItem = (item: AudioTrack) => {
 		const isCurrent = currentTrackId === item.id;
-		const isCurrentlyPlaying = isCurrent && isPlaying && !isLoading && tracksReady;
+		const isCurrentlyPlaying = isCurrent && state === AudioState.PLAYING && !isLoading && tracksReady;
 		// Only show loading if this is the current track AND (it's actually loading OR tracks are being loaded)
 		const isCurrentlyLoading = isCurrent && (isLoading || (!tracksReady && currentTrackId !== null));
 		const isDisabled = !tracksReady;

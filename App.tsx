@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useRef, useEffect } from 'react';
 import { StatusBar, StyleSheet, LogBox, AppState } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
@@ -6,8 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { color } from './src/utils/colorUtils';
 import DrawerNavigator from './src/navigation/DrawerNavigator';
 import AdManager from './src/components/AdManager';
-import { ListenLiveProvider } from './src/contexts/ListenLiveContext';
-import { UniversalAudioProvider } from './src/contexts/UniversalAudioContext';
+import { HPMAudioProvider } from './src/contexts/HPMAudioContext';
 import { analyticsService } from './src/services/AnalyticsService';
 import PushNotificationService from './src/services/PushNotificationService';
 
@@ -102,6 +102,7 @@ function App() {
         appStateRef.current = nextAppState;
       }
     );
+
     return () => {
       subscription.remove();
     };
@@ -109,37 +110,49 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <UniversalAudioProvider>
-        <ListenLiveProvider>
-          <AdManager>
-            <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-              <StatusBar barStyle={'light-content'} />
-              <NavigationContainer
-                ref={navigationRef}
-                onReady={() => {
-                  routeNameRef.current = navigationRef.current?.getCurrentRoute()?.name;
-                }}
-                onStateChange={async () => {
-                  const previousRouteName = routeNameRef.current;
-                  const currentRouteName = navigationRef.current?.getCurrentRoute()?.name;
+      <HPMAudioProvider>
+        <AdManager>
+          <SafeAreaView
+            style={styles.container}
+            edges={['top', 'left', 'right']}
+          >
+            <StatusBar barStyle={'light-content'} />
 
-                  if (previousRouteName !== currentRouteName && currentRouteName) {
-                    // Track screen view
-                    await analyticsService.logScreenView(
-                      currentRouteName,
-                      currentRouteName
-                    );
-                  }
+            <NavigationContainer
+              ref={navigationRef}
+              onReady={() => {
+                routeNameRef.current =
+                  navigationRef.current?.getCurrentRoute()
+                    ?.name;
+              }}
+              onStateChange={async () => {
+                const previousRouteName =
+                  routeNameRef.current;
 
-                  routeNameRef.current = currentRouteName;
-                }}
-              > 
-                <DrawerNavigator />
-              </NavigationContainer>
-            </SafeAreaView>
-          </AdManager>
-        </ListenLiveProvider>
-      </UniversalAudioProvider>
+                const currentRouteName =
+                  navigationRef.current?.getCurrentRoute()
+                    ?.name;
+
+                if (
+                  previousRouteName !==
+                    currentRouteName &&
+                  currentRouteName
+                ) {
+                  await analyticsService.logScreenView(
+                    currentRouteName,
+                    currentRouteName
+                  );
+                }
+
+                routeNameRef.current =
+                  currentRouteName;
+              }}
+            >
+              <DrawerNavigator />
+            </NavigationContainer>
+          </SafeAreaView>
+        </AdManager>
+      </HPMAudioProvider>
     </SafeAreaProvider>
   );
 }

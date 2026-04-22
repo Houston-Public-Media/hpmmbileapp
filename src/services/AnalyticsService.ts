@@ -1,25 +1,37 @@
-import analytics from '@react-native-firebase/analytics';
+import {
+  getAnalytics,
+  setAnalyticsCollectionEnabled,
+  setUserId,
+  Analytics,
+  logEvent,
+  setUserProperty,
+  resetAnalyticsData
+} from '@react-native-firebase/analytics';
 
 /**
  * Analytics Service - Centralized Firebase Analytics tracking
  * 
  * This service provides a clean interface for tracking user behavior,
  * screen views, and custom events throughout the app.
+ * 
+ * 
+ * todo)) Figure out how to convert Analytics Service to use modular web version of analytics
  */
 
 export class AnalyticsService {
-  private static instance: AnalyticsService;
+  private analytics: Analytics;
 
-  private constructor() {
+  public constructor() {
+    this.analytics = getAnalytics();
     this.initialize();
   }
 
-  public static getInstance(): AnalyticsService {
-    if (!AnalyticsService.instance) {
-      AnalyticsService.instance = new AnalyticsService();
-    }
-    return AnalyticsService.instance;
-  }
+  // public static getInstance(): AnalyticsService {
+  //   if (!AnalyticsService.instance) {
+  //     AnalyticsService.instance = getAnalytics();
+  //   }
+  //   return AnalyticsService.instance;
+  // }
 
   /**
    * Initialize analytics
@@ -27,7 +39,7 @@ export class AnalyticsService {
   private async initialize() {
     try {
       // Enable analytics collection
-      await analytics().setAnalyticsCollectionEnabled(true);
+      await setAnalyticsCollectionEnabled(this.analytics, true);
       console.log('✅ Firebase Analytics initialized');
     } catch (error) {
       console.error('❌ Analytics initialization error:', error);
@@ -41,7 +53,7 @@ export class AnalyticsService {
    */
   async logEvent(eventName: string, params?: { [key: string]: any }) {
     try {
-      await analytics().logEvent(eventName, params);
+      await logEvent(this.analytics, eventName, params);
       console.log(`📊 Event logged: ${eventName}`, params);
     } catch (error) {
       console.error(`❌ Error logging event ${eventName}:`, error);
@@ -55,7 +67,7 @@ export class AnalyticsService {
    */
   async logScreenView(screenName: string, screenClass?: string) {
     try {
-      await analytics().logScreenView({
+      await logEvent(this.analytics, 'screen_viewed', {
         screen_name: screenName,
         screen_class: screenClass || screenName,
       });
@@ -71,7 +83,7 @@ export class AnalyticsService {
    */
   async setUserId(userId: string) {
     try {
-      await analytics().setUserId(userId);
+      await setUserId(this.analytics,userId);
       console.log(`👤 User ID set: ${userId}`);
     } catch (error) {
       console.error('❌ Error setting user ID:', error);
@@ -85,7 +97,7 @@ export class AnalyticsService {
    */
   async setUserProperty(name: string, value: string) {
     try {
-      await analytics().setUserProperty(name, value);
+      await setUserProperty(this.analytics, name, value);
       console.log(`🏷️ User property set: ${name} = ${value}`);
     } catch (error) {
       console.error(`❌ Error setting user property ${name}:`, error);
@@ -97,7 +109,7 @@ export class AnalyticsService {
    */
   async resetAnalyticsData() {
     try {
-      await analytics().resetAnalyticsData();
+      await resetAnalyticsData(this.analytics);
       console.log('🔄 Analytics data reset');
     } catch (error) {
       console.error('❌ Error resetting analytics data:', error);
@@ -110,35 +122,46 @@ export class AnalyticsService {
    * Track home screen view
    */
   async trackHomeScreen() {
-    await this.logScreenView('Home', 'HomeScreen');
+    await this.logEvent('screen_viewed', {
+      screen_name: 'Home',
+      screen_class: 'HomeScreen'
+    });
   }
 
   /**
    * Track listen live screen view
    */
   async trackListenLiveScreen() {
-    await this.logScreenView('Listen_Live', 'ListenLiveScreen');
+    await this.logEvent('screen_viewed', {
+      screen_name: 'ListenLive',
+      screen_class: 'ListenLiveScreen'
+    });
   }
 
   /**
    * Track watch live screen view
    */
   async trackWatchLiveScreen() {
-    await this.logScreenView('Watch_Live', 'WatchLiveScreen');
+    await this.logEvent('screen_viewed', {
+      screen_name: 'WatchLive',
+      screen_class: 'WatchLiveScreen'
+    });
   }
 
   /**
    * Track podcast screen view
    */
   async trackPodcastScreen() {
-    await this.logScreenView('Podcast', 'PodcastScreen');
+    await this.logEvent('screen_viewed', {
+      screen_name: 'PodcastList',
+      screen_class: 'PodcastScreen'
+    });
   }
 
   /**
    * Track podcast details screen
    */
   async trackPodcastDetailsScreen(podcastId: string, podcastTitle: string) {
-    await this.logScreenView('Podcast_Details', 'PodcastDetailsScreen');
     await this.logEvent('podcast_viewed', {
       podcast_id: podcastId,
       podcast_title: podcastTitle,
@@ -149,7 +172,7 @@ export class AnalyticsService {
    * Track news detail screen
    */
   async trackNewsDetailScreen(articleId: string, articleTitle: string) {
-    await this.logScreenView('News_Detail', 'NewsDetailScreen');
+    //await this.logScreenView('News_Detail', 'NewsDetailScreen');
     await this.logEvent('news_article_viewed', {
       article_id: articleId,
       article_title: articleTitle,
@@ -160,7 +183,7 @@ export class AnalyticsService {
    * Track category list screen
    */
   async trackCategoryListScreen(category: string) {
-    await this.logScreenView('Category_List', 'CategoryListScreen');
+    //await this.logScreenView('Category_List', 'CategoryListScreen');
     await this.logEvent('category_viewed', {
       category_name: category,
     });
@@ -170,14 +193,20 @@ export class AnalyticsService {
    * Track profile/settings screen
    */
   async trackProfileScreen() {
-    await this.logScreenView('Profile', 'ProfileScreen');
+    await this.logEvent('screen_viewed', {
+      screen_name: 'Profile',
+      screen_class: 'ProfileScreen'
+    });
   }
 
   /**
    * Track vertical videos screen
    */
   async trackVerticalVideosScreen() {
-    await this.logScreenView('Vertical_Videos', 'VerticalVideosScreen');
+    await this.logEvent('screen_viewed', {
+      screen_name: 'VerticalVideos',
+      screen_class: 'VerticalVideosScreen'
+    });
   }
 
   // ==================== AUDIO EVENTS ====================
@@ -401,7 +430,7 @@ export class AnalyticsService {
    * Track app background
    */
   async trackAppBackground(sessionDuration: number) {
-    await this.logEvent('app_background', {
+    await this.logEvent('app_send_to_background', {
       session_duration_seconds: sessionDuration,
       timestamp: Date.now(),
     });
@@ -420,7 +449,7 @@ export class AnalyticsService {
 }
 
 // Export singleton instance
-export const analyticsService = AnalyticsService.getInstance();
+export const analyticsService = new AnalyticsService();
 
 // Export default for convenience
 export default analyticsService;

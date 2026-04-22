@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, ActivityIndicator, StyleSheet } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { fetchHPMPodcasts, Podcast } from '../services/podcastApi';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { PodcastStackParamList } from '../navigation/PodcastStack';
 import PodcastCard from '../components/PodcastCard';
 import ScreenHeader from '../components/ScreenHeader';
-import { listenLiveService } from '../services/ListenLiveServices';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
 
@@ -16,14 +15,6 @@ const PodcastScreen = () => {
   const navigation = useNavigation<PodcastScreenNavigationProp>();
   const [podcasts, setPodcasts] = useState<Podcast[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-
-  // Pause Listen Live audio when Shows screen comes into focus
-  useFocusEffect(
-    React.useCallback(() => {
-      // Pause any Listen Live audio that might be playing
-      listenLiveService.pauseTrack();
-    }, [])
-  );
 
   useEffect(() => {
     fetchHPMPodcasts()

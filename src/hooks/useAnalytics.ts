@@ -34,11 +34,7 @@ export const useScreenTracking = (
 
   useEffect(() => {
     if (!hasTracked.current) {
-      analyticsService.logScreenView(screenName, screenName);
-      
-      if (params) {
-        analyticsService.logEvent(`${screenName.toLowerCase()}_viewed`, params);
-      }
+      analyticsService.logEvent('screen_viewed', params);
       
       hasTracked.current = true;
     }
@@ -84,13 +80,17 @@ export const useScreenTracking = (
 export const useNavigationTracking = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const previousRoute = useRef<string>();
+  const previousRoute = useRef<string>('');
 
   useEffect(() => {
     const currentRoute = route.name;
     
     if (previousRoute.current !== currentRoute) {
-      analyticsService.logScreenView(currentRoute, currentRoute);
+      analyticsService.logEvent('navigation_route', {
+        name: route.name,
+        previousRoute: previousRoute,
+        currentRoute: currentRoute
+      });
       previousRoute.current = currentRoute;
     }
   }, [route.name]);

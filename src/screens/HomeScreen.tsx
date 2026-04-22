@@ -17,9 +17,6 @@ import SectionTitle from '../components/SectionTitle';
 import CategorySection from '../components/CategorySection';
 import AudioFooter from '../components/AudioFooter';
 import { useAds } from '../hooks/useAds';
-import { listenLiveService } from '../services/ListenLiveServices';
-import { podcastAudioService } from '../services/PodcastAudioService';
-import { htmlAudioService } from '../services/HtmlAudioService';
 import BrightcoveVideo from '../components/BrightcoveVideo';
 import { useScreenTracking } from '../hooks/useAnalytics';
 
@@ -50,14 +47,6 @@ export default function HomeScreen({ navigation }: Props) {
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 
 	const { showInterstitialAd, isInterstitialLoaded } = useAds();
-
-	useFocusEffect(
-		React.useCallback(() => {
-			listenLiveService.pauseTrack();
-			podcastAudioService.pauseCurrentEpisode();
-			htmlAudioService.pauseCurrentAudio();
-		}, [])
-	);
 
 	const featured = articles[0];
 	const borderNewsList = articles.slice(1, 5);
