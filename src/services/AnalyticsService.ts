@@ -1,219 +1,116 @@
-import {
-  getAnalytics,
-  setAnalyticsCollectionEnabled,
-  setUserId,
-  Analytics,
-  logEvent,
-  setUserProperty,
-  resetAnalyticsData
-} from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent, setUserId, setUserProperties, setAnalyticsCollectionEnabled, } from '@react-native-firebase/analytics';
+import { getApp } from '@react-native-firebase/app';
 
-/**
- * Analytics Service - Centralized Firebase Analytics tracking
- * 
- * This service provides a clean interface for tracking user behavior,
- * screen views, and custom events throughout the app.
- * 
- * 
- * todo)) Figure out how to convert Analytics Service to use modular web version of analytics
- */
+const analytics = getAnalytics(getApp());
 
 export class AnalyticsService {
-  private analytics: Analytics;
+  private static instance: AnalyticsService;
 
-  public constructor() {
-    this.analytics = getAnalytics();
+  private constructor() {
     this.initialize();
   }
 
-  // public static getInstance(): AnalyticsService {
-  //   if (!AnalyticsService.instance) {
-  //     AnalyticsService.instance = getAnalytics();
-  //   }
-  //   return AnalyticsService.instance;
-  // }
+  public static getInstance(): AnalyticsService {
+    if (!AnalyticsService.instance) {
+      AnalyticsService.instance = new AnalyticsService();
+    }
+    return AnalyticsService.instance;
+  }
 
-  /**
-   * Initialize analytics
-   */
   private async initialize() {
     try {
-      // Enable analytics collection
-      await setAnalyticsCollectionEnabled(this.analytics, true);
-      console.log('✅ Firebase Analytics initialized');
+      await setAnalyticsCollectionEnabled(analytics, true);
+      console.log('Firebase Analytics initialized');
     } catch (error) {
-      console.error('❌ Analytics initialization error:', error);
+      console.error('Analytics initialization error:', error);
     }
   }
 
-  /**
-   * Log a custom event
-   * @param eventName - Name of the event (use snake_case)
-   * @param params - Event parameters (optional)
-   */
-  async logEvent(eventName: string, params?: { [key: string]: any }) {
+  async logEvent(eventName: string, params?: Record<string, any>) {
     try {
-      await logEvent(this.analytics, eventName, params);
-      console.log(`📊 Event logged: ${eventName}`, params);
+      await logEvent(analytics, eventName, params);
     } catch (error) {
-      console.error(`❌ Error logging event ${eventName}:`, error);
+      console.error(`Error logging event: ${eventName}`, error);
     }
   }
-
-  /**
-   * Log screen view
-   * @param screenName - Name of the screen
-   * @param screenClass - Class/component name (optional)
-   */
   async logScreenView(screenName: string, screenClass?: string) {
-    try {
-      await logEvent(this.analytics, 'screen_viewed', {
-        screen_name: screenName,
-        screen_class: screenClass || screenName,
-      });
-      console.log(`📱 Screen view: ${screenName}`);
-    } catch (error) {
-      console.error(`❌ Error logging screen view ${screenName}:`, error);
-    }
+  try {
+    await logEvent(analytics, 'screen_view', {
+      firebase_screen: screenName,
+      firebase_screen_class: screenClass || screenName,
+    });
+
+    console.log('Screen logged:', screenName);
+  } catch (error) {
+    console.error('Screen tracking error:', error);
   }
+}
 
-  /**
-   * Set user ID for tracking
-   * @param userId - Unique user identifier
-   */
-  async setUserId(userId: string) {
-    try {
-      await setUserId(this.analytics,userId);
-      console.log(`👤 User ID set: ${userId}`);
-    } catch (error) {
-      console.error('❌ Error setting user ID:', error);
-    }
-  }
-
-  /**
-   * Set user property
-   * @param name - Property name
-   * @param value - Property value
-   */
-  async setUserProperty(name: string, value: string) {
-    try {
-      await setUserProperty(this.analytics, name, value);
-      console.log(`🏷️ User property set: ${name} = ${value}`);
-    } catch (error) {
-      console.error(`❌ Error setting user property ${name}:`, error);
-    }
-  }
-
-  /**
-   * Reset analytics data (useful for logout)
-   */
-  async resetAnalyticsData() {
-    try {
-      await resetAnalyticsData(this.analytics);
-      console.log('🔄 Analytics data reset');
-    } catch (error) {
-      console.error('❌ Error resetting analytics data:', error);
-    }
-  }
-
-  // ==================== SCREEN TRACKING ====================
-
-  /**
-   * Track home screen view
-   */
   async trackHomeScreen() {
-    await this.logEvent('screen_viewed', {
-      screen_name: 'Home',
-      screen_class: 'HomeScreen'
-    });
+    await this.logScreenView('Home', 'HomeScreen');
+    console.log("Home Screen analytics");
   }
-
-  /**
-   * Track listen live screen view
-   */
   async trackListenLiveScreen() {
-    await this.logEvent('screen_viewed', {
-      screen_name: 'ListenLive',
-      screen_class: 'ListenLiveScreen'
-    });
+    await this.logScreenView('Listen Live', 'ListenLiveScreen');
+    console.log("Listen live Screen analytics");
   }
-
-  /**
-   * Track watch live screen view
-   */
   async trackWatchLiveScreen() {
-    await this.logEvent('screen_viewed', {
-      screen_name: 'WatchLive',
-      screen_class: 'WatchLiveScreen'
-    });
+    await this.logScreenView('Watch Live', 'WatchLiveScreen');
+    console.log("Watchß Screen analytics");
   }
-
-  /**
-   * Track podcast screen view
-   */
   async trackPodcastScreen() {
-    await this.logEvent('screen_viewed', {
-      screen_name: 'PodcastList',
-      screen_class: 'PodcastScreen'
-    });
+    await this.logScreenView('Podcast', 'PodcastScreen');
   }
 
-  /**
-   * Track podcast details screen
-   */
+  async trackProfileScreen() {
+    await this.logScreenView('Profile', 'ProfileScreen');
+  }
+
+  async trackVerticalVideosScreen() {
+    await this.logScreenView('Vertical Videos', 'VerticalVideosScreen');
+  }
   async trackPodcastDetailsScreen(podcastId: string, podcastTitle: string) {
+    await this.logScreenView('Podcast Details', 'PodcastDetailsScreen');
+
     await this.logEvent('podcast_viewed', {
       podcast_id: podcastId,
       podcast_title: podcastTitle,
     });
   }
-
-  /**
-   * Track news detail screen
-   */
   async trackNewsDetailScreen(articleId: string, articleTitle: string) {
-    //await this.logScreenView('News_Detail', 'NewsDetailScreen');
+    await this.logScreenView('News Detail', 'NewsDetailScreen');
     await this.logEvent('news_article_viewed', {
       article_id: articleId,
       article_title: articleTitle,
     });
   }
-
-  /**
-   * Track category list screen
-   */
   async trackCategoryListScreen(category: string) {
-    //await this.logScreenView('Category_List', 'CategoryListScreen');
+    await this.logScreenView('Category List', 'CategoryListScreen');
+
     await this.logEvent('category_viewed', {
       category_name: category,
     });
   }
-
-  /**
-   * Track profile/settings screen
-   */
-  async trackProfileScreen() {
-    await this.logEvent('screen_viewed', {
-      screen_name: 'Profile',
-      screen_class: 'ProfileScreen'
-    });
+  async setUserId(userId: string) {
+    try {
+      await setUserId(analytics, userId);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  async setUserProperty(name: string, value: string) {
+    try {
+      await setUserProperties(analytics, {
+        [name]: value,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  /**
-   * Track vertical videos screen
-   */
-  async trackVerticalVideosScreen() {
-    await this.logEvent('screen_viewed', {
-      screen_name: 'VerticalVideos',
-      screen_class: 'VerticalVideosScreen'
-    });
+  async resetAnalyticsData() {
+    await this.logEvent('reset_analytics');
   }
-
-  // ==================== AUDIO EVENTS ====================
-
-  /**
-   * Track listen live started
-   */
   async trackListenLiveStarted(stationName: string) {
     await this.logEvent('listen_live_started', {
       station_name: stationName,
@@ -221,235 +118,119 @@ export class AnalyticsService {
     });
   }
 
-  /**
-   * Track listen live stopped
-   */
   async trackListenLiveStopped(stationName: string, duration: number) {
     await this.logEvent('listen_live_stopped', {
       station_name: stationName,
       duration_seconds: duration,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track podcast play
-   */
   async trackPodcastPlayed(podcastId: string, episodeTitle: string) {
     await this.logEvent('podcast_played', {
       podcast_id: podcastId,
       episode_title: episodeTitle,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track podcast pause
-   */
   async trackPodcastPaused(podcastId: string, position: number) {
     await this.logEvent('podcast_paused', {
       podcast_id: podcastId,
       position_seconds: position,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track podcast completed
-   */
   async trackPodcastCompleted(podcastId: string, duration: number) {
     await this.logEvent('podcast_completed', {
       podcast_id: podcastId,
       duration_seconds: duration,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track audio error
-   */
   async trackAudioError(errorType: string, errorMessage: string) {
     await this.logEvent('audio_error', {
       error_type: errorType,
       error_message: errorMessage,
-      timestamp: Date.now(),
     });
   }
-
-  // ==================== VIDEO EVENTS ====================
-
-  /**
-   * Track video started
-   */
   async trackVideoStarted(videoId: string, videoTitle: string) {
     await this.logEvent('video_started', {
       video_id: videoId,
       video_title: videoTitle,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track video completed
-   */
   async trackVideoCompleted(videoId: string, duration: number) {
     await this.logEvent('video_completed', {
       video_id: videoId,
       duration_seconds: duration,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track watch live started
-   */
   async trackWatchLiveStarted(streamName: string) {
     await this.logEvent('watch_live_started', {
       stream_name: streamName,
-      timestamp: Date.now(),
     });
   }
-
-  // ==================== NAVIGATION EVENTS ====================
-
-  /**
-   * Track tab change
-   */
   async trackTabChanged(tabName: string) {
     await this.logEvent('tab_changed', {
       tab_name: tabName,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track drawer opened
-   */
   async trackDrawerOpened() {
-    await this.logEvent('drawer_opened', {
-      timestamp: Date.now(),
-    });
+    await this.logEvent('drawer_opened');
   }
-
-  // ==================== USER INTERACTION EVENTS ====================
-
-  /**
-   * Track button click
-   */
   async trackButtonClick(buttonName: string, screenName: string) {
     await this.logEvent('button_clicked', {
       button_name: buttonName,
       screen_name: screenName,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track search
-   */
   async trackSearch(searchTerm: string, resultCount: number) {
     await this.logEvent('search', {
       search_term: searchTerm,
       result_count: resultCount,
-      timestamp: Date.now(),
     });
   }
 
-  /**
-   * Track share
-   */
   async trackShare(contentType: string, contentId: string, method: string) {
     await this.logEvent('share', {
       content_type: contentType,
       content_id: contentId,
-      method: method,
-      timestamp: Date.now(),
+      method,
     });
   }
-
-  /**
-   * Track donation button click
-   */
   async trackDonateButtonClicked(source: string) {
     await this.logEvent('donate_button_clicked', {
-      source: source,
-      timestamp: Date.now(),
+      source,
     });
   }
-
-  // ==================== AD EVENTS ====================
-
-  /**
-   * Track ad impression
-   */
   async trackAdImpression(adType: string, adLocation: string) {
     await this.logEvent('ad_impression', {
       ad_type: adType,
       ad_location: adLocation,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track ad click
-   */
   async trackAdClick(adType: string, adLocation: string) {
     await this.logEvent('ad_clicked', {
       ad_type: adType,
       ad_location: adLocation,
-      timestamp: Date.now(),
     });
   }
-
-  // ==================== ERROR TRACKING ====================
-
-  /**
-   * Track app error
-   */
   async trackError(errorType: string, errorMessage: string, stackTrace?: string) {
     await this.logEvent('app_error', {
       error_type: errorType,
       error_message: errorMessage,
       stack_trace: stackTrace,
-      timestamp: Date.now(),
     });
   }
-
-  // ==================== ENGAGEMENT EVENTS ====================
-
-  /**
-   * Track app open
-   */
   async trackAppOpen() {
-    await this.logEvent('app_open', {
-      timestamp: Date.now(),
-    });
+    await this.logEvent('app_open');
   }
-
-  /**
-   * Track app background
-   */
   async trackAppBackground(sessionDuration: number) {
-    await this.logEvent('app_send_to_background', {
+    await this.logEvent('app_background', {
       session_duration_seconds: sessionDuration,
-      timestamp: Date.now(),
     });
   }
-
-  /**
-   * Track user engagement
-   */
-  async trackUserEngagement(engagementType: string, duration: number) {
+  async trackUserEngagement(type: string, duration: number) {
     await this.logEvent('user_engagement', {
-      engagement_type: engagementType,
+      engagement_type: type,
       duration_seconds: duration,
-      timestamp: Date.now(),
     });
   }
 }
-
-// Export singleton instance
-export const analyticsService = new AnalyticsService();
-
-// Export default for convenience
+export const analyticsService = AnalyticsService.getInstance();
 export default analyticsService;

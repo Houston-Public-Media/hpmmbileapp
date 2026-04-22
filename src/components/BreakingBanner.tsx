@@ -1,40 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, ViewStyle, TextStyle} from 'react-native';
+import React, { useMemo } from 'react';
+import { TouchableOpacity, View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { fetchBreaking } from '../services/newsApi';
 
-type Breaking = {
-  id: number;
-  title: string;
-  type: string;
+type Breaking = { id: number; title: string; type: string; };
+
+type Props = {
+  data: Breaking | null;
 };
 
-const styles = StyleSheet.create({
-  banner: {
-    padding: 8,
-  },
-  bannerText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-});
 
-const BreakingBanner: React.FC = () => {
+
+const BreakingBanner: React.FC<Props> = ({ data }) => {
   const navigation = useNavigation<StackNavigationProp<any>>();
-  const [breaking, setBreaking] = useState<Breaking>({
-    id: 0,
-    title: '',
-    type: '',
-  });
-
-  useEffect(() => {
-    fetchBreaking().then(data => {
-      setBreaking(data);
-    });
-  }, []);
+  const breaking = useMemo(() => data, [data]);
+  if (!breaking || breaking.id === 0 || !breaking.title) {
+    return null;
+  }
 
   const getViewStyle = (newstype: string): ViewStyle => {
     switch (newstype) {
@@ -58,13 +40,6 @@ const BreakingBanner: React.FC = () => {
     }
   };
 
-  // ✅ Conditionally render only if there's valid breaking news
-  const shouldShowBanner = breaking && breaking.id !== 0 && breaking.title !== '';
-
-  if (!shouldShowBanner) {
-    return null;
-  }
-
   return (
     <TouchableOpacity onPress={() => navigation.navigate('NewsDetail', { postId: breaking.id })}>
       <View style={[styles.banner, getViewStyle(breaking.type)]}>
@@ -75,5 +50,17 @@ const BreakingBanner: React.FC = () => {
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  banner: {
+    padding: 8,
+  },
+  bannerText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+});
 
 export default BreakingBanner;

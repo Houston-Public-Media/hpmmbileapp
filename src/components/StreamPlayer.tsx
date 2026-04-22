@@ -19,7 +19,6 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 	const {
 		currentTrack,
 		state,
-		isLoading,
 		canSeek: audioCanSeek,
 		togglePlayPause,
 	} = useHPMAudio();
@@ -34,7 +33,7 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 
 	// Optimized rotation animation for loading spinner
 	useEffect(() => {
-		if (isLoading) {
+		if (state === AudioState.LOADING) {
 			rotateAnim.setValue(0);
 			const animation = Animated.loop(
 				Animated.timing(rotateAnim, {
@@ -49,7 +48,7 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 		} else {
 			rotateAnim.setValue(0);
 		}
-	}, [isLoading, rotateAnim]);
+	}, [state, rotateAnim]);
 
 	const onPlayPausePress = async (trackId: string) => {
 		try {
@@ -60,7 +59,7 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 			}
 
 			// Don't allow new actions while already loading
-			if (isLoading && currentTrackId && currentTrackId !== trackId) {
+			if (state === AudioState.LOADING && currentTrackId && currentTrackId !== trackId) {
 				return;
 			}
 			await togglePlayPause(trackId);
@@ -112,9 +111,9 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 
 	const renderItem = (item: AudioTrack) => {
 		const isCurrent = currentTrackId === item.id;
-		const isCurrentlyPlaying = isCurrent && state === AudioState.PLAYING && !isLoading && tracksReady;
+		const isCurrentlyPlaying = isCurrent && state === AudioState.PLAYING && tracksReady;
 		// Only show loading if this is the current track AND (it's actually loading OR tracks are being loaded)
-		const isCurrentlyLoading = isCurrent && (isLoading || (!tracksReady && currentTrackId !== null));
+		const isCurrentlyLoading = isCurrent && (state === AudioState.LOADING || (!tracksReady && currentTrackId !== null));
 		const isDisabled = !tracksReady;
 
 		return (

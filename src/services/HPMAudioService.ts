@@ -113,10 +113,7 @@ class HPMAudioService {
 				capabilities: [
 					Capability.Play,
 					Capability.Pause,
-					Capability.Stop,
-					Capability.SeekTo,
-					Capability.JumpForward,
-					Capability.JumpBackward,
+					Capability.Stop
 				],
 				forwardJumpInterval: 15,
 				backwardJumpInterval: 15,
@@ -347,6 +344,26 @@ class HPMAudioService {
 	async play(track: AudioTrack): Promise<void> {
 		try {
 			await this.initialize();
+			if (track.isLiveStream) {
+				await TrackPlayer.updateOptions({
+					capabilities: [
+						Capability.Play,
+						Capability.Pause,
+						Capability.Stop
+					]
+				});
+			} else {
+				await TrackPlayer.updateOptions({
+					capabilities: [
+						Capability.Play,
+						Capability.Pause,
+						Capability.Stop,
+						Capability.SeekTo,
+						Capability.JumpForward,
+						Capability.JumpBackward
+					]
+				});
+			}
 
 			// Set loading state
 			this.state.state = AudioState.LOADING;
@@ -723,3 +740,39 @@ class HPMAudioService {
 
 // Export singleton instance
 export const hpmAudioService = new HPMAudioService();
+
+export async function PlaybackService() {
+	TrackPlayer.addEventListener(Event.RemotePlay, () => {
+		TrackPlayer.play();
+	});
+
+	TrackPlayer.addEventListener(Event.RemotePause, () => {
+		TrackPlayer.pause();
+	});
+
+	TrackPlayer.addEventListener(Event.RemoteStop, () => {
+		TrackPlayer.pause();
+	});
+
+	TrackPlayer.addEventListener(Event.RemoteNext, async () => {
+		await TrackPlayer.skipToNext();
+	});
+
+	TrackPlayer.addEventListener(Event.RemotePrevious, async () => {
+		await TrackPlayer.skipToPrevious();
+	});
+
+	TrackPlayer.addEventListener(Event.RemoteSeek, async (event) => {
+		await TrackPlayer.seekTo(event.position);
+	});
+
+	TrackPlayer.addEventListener(Event.RemoteJumpForward, async (event) => {
+		const position = await TrackPlayer.getProgress();
+		await TrackPlayer.seekTo(position.position + (event.interval || 10));
+	});
+
+	TrackPlayer.addEventListener(Event.RemoteJumpBackward, async (event) => {
+		const position = await TrackPlayer.getProgress();
+		await TrackPlayer.seekTo(Math.max(0, position.position - (event.interval || 10)));
+	});
+}

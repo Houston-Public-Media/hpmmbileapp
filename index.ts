@@ -1,6 +1,6 @@
 import { registerRootComponent } from 'expo';
 import TrackPlayer from 'react-native-track-player';
-import { PlaybackService } from './src/services/PlaybackService';
+import { PlaybackService } from './src/services/HPMAudioService';
 
 import App from './App';
 

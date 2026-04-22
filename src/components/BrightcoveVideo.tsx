@@ -59,14 +59,7 @@ export default function BrightcoveVideo() {
 
   return (
     <View style={styles.container}>
-      <SectionTitle
-        title="HPM"
-        subtitle="Shorts"
-        line={true}
-        containerStyle={{ marginBottom: 16 }}
-        titleStyle={{ color: 'black' }}
-        subtitleStyle={{ color: '#c8102e' }}
-      />
+      <SectionTitle title="HPM" subtitle="Shorts" line={true} containerStyle={{ marginBottom: 16 }} titleStyle={{ color: 'black' }} subtitleStyle={{ color: '#c8102e' }} />
     <FlatList
       data={videos}
       horizontal

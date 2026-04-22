@@ -1,17 +1,26 @@
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet, FlatList,Dimensions, ActivityIndicator,Text} from "react-native";
+import React, { useEffect, useState, useMemo } from "react";
+import { View, StyleSheet, FlatList,Dimensions, ActivityIndicator } from "react-native";
 import { WebView } from "react-native-webview";
 import ScreenHeader from "../components/ScreenHeader";
 import BreakingBanner from "../components/BreakingBanner";
 import TalkshowBanner from "../components/TalkshowBanner";
 import { fetchBCVideoGrid } from "../services/newsApi";
-import { BrightcoveVideo } from '../type';
+import { BrightcoveVideo, Breaking, TalkshowEntry } from '../type';
 
 const { width } = Dimensions.get("window");
 const NUM_COLUMNS = 2;
 const ITEM_MARGIN = 8; // spacing between cards
 
-const VerticalVideosScreen = () => {
+type Props = {
+  data: {
+    breaking: Breaking | null,
+    talkshow: TalkshowEntry[]
+  }
+};
+
+const VerticalVideosScreen: React.FC<Props> = ({ data }) => {
+  const talkshow = useMemo(() => data.talkshow, [data]);
+  const breaking = useMemo(() => data.breaking, [data]);
   const [videos, setVideos] = useState<BrightcoveVideo[]>([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -54,8 +63,8 @@ const VerticalVideosScreen = () => {
 
   return (
     <>
-      <BreakingBanner />
-      <TalkshowBanner />
+      <BreakingBanner data={breaking} />
+      <TalkshowBanner data={talkshow} />
       <ScreenHeader title="HPM Shorts" description="" />
 
       <View style={styles.container}>

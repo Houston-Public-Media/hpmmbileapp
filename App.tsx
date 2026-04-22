@@ -24,7 +24,6 @@ function App() {
   const appStateRef = useRef(AppState.currentState);
   const sessionStartTime = useRef(Date.now());
 
-  // ✅ Register push notifications (your existing logic kept)
   useEffect(() => {
     const initPushNotifications = async () => {
       const token =
@@ -48,6 +47,7 @@ function App() {
 
     return () => subscription.remove();
   }, []);
+  
   useEffect(() => {
     const checkInitialNotification = async () => {
       const response =
@@ -77,7 +77,7 @@ function App() {
   useEffect(() => {
     const subscription = AppState.addEventListener(
       'change',
-      (nextAppState) => {
+      async (nextAppState) => {
         if (
           appStateRef.current.match(/active/) &&
           nextAppState === 'background'
@@ -97,6 +97,8 @@ function App() {
         ) {
           analyticsService.trackAppOpen();
           sessionStartTime.current = Date.now();
+          
+          await PushNotificationService.syncPushTokenWithServer();
         }
 
         appStateRef.current = nextAppState;
@@ -121,31 +123,22 @@ function App() {
             <NavigationContainer
               ref={navigationRef}
               onReady={() => {
-                routeNameRef.current =
-                  navigationRef.current?.getCurrentRoute()
-                    ?.name;
+                routeNameRef.current = navigationRef.current?.getCurrentRoute()?.name;
               }}
               onStateChange={async () => {
-                const previousRouteName =
-                  routeNameRef.current;
+                const previousRouteName = routeNameRef.current;
 
-                const currentRouteName =
-                  navigationRef.current?.getCurrentRoute()
-                    ?.name;
+                const currentRouteName = navigationRef.current?.getCurrentRoute()?.name;
 
                 if (
-                  previousRouteName !==
-                    currentRouteName &&
-                  currentRouteName
+                  currentRouteName &&
+                  previousRouteName !== currentRouteName
                 ) {
                   await analyticsService.logScreenView(
                     currentRouteName,
                     currentRouteName
                   );
                 }
-
-                routeNameRef.current =
-                  currentRouteName;
               }}
             >
               <DrawerNavigator />

@@ -1,6 +1,6 @@
 // src/services/newsApi.ts
 
-import { Weather, Breaking, TalkshowEntry, TalkshowResponse, NewsArticle, NewsDetail, BrightcoveVideo } from '../type';
+import { Weather, NewsArticle, NewsDetail, BrightcoveVideo } from '../type';
 
 export async function fetchWeather(): Promise<Weather> {
   const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list');
@@ -8,31 +8,20 @@ export async function fetchWeather(): Promise<Weather> {
   return json?.data?.weather || {};
 }
 
-export async function fetchBreaking(): Promise<Breaking> {
-  const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list');
-  const json = await response.json();
-  return json?.data?.breaking || {};
-}
-
-export async function fetchTalkshow(): Promise<TalkshowEntry[]> {
-  const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list');
-  const json = await response.json();
-  return Array.isArray(json?.data?.talkshow) ? json.data.talkshow : [];
-}
-
-export async function fetchPriorityNews(): Promise<NewsArticle[]> {
+export async function fetchPriorityData() {
   try {
     const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/list');
     const json = await response.json();
-    return json?.data?.articles;
+    return json?.data || {};
   } catch (error) {
-    return [];
+    console.log('Priority API error:', error);
+    return {};
   }
 }
 
 export async function fetchBCVideos(): Promise<BrightcoveVideo[]> {
   try {
-    const res = await fetch(`https://www.houstonpublicmedia.org/wp-json/hpm-video/v1/list/?playlist=true`); //http://staging.hpm.io/wp-json/hpm-priority/v1/list
+    const res = await fetch(`https://www.houstonpublicmedia.org/wp-json/hpm-video/v1/list/?playlist=false&limit=12`);
     const json = await res.json();
     const videosList = json?.data?.videos ?? [];
     return videosList;

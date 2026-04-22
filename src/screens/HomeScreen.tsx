@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { fetchPriorityNews, fetchTalkshow } from '../services/newsApi';
+import { fetchPriorityData } from '../services/newsApi';
 import NewsCard from '../components/NewsCard';
 import { color } from '../utils/colorUtils';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -45,6 +45,7 @@ export default function HomeScreen({ navigation }: Props) {
 	const [refreshing, setRefreshing] = useState<boolean>(false);
 	const [selectedCategories, setSelectedCategories] = useState<{ id: string; name: string }[]>([]);
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+	const [breakingData, setBreakingData] = useState<any>(null);
 
 	const { showInterstitialAd, isInterstitialLoaded } = useAds();
 
@@ -88,23 +89,36 @@ export default function HomeScreen({ navigation }: Props) {
 
 	const loadData = async () => {
 		try {
-			const [data, talkshow] = await Promise.all([
-				fetchPriorityNews(),
-				fetchTalkshow()
-			]);
-			setArticles(data);
-			setTalkshowData(talkshow);
+			const data = await fetchPriorityData();
+
+			setArticles(Array.isArray(data?.articles) ? data.articles : []);
+			setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+			setBreakingData(data?.breaking || null);
+
 			const categories = await getSelectedCategories();
-			setSelectedCategories(categories.map(cat => ({ id: cat.id, name: cat.name })));
+			setSelectedCategories(
+				categories.map(cat => ({ id: cat.id, name: cat.name }))
+			);
+			//console.log('State updated');
+		} catch (e) {
+			console.log('Home load failed', e);
 		} finally {
 			setLoading(false);
 			setRefreshing(false);
+			//console.log('loadData finished');
 		}
 	};
 
-	useEffect(() => {
-		loadData();
-	}, []);
+	useFocusEffect(
+		React.useCallback(() => {
+			loadData(); 
+			const interval = setInterval(() => {
+			loadData();
+			}, 5 * 60 * 1000); 
+
+			return () => clearInterval(interval);
+		}, [])
+	);
 
 	const handleRefresh = () => {
 		setRefreshing(true);
@@ -223,7 +237,7 @@ export default function HomeScreen({ navigation }: Props) {
 								talkshow={show.talkshow}
 								showSlug={show.showSlug}
 								onPress={() => {
-									// Add navigation if needed
+
 								}}
 							/>
 						))}
@@ -241,7 +255,7 @@ export default function HomeScreen({ navigation }: Props) {
 				return (
 					<View style={styles.section}>
 						<BrightcoveVideo />
-						<TouchableOpacity onPress={() => navigation.navigate('VerticalVideosScreen', {})} style={styles.seeAllButton}>
+						<TouchableOpacity onPress={() => navigation.navigate('VerticalVideosScreen', {data: {breaking: breakingData, talkshow: talkshowData}})} style={styles.seeAllButton}>
 							<Text style={styles.seeAll}>View all</Text>
 						</TouchableOpacity> 
 					</View>
@@ -266,8 +280,8 @@ export default function HomeScreen({ navigation }: Props) {
 
 	return (
 		<View style={styles.container}>
-			<BreakingBanner />
-			<TalkshowBanner />
+			<BreakingBanner data={breakingData} />
+			<TalkshowBanner data={talkshowData}/>
 			<FlatList
 				data={sections}
 				renderItem={renderSection}
