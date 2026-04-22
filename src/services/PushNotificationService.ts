@@ -3,13 +3,14 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
+// Configure notification behavior for both foreground and background
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
-    shouldShowBanner: false,
-    shouldShowList: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -32,16 +33,91 @@ export class PushNotificationService {
     return PushNotificationService.instance;
   }
 
+
+/* Save Expo token to database */
+async saveTokenToServer(token: string) {
+  try {
+    const response = await fetch('https://push.hpm.io/token.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: token,
+        platform: Platform.OS,
+      }),
+    });
+
+    const result = await response.json();
+    console.log('Token saved to DB:', result);
+
+  } catch (error) {
+    console.error('Failed to save token:', error);
+  }
+}
+/* Remove Expo token from database */
+async removeTokenFromServer(token: string) {
+  try {
+    const response = await fetch('https://push.hpm.io/remove-token.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: token,
+      }),
+    });
+
+    const result = await response.json();
+    console.log('Token removed from DB:', result);
+
+  } catch (error) {
+    console.error('Failed to remove token:', error);
+  }
+}
+
+/* ✅ NEW: Sync token with permission state */
+async syncPushTokenWithServer(): Promise<void> {
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+
+    // If permission revoked → remove token
+    if (status !== 'granted') {
+      if (this.expoPushToken) {
+        await this.removeTokenFromServer(this.expoPushToken);
+        this.expoPushToken = null;
+        console.log('Push disabled → token removed');
+      }
+      return;
+    }
+
+    // If permission granted but no token → re-register
+    if (!this.expoPushToken) {
+      await this.registerForPushNotifications();
+    }
+
+  } catch (error) {
+    console.error('Error syncing push token:', error);
+  }
+}
+
+  /**
+   * Register for push notifications and get the token
+   * Works for both Android and iOS
+   */
   async registerForPushNotifications(): Promise<string | null> {
     let token: string | null = null;
 
     if (Platform.OS === 'android') {
+      // Android 13+ (API 33+) requires POST_NOTIFICATIONS permission at runtime
       if (Platform.Version >= 33) {
         const { status: androidStatus } = await Notifications.requestPermissionsAsync();
         if (androidStatus !== 'granted') {
+          //console.log('Notification permission not granted on Android 13+!');
           return null;
         }
       }
+      // Android notification channel setup
       await Notifications.setNotificationChannelAsync('default', {
         name: 'Default',
         importance: Notifications.AndroidImportance.MAX,
@@ -51,6 +127,8 @@ export class PushNotificationService {
         enableVibrate: true,
         showBadge: true,
       });
+
+      // Additional channels for different notification types
       await Notifications.setNotificationChannelAsync('reminders', {
         name: 'Reminders',
         importance: Notifications.AndroidImportance.HIGH,
@@ -82,40 +160,66 @@ export class PushNotificationService {
       }
       
       if (finalStatus !== 'granted') {
+        //console.log('Failed to get push token for push notification!');
         return null;
       }
 
       try {
+        // Get the project ID from Constants
         const projectId = Constants.expoConfig?.extra?.eas?.projectId;
         
         if (!projectId) {
           console.warn('No EAS project ID found. Push tokens may not work for server notifications.');
           console.log('Available Constants:', JSON.stringify(Constants.expoConfig, null, 2));
         }
+
+        // Get the token that uniquely identifies this device
+        // This works for both Android and iOS
         const tokenResponse = await Notifications.getExpoPushTokenAsync({
-          projectId: projectId || 'hpm-application', 
+          projectId: projectId || 'hpm-application', // Fallback to the project ID from Firebase config
         });
         
         token = tokenResponse.data;
-        this.expoPushToken = token;       
+        this.expoPushToken = token;
+        await this.saveTokenToServer(token);
+        console.log('Expo push token:', token);
+        
         if (token) {
+          console.log('PPush token generated successfully');
         } else {
+          console.error('Failed to generate push token');
         }
       } catch (error) {
+        console.error('Error getting push token:', error);
+        console.log('Constants.expoConfig:', Constants.expoConfig);
+        console.log('Constants.expoConfig?.extra:', Constants.expoConfig?.extra);
+        console.log('Constants.expoConfig?.extra?.eas:', Constants.expoConfig?.extra?.eas);
         return null;
       }
     } else {
+      console.log('Must use physical device for Push Notifications');
     }
 
     return token;
   }
 
+  /**
+   * Get the current push token
+   */
   getPushToken(): string | null {
     return this.expoPushToken;
   }
+
+  /**
+   * Check if push token is available
+   */
   isPushTokenAvailable(): boolean {
     return !!this.expoPushToken;
   }
+
+  /**
+   * Get detailed push token status for debugging
+   */
   getPushTokenStatus(): {
     isAvailable: boolean;
     token: string | null;
@@ -138,17 +242,28 @@ export class PushNotificationService {
     };
   }
 
+  /**
+   * Add notification received listener (works in foreground)
+   */
   addNotificationReceivedListener(
     callback: (notification: Notifications.Notification) => void
   ): Notifications.Subscription {
     return Notifications.addNotificationReceivedListener(callback);
   }
+
+  /**
+   * Add notification response listener (when user taps notification)
+   * Works for both foreground and background notifications
+   */
   addNotificationResponseReceivedListener(
     callback: (response: Notifications.NotificationResponse) => void
   ): Notifications.Subscription {
     return Notifications.addNotificationResponseReceivedListener(callback);
   }
 
+  /**
+   * Schedule a local notification
+   */
   async scheduleLocalNotification(
     title: string,
     body: string,
@@ -164,7 +279,7 @@ export class PushNotificationService {
         sound: 'default',
         priority: Notifications.AndroidNotificationPriority.HIGH,
       },
-      trigger: trigger || null, // null means send immediately
+      trigger: trigger || null,
     });
     return identifier;
   }
@@ -225,7 +340,6 @@ export class PushNotificationService {
   async disablePushNotifications(): Promise<void> {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
-      // Dismiss delivered notifications if supported
       if ((Notifications as any).dismissAllNotificationsAsync) {
         await (Notifications as any).dismissAllNotificationsAsync();
       }
@@ -235,4 +349,4 @@ export class PushNotificationService {
   }
 }
 
-export default PushNotificationService.getInstance(); 
+export default PushNotificationService.getInstance();

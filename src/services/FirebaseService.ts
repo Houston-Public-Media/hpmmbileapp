@@ -18,6 +18,7 @@ export interface PushNotificationPayload {
 export class FirebaseService {
   private static instance: FirebaseService;
   private expoPushEndpoint = 'https://exp.host/--/api/v2/push/send';
+  
 
   private constructor() {}
 

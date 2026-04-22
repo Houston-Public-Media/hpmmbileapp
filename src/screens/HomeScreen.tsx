@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { fetchPriorityNews, fetchTalkshow } from '../services/newsApi';
+import { fetchPriorityData } from '../services/newsApi';
 import NewsCard from '../components/NewsCard';
 import { color } from '../utils/colorUtils';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -10,7 +10,6 @@ import RadioSection from '../components/RadioSection';
 import TalkshowBanner from '../components/TalkshowBanner';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowCard from '../components/TalkshowCard';
-import { NewsArticle, TalkshowEntry } from '../type';
 import AdBanner from '../components/AdBanner';
 import { getSelectedCategories } from '../utils/categoryStorage';
 import SectionTitle from '../components/SectionTitle';
@@ -22,6 +21,7 @@ import { podcastAudioService } from '../services/PodcastAudioService';
 import { htmlAudioService } from '../services/HtmlAudioService';
 import BrightcoveVideo from '../components/BrightcoveVideo';
 import { useScreenTracking } from '../hooks/useAnalytics';
+import { NewsArticle, TalkshowEntry } from '../type';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -49,6 +49,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [selectedCategories, setSelectedCategories] = useState<{ id: string; name: string }[]>([]);
   const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+  const [breakingData, setBreakingData] = useState<any>(null);
 
   const { showInterstitialAd, isInterstitialLoaded } = useAds();
 
@@ -98,28 +99,40 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
-  const loadData = async () => {
-    try {
-      const [data, talkshow] = await Promise.all([
-        fetchPriorityNews(),
-        fetchTalkshow()
-      ]);
-      setArticles(data);
-      setTalkshowData(talkshow);
-      const categories = await getSelectedCategories();
-      setSelectedCategories(categories.map(cat => ({ id: cat.id, name: cat.name })));
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+const loadData = async () => {
+  try {
+    const data = await fetchPriorityData();
 
-  useEffect(() => {
-    loadData();
-  }, []);
+    setArticles(Array.isArray(data?.articles) ? data.articles : []);
+    setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+    setBreakingData(data?.breaking || null);
+
+    const categories = await getSelectedCategories();
+    setSelectedCategories(
+      categories.map(cat => ({ id: cat.id, name: cat.name }))
+    );
+     //console.log('State updated');
+  } catch (e) {
+    console.log('Home load failed', e);
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+    //console.log('loadData finished');
+  }
+};
+
+useFocusEffect(
+  React.useCallback(() => {
+    loadData(); 
+    const interval = setInterval(() => {
+      loadData();
+    }, 5 * 60 * 1000); 
+
+    return () => clearInterval(interval);
+  }, [])
+);
 
   const handleRefresh = () => {
-    setRefreshing(true);
     loadData();
   };
 
@@ -235,7 +248,7 @@ export default function HomeScreen({ navigation }: Props) {
                 talkshow={show.talkshow}
                 showSlug={show.showSlug}
                 onPress={() => {
-                  // Add navigation if needed
+                
                 }}
               />
             ))}
@@ -279,8 +292,9 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <BreakingBanner />
-      <TalkshowBanner />
+      <BreakingBanner data={breakingData} />
+      
+      <TalkshowBanner data={talkshowData} />
       <FlatList
         data={sections}
         renderItem={renderSection}

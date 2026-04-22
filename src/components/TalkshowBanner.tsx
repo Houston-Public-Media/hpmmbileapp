@@ -1,38 +1,46 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Linking } from 'react-native';
-import { fetchTalkshow } from '../services/newsApi';
-import type { TalkshowResponse, TalkshowEntry } from '../type';
+import { TalkshowEntry } from '../type';
 
-const TalkshowBanner: React.FC = () => {
-  const [talkshows, setTalkshows] = useState<TalkshowResponse['talkshow'] | null>(null);
+type Props = {
+  data: TalkshowEntry[];
+};
 
-  useEffect(() => {
-    fetchTalkshow().then(setTalkshows);
-  }, []);
-
-  // Find the live talkshow entry
+const TalkshowBanner: React.FC<Props> = ({ data }) => { 
   const liveTalkshow = useMemo(() => {
-    if (!talkshows) return null;
-    return talkshows.find(show => show.live);
-  }, [talkshows]);
+    return data?.find(show => show.live) || null;
+  }, [data]);
+  if (!liveTalkshow) return null;
 
-  if (!liveTalkshow) return null; // Hide banner if nothing live
-
-  const { showSlug, id, showName, phone, backgroundColor, accentColor, textColor } = liveTalkshow;
-
+  const { id, showName, phone, backgroundColor, textColor, } = liveTalkshow;
   const youtubeUrl = `https://www.youtube.com/watch?v=${id}`;
   const description = `${showName} is on air now!`;
 
   return (
     <View style={[styles.banner, { backgroundColor: backgroundColor || '#ccc' }]}>
       <Text style={[styles.bannerText, { color: textColor || '#000' }]}>
-        <Text style={styles.link} onPress={() => Linking.openURL(youtubeUrl)}>
+        <Text
+          style={styles.link}
+          onPress={() => Linking.openURL(youtubeUrl)}
+        >
           {description}
-        </Text>{' | '}
-        <Text style={styles.link} onPress={() => Linking.openURL(`tel:${phone}`)}>
+        </Text>
+
+        {' | '}
+
+        <Text
+          style={styles.link}
+          onPress={() => Linking.openURL(`tel:${phone}`)}
+        >
           Call
-        </Text>{' / '}
-        <Text style={styles.link} onPress={() => Linking.openURL(`sms:${phone}`)}>
+        </Text>
+
+        {' / '}
+
+        <Text
+          style={styles.link}
+          onPress={() => Linking.openURL(`sms:${phone}`)}
+        >
           Text
         </Text>
       </Text>
@@ -53,5 +61,4 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
-
 export default TalkshowBanner;
