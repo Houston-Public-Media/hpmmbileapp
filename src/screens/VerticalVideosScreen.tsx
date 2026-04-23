@@ -4,7 +4,7 @@ import { WebView } from "react-native-webview";
 import ScreenHeader from "../components/ScreenHeader";
 import BreakingBanner from "../components/BreakingBanner";
 import TalkshowBanner from "../components/TalkshowBanner";
-import { fetchBCVideoGrid } from "../services/newsApi";
+import { fetchBrightcoveVideos } from "../services/newsApi";
 import { fetchPriorityData } from '../services/newsApi';
 import { NewsArticle, TalkshowEntry } from '../type';
 import { BrightcoveVideo } from '../type';
@@ -14,13 +14,13 @@ const NUM_COLUMNS = 2;
 const ITEM_MARGIN = 8; // spacing between cards
 
 const VerticalVideosScreen = () => {
-  const [videos, setVideos] = useState<BrightcoveVideo[]>([]);
-  const [offset, setOffset] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
-  const [breakingData, setBreakingData] = useState<any>(null);
+const [videos, setVideos] = useState<BrightcoveVideo[]>([]); 
+const [offset, setOffset] = useState(0);
+const [loading, setLoading] = useState(false);
+const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+const [breakingData, setBreakingData] = useState<any>(null);
 
-  const loadVideos = async () => {
+const loadVideos = async () => {
     if (loading) return;
     setLoading(true);
     const data = await fetchPriorityData();
@@ -28,12 +28,11 @@ const VerticalVideosScreen = () => {
     setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
     setBreakingData(data?.breaking || null);
 
-    const newVideos = await fetchBCVideoGrid(offset);
+    const newVideos = await fetchBrightcoveVideos({ playlist: false, limit: 0, offset: offset, screen: true, });
     const validVideos = newVideos.filter(v => v.id);
 
-    setVideos(prev => [...prev, ...validVideos]);
-   setOffset(prev => prev + newVideos.length);
-
+  setVideos(prev => [...prev, ...validVideos]);
+  setOffset(prev => prev + newVideos.length);
     setLoading(false);
   };
 
@@ -53,9 +52,6 @@ const VerticalVideosScreen = () => {
           scrollEnabled={false}
           backgroundColor="transparent"
         />
-        {/* <View style={styles.overlay}>
-          <Text style={styles.title}>{item.name}</Text>
-        </View> */}
       </View>
     );
   };

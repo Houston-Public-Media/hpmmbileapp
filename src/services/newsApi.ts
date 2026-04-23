@@ -18,37 +18,22 @@ export async function fetchPriorityData() {
     return {};
   }
 }
-export async function fetchBCVideos(): Promise<BrightcoveVideo[]> {
+
+export async function fetchBrightcoveVideos({playlist = false, limit, offset = 0, screen = false }: {playlist?: boolean; limit?: number; offset?: number; screen?: boolean;}): Promise<BrightcoveVideo[]> {
   try {
-    const res = await fetch(`https://www.houstonpublicmedia.org/wp-json/hpm-video/v1/list/?playlist=false&limit=12`); //http://staging.hpm.io/wp-json/hpm-priority/v1/list
+    const params = new URLSearchParams();
+    params.append('playlist', String(playlist));
+    params.append('offset', String(offset));
+    if (limit !== undefined) {
+      params.append('limit', String(limit));
+    }
+    const url = `https://www.houstonpublicmedia.org/wp-json/hpm-video/v1/list/?${params.toString()}`;
+    const res = await fetch(url);
     const json = await res.json();
-    const videosList = json?.data?.videos ?? [];
-    return videosList;
+    return json?.data?.videos ?? [];
   } catch (error) {
     console.log("Error fetching videos:", error);
     return [];
-  }
-}
-
-export async function fetchBCVideoGrid(offset = 0): Promise<BrightcoveVideo[]> {
-  try {
-    const res = await fetch(`https://www.houstonpublicmedia.org/wp-json/hpm-video/v1/list/?playlist=false&offset=${offset}`);
-    const json = await res.json();
-    const videosList = json?.data?.videos ?? [];
-    return videosList;
-  } catch (error) {
-    console.log("Error fetching videos:", error);
-    return [];
-  }
-}
-
-export async function fetchNewsArticle(id: number): Promise<NewsArticle | null> {
-  try {
-    const response = await fetch(`https://www.houstonpublicmedia.org/wp-json/hpm-priority/v1/article/${id}`);
-    const json = await response.json();
-    return json?.data?.article || null;
-  } catch (error) {
-    return null;
   }
 }
 

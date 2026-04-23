@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { fetchPriorityData } from '../services/newsApi';
+import { fetchPriorityData, fetchBrightcoveVideos } from '../services/newsApi';
 import NewsCard from '../components/NewsCard';
 import { color } from '../utils/colorUtils';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -50,8 +50,9 @@ export default function HomeScreen({ navigation }: Props) {
   const [selectedCategories, setSelectedCategories] = useState<{ id: string; name: string }[]>([]);
   const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
   const [breakingData, setBreakingData] = useState<any>(null);
-
+  const [brightcoveVideos, setBrightcoveVideos] = useState<any[]>([]);
   const { showInterstitialAd, isInterstitialLoaded } = useAds();
+  
 
   useFocusEffect(
     React.useCallback(() => {
@@ -106,6 +107,8 @@ const loadData = async () => {
     setArticles(Array.isArray(data?.articles) ? data.articles : []);
     setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
     setBreakingData(data?.breaking || null);
+    const videos = await fetchBrightcoveVideos({ playlist: false, limit: 12, offset: 0, screen: false,});
+    setBrightcoveVideos(Array.isArray(videos) ? videos : []);
 
     const categories = await getSelectedCategories();
     setSelectedCategories(
@@ -265,7 +268,7 @@ useFocusEffect(
         case 'brightcove':
         return (
         <View style={styles.section}>
-          <BrightcoveVideo />
+          <BrightcoveVideo videos={brightcoveVideos} />
           <TouchableOpacity onPress={() => navigation.navigate('VerticalVideosScreen', {})} style={styles.seeAllButton}>
             <Text style={styles.seeAll}>View all</Text>
           </TouchableOpacity> 
