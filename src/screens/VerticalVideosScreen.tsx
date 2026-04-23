@@ -5,6 +5,8 @@ import ScreenHeader from "../components/ScreenHeader";
 import BreakingBanner from "../components/BreakingBanner";
 import TalkshowBanner from "../components/TalkshowBanner";
 import { fetchBCVideoGrid } from "../services/newsApi";
+import { fetchPriorityData } from '../services/newsApi';
+import { NewsArticle, TalkshowEntry } from '../type';
 import { BrightcoveVideo } from '../type';
 
 const { width } = Dimensions.get("window");
@@ -15,10 +17,16 @@ const VerticalVideosScreen = () => {
   const [videos, setVideos] = useState<BrightcoveVideo[]>([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+  const [breakingData, setBreakingData] = useState<any>(null);
 
   const loadVideos = async () => {
     if (loading) return;
     setLoading(true);
+    const data = await fetchPriorityData();
+    
+    setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+    setBreakingData(data?.breaking || null);
 
     const newVideos = await fetchBCVideoGrid(offset);
     const validVideos = newVideos.filter(v => v.id);
@@ -54,8 +62,8 @@ const VerticalVideosScreen = () => {
 
   return (
     <>
-      <BreakingBanner />
-      <TalkshowBanner />
+      <BreakingBanner data={breakingData} />      
+      <TalkshowBanner data={talkshowData} />
       <ScreenHeader title="HPM Shorts" description="" />
 
       <View style={styles.container}>

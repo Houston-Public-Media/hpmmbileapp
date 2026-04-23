@@ -292,8 +292,7 @@ useFocusEffect(
 
   return (
     <View style={styles.container}>
-      <BreakingBanner data={breakingData} />
-      
+      <BreakingBanner data={breakingData} />      
       <TalkshowBanner data={talkshowData} />
       <FlatList
         data={sections}

@@ -17,6 +17,8 @@ import CoauthorCard from '../components/CoauthorCard';
 import TalkshowBanner from '../components/TalkshowBanner';
 import BreakingBanner from '../components/BreakingBanner';
 import { decodeHtmlEntities } from '../utils/htmlUtils';
+import { fetchPriorityData } from '../services/newsApi';
+import { NewsArticle, TalkshowEntry } from '../type';
 
 // Define the params expected for this screen
 type NewsDetailParams = {
@@ -32,6 +34,8 @@ const NewsDetailScreen = () => {
   const [post, setPost] = useState<NewsDetail | null>(null);
   const [coauthors, setCoauthors] = useState<Coauthor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+  const [breakingData, setBreakingData] = useState<any>(null);
 
   // Fetch post data
   useEffect(() => {
@@ -42,6 +46,7 @@ const NewsDetailScreen = () => {
     const loadPost = async () => {
       try {
         const data = await fetchNewsArticleById(postId);
+        const bannerData = await fetchPriorityData();
         // console.log('data', data);
         setPost(data);
         if (data?.coauthors && Array.isArray(data.coauthors)) {
@@ -50,6 +55,9 @@ const NewsDetailScreen = () => {
           //console.warn('No coauthors field found in response.');
           setCoauthors([]); // optional: clear previous coauthors if needed
         }
+        setTalkshowData(Array.isArray(bannerData?.talkshow) ? bannerData.talkshow : []);
+        setBreakingData(bannerData?.breaking || null);
+
       } catch (error) {
         //console.error('Error loading post:', error);
       } finally {
@@ -85,8 +93,8 @@ const NewsDetailScreen = () => {
   // Render post content
   return (
     <View style={styles.safeArea}>
-       <BreakingBanner />
-      <TalkshowBanner />
+      <BreakingBanner data={breakingData} />      
+      <TalkshowBanner data={talkshowData} />
       <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
           <HtmlRenderer

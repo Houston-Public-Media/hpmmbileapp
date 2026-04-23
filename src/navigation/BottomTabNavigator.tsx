@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, Linking } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { analyticsService } from '../services/AnalyticsService';
 
 import ProfileScreen from '../screens/ProfileScreen';
@@ -9,6 +9,7 @@ import ListenLiveScreen from '../screens/ListenLiveScreen';
 import HomeStack from './HomeStack';
 import WatchLiveScreen from '../screens/WatchLiveScreen';
 import PodcastStack from './PodcastStack';
+import VerticalVideosScreen from '../screens/VerticalVideosScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -28,39 +29,33 @@ const BottomTabNavigator = () => (
         let iconColor = color;
 
         switch (route.name) {
-          case 'Home':
+          case 'Today':
             iconName = 'home-outline';
-            break;
+            return <Ionicons name={iconName} size={size} color={iconColor} />;
+
           case 'Listen':
             iconName = 'musical-notes-outline';
-            break;
+            return <Ionicons name={iconName} size={size} color={iconColor} />;
+
           case 'Watch':
             iconName = 'videocam-outline';
-            break;
+            return <Ionicons name={iconName} size={size} color={iconColor} />;
+
           case 'Podcast':
-            iconName = 'book-outline';
-            break;
-          case 'Donate':
-            iconName = focused ? 'heart' : 'heart-outline';
-            //iconColor = 'red';
-            break;
+            return <FontAwesome name="podcast" size={size} color={iconColor} />;
+
+          case 'Shorts':
+            iconName = 'play-circle-outline';
+            return <Ionicons name={iconName} size={size} color={iconColor} />;
+
           case 'Settings':
             iconName = 'person-outline';
-            break;
+            return <Ionicons name={iconName} size={size} color={iconColor} />;
         }
-
-        return <Ionicons name={iconName} size={size} color={iconColor} />;
       },
-      tabBarLabel: ({ focused, color }) => {
-        if (route.name === 'Donate') {
-          return (
-            <Text style={{ color/* : 'red', fontWeight: 'bold' */, fontSize: 13 }}>
-              Donate
-            </Text>
-          );
-        }
-        return <Text style={{ color, fontSize: 13 }}>{route.name}</Text>;
-      },
+       tabBarLabel: ({ focused, color }) => {        
+         return <Text style={{ color, fontSize: 13 }}>{route.name}</Text>;
+       },
     })}
     screenListeners={{
       tabPress: (e) => {
@@ -74,9 +69,9 @@ const BottomTabNavigator = () => (
     <Tab.Screen name="Listen" component={ListenLiveScreen} />
     <Tab.Screen name="Watch" component={WatchLiveScreen} />
     <Tab.Screen name="Podcast" component={PodcastStack} />
+    <Tab.Screen name="Shorts" component={VerticalVideosScreen} />
 
-    {/* ✅ Updated Donate screen */}
-    <Tab.Screen
+    {/* <Tab.Screen
       name="Donate"
       listeners={{
         tabPress: (e) => {
@@ -87,7 +82,7 @@ const BottomTabNavigator = () => (
       }}
     >
       {() => null}
-    </Tab.Screen>
+    </Tab.Screen> */}
 
     <Tab.Screen name="Settings" component={ProfileScreen} />
   </Tab.Navigator>

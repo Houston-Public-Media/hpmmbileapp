@@ -1,4 +1,4 @@
-import React, { JSX, useCallback } from 'react';
+import React, { JSX, useCallback, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ListenLivePlayer from '../components/ListenLivePlayer';
@@ -7,7 +7,8 @@ import { color } from '../utils/colorUtils';
 import ScreenHeader from '../components/ScreenHeader';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
-//import { analyticsService } from '../services/AnalyticsService';
+import { fetchPriorityData } from '../services/newsApi';
+import { NewsArticle, TalkshowEntry } from '../type';
 import { useFocusEffect } from '@react-navigation/native';
 
 function ListenLiveScreen(): JSX.Element {
@@ -17,6 +18,30 @@ function ListenLiveScreen(): JSX.Element {
     }, [])
   );
   const { isPlayerReady, tracks, error, isLoading, refreshListenLiveData } = useListenLive();
+  const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+  const [breakingData, setBreakingData] = useState<any>(null);
+
+
+  const loadBannerData = async () => {
+    try {
+      const data = await fetchPriorityData();
+
+      setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+      setBreakingData(data?.breaking || null);
+    } catch (e) {
+      console.log('ListenLive load failed', e);
+    }
+  };
+  useFocusEffect(
+    useCallback(() => {
+      loadBannerData();
+      const interval = setInterval(() => {
+        loadBannerData();
+      }, 60 * 1000);
+
+      return () => clearInterval(interval);
+    }, [])
+  ); 
 
   if (isLoading) {
     return (
@@ -61,8 +86,8 @@ function ListenLiveScreen(): JSX.Element {
 
   return (
     <>
-      <BreakingBanner />
-      <TalkshowBanner />
+      <BreakingBanner data={breakingData} />      
+      <TalkshowBanner data={talkshowData} />
       <ScreenHeader 
         title="Listen Live"
         description="Stream Houston Public Media's live radio channels including News 88.7, Classical, and more"

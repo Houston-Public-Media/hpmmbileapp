@@ -1,22 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  Linking,
-  StyleSheet,
-  Image,
-  ScrollView
-} from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, StyleSheet, Image, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import {
-  fetchHPMPodcastDetails,
-  fetchHPMPodcasts,
-  PodcastDetails,
-  Podcast
-} from '../services/podcastApi';
+import { fetchHPMPodcastDetails, fetchHPMPodcasts, PodcastDetails, Podcast } from '../services/podcastApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import PodcastEpisodeCard from '../components/PodcastEpisodeCard';
@@ -25,6 +10,8 @@ import { useUniversalAudio } from '../contexts/UniversalAudioContext';
 import { cleanText } from '../utils/htmlUtils';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
+import { fetchPriorityData } from '../services/newsApi';
+import { NewsArticle, TalkshowEntry } from '../type';
 
 type PodcastDetailsRouteProp = RouteProp<PodcastStackParamList, 'PodcastDetails'>;
 
@@ -35,46 +22,40 @@ const PodcastDetailsScreen: React.FC = () => {
   const [podcastDetail, setPodcastDetail] = useState<PodcastDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [externalLinks, setExternalLinks] = useState<Podcast['external_links'] | null>(null);
-  
-  // Get universal audio context
-  // Note: No need to manually pause here - the universal service handles conflicts automatically
+  const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+  const [breakingData, setBreakingData] = useState<any>(null);  
 
   const handleEpisodePress = (episodeId: number, episodeTitle: string) => {
-    // Navigate to NewsDetailScreen in HomeStack
-    // Using the episodeId as postId since they likely share the same WordPress ID system
     (navigation as any).navigate('NewsDetail', {
       postId: episodeId,
       title: cleanText(episodeTitle)
     });
   };
 
-
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Fetch podcast details
         if (podcast.feed_json) {
           const details = await fetchHPMPodcastDetails(podcast.feed_json);
           setPodcastDetail(details);
         }
-
-        // Fetch external links from main podcasts API
         const podcasts = await fetchHPMPodcasts();
         const matchingPodcast = podcasts.find(p => p.id === podcast.id);
         if (matchingPodcast) {
           setExternalLinks(matchingPodcast.external_links);
         }
+    const data = await fetchPriorityData();    
+    setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+    setBreakingData(data?.breaking || null);
+
       } catch (error) {
         console.error('Error loading podcast data:', error);
       } finally {
         setLoading(false);
       }
     };
-
     loadData();
   }, [podcast]);
-
-
 
   if (loading) {
     return (
@@ -127,8 +108,8 @@ const PodcastDetailsScreen: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <BreakingBanner />
-      <TalkshowBanner />
+      <BreakingBanner data={breakingData} />      
+      <TalkshowBanner data={talkshowData} />
       {/* Podcast Header */}
       <View style={styles.header}>
         <Text style={styles.title}>
