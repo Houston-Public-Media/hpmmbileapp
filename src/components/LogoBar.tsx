@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Linking, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
-import { Image } from 'react-native'
+import { Linking, StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { DrawerNavigationProp } from '@react-navigation/drawer'
 import { fetchWeather } from '../services/newsApi';
