@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, StyleSheet, Image, ScrollView } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { fetchHPMPodcastDetails, fetchHPMPodcasts, PodcastDetails, Podcast } from '../services/podcastApi';
-import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import PodcastEpisodeCard from '../components/PodcastEpisodeCard';
 import { PodcastStackParamList } from '../navigation/PodcastStack';
@@ -11,7 +9,7 @@ import { cleanText } from '../utils/htmlUtils';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
 import { fetchPriorityData } from '../services/newsApi';
-import { NewsArticle, TalkshowEntry } from '../type';
+import { TalkshowEntry } from '../type';
 
 type PodcastDetailsRouteProp = RouteProp<PodcastStackParamList, 'PodcastDetails'>;
 
@@ -57,7 +55,7 @@ const PodcastDetailsScreen: React.FC = () => {
     loadData();
   }, [podcast]);
 
-  if (loading) {
+    if (loading) {
     return (
       <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />
     );
@@ -65,43 +63,34 @@ const PodcastDetailsScreen: React.FC = () => {
 
   const renderPlatformIcon = (platform: string, url: string) => {
     if (!url) return null;
-    
-    let iconName: keyof typeof MaterialIcons.glyphMap = 'link';
-    let iconColor: string = '#333';
-    
+    let imgSource;
+
     switch (platform) {
       case 'spotify':
-        iconName = 'music-note';
-        iconColor = '#1DB954';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/spotify.png.webp' };
         break;
       case 'npr':
-        iconName = 'radio';
-        iconColor = '#FF6B35';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/npr.png.webp' };
         break;
       case 'pcast':
-        iconName = 'headset';
-        iconColor = '#F43E37';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/pocketcasts.png.webp' };
         break;
       case 'amazon':
-        iconName = 'shopping-cart';
-        iconColor = '#FF9900';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/amazon.png.webp' };
         break;
       case 'itunes':
-        iconName = 'music-note';
-        iconColor = 'purple';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/apple.png.webp' };
         break;
       default:
-        iconName = 'link';
-        iconColor = '#333';
+        imgSource = { uri: 'https://cdn.houstonpublicmedia.org/assets/images/podcasts/rss.png.webp' };
     }
-
     return (
       <TouchableOpacity
         key={platform}
         style={styles.platformButton}
         onPress={() => Linking.openURL(url)}
       >
-        <MaterialIcons name={iconName} size={24} color={iconColor} />
+        <Image source={imgSource} style={styles.icon} />
       </TouchableOpacity>
     );
   };
@@ -187,7 +176,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    color: '#666',
+    color: '#343434',
     textAlign: 'justify',
     lineHeight: 20,
     marginBottom: 20,
@@ -227,6 +216,10 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
+  icon: {
+    width: 50,
+    height: 50
+  }
 });
 
 export default PodcastDetailsScreen;
