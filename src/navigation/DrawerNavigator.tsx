@@ -2,7 +2,7 @@ import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import BottomTabNavigator from './BottomTabNavigator';
 import SettingsScreen from '../screens/ProfileScreen';
-import LogoBar from '../components/LogoBar';
+import { LogoBar } from '../components/LogoBar';
 
 const Drawer = createDrawerNavigator();
 
