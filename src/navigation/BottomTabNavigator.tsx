@@ -9,6 +9,7 @@ import ContactScreen from '../screens/ContactScreen';
 import ListenStack from './ListenStack';
 import HomeStack from './HomeStack';
 import WatchLiveScreen from '../screens/WatchLiveScreen';
+import VerticalVideosScreen from '../screens/VerticalVideosScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -37,11 +38,8 @@ const BottomTabNavigator = () => (
 					case 'Watch':
 						iconName = 'videocam-outline';
 						break;
-					case 'Shows':
-						iconName = 'book-outline';
-						break;
-					case 'Contact':
-						iconName = 'chatbubbles-outline';
+					case 'Shorts':
+						iconName = 'play-circle-outline';
 						break;
 					case 'Settings':
 						iconName = 'person-outline';
@@ -58,7 +56,7 @@ const BottomTabNavigator = () => (
 		<Tab.Screen name="Today" component={HomeStack} />
 		<Tab.Screen name="Listen" component={ListenStack} />
 		<Tab.Screen name="Watch" component={WatchLiveScreen} />
-		<Tab.Screen name="Contact" component={ContactScreen} />
+		<Tab.Screen name="Shorts" component={VerticalVideosScreen} />
 		<Tab.Screen name="Settings" component={ProfileScreen} />
 	</Tab.Navigator>
 );

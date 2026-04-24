@@ -58,8 +58,8 @@
 	<string>Allow $(PRODUCT_NAME) to access your microphone</string>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>fetch</string>
 		<string>audio</string>
+		<string>fetch</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>SplashScreen</string>

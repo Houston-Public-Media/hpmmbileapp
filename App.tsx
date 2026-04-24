@@ -24,6 +24,7 @@ function App() {
   const appStateRef = useRef(AppState.currentState);
   const sessionStartTime = useRef(Date.now());
 
+
   useEffect(() => {
     const initPushNotifications = async () => {
       const token =
@@ -47,7 +48,7 @@ function App() {
 
     return () => subscription.remove();
   }, []);
-  
+
   useEffect(() => {
     const checkInitialNotification = async () => {
       const response =
@@ -74,7 +75,8 @@ function App() {
       });
     }
   };
-  useEffect(() => {
+
+useEffect(() => {
     const subscription = AppState.addEventListener(
       'change',
       async (nextAppState) => {
@@ -97,7 +99,7 @@ function App() {
         ) {
           analyticsService.trackAppOpen();
           sessionStartTime.current = Date.now();
-          
+
           await PushNotificationService.syncPushTokenWithServer();
         }
 
@@ -120,27 +122,37 @@ function App() {
           >
             <StatusBar barStyle={'light-content'} />
 
-            <NavigationContainer
-              ref={navigationRef}
-              onReady={() => {
-                routeNameRef.current = navigationRef.current?.getCurrentRoute()?.name;
-              }}
-              onStateChange={async () => {
-                const previousRouteName = routeNameRef.current;
+              <NavigationContainer
+                ref={navigationRef}
+                onReady={() => {
+                  routeNameRef.current =
+                    navigationRef.current?.getCurrentRoute()
+                      ?.name;
+                }}
+                onStateChange={async () => {
+                  const previousRouteName = routeNameRef.current;
+                  const currentRouteName =
+                    navigationRef.current?.getCurrentRoute()?.name;
 
-                const currentRouteName = navigationRef.current?.getCurrentRoute()?.name;
+                  if (
+                    currentRouteName &&
+                    previousRouteName !== currentRouteName
+                  ) {
+                    routeNameRef.current = currentRouteName;
 
-                if (
-                  currentRouteName &&
-                  previousRouteName !== currentRouteName
-                ) {
-                  await analyticsService.logScreenView(
-                    currentRouteName,
-                    currentRouteName
-                  );
-                }
-              }}
-            >
+                    try {
+                      await analyticsService.logScreenView(
+                        currentRouteName,
+                        currentRouteName
+                      );
+
+                      console.log('Screen tracked:', currentRouteName);
+                    } catch (e) {
+                      console.log('Screen tracking failed:', e);
+                    }
+                  }
+                }}
+              >
               <DrawerNavigator />
             </NavigationContainer>
           </SafeAreaView>

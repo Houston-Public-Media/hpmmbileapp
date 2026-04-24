@@ -1,6 +1,6 @@
 // src\screens\ListenLiveScreen.tsx
 
-import React, { JSX, useEffect, useState } from 'react';
+import React, { JSX, useEffect, useState, useCallback } from 'react';
 import {
 	ActivityIndicator,
 	StyleSheet,
@@ -23,6 +23,9 @@ import { useNavigation } from '@react-navigation/native';
 import PodcastCard from '../components/PodcastCard';
 import AudioFooter from '../components/AudioFooter';
 type PodcastScreenNavigationProp = StackNavigationProp<PodcastStackParamList, 'PodcastList'>;
+import { fetchPriorityData } from '../services/newsApi';
+import { NewsArticle, TalkshowEntry } from '../type';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 function ListenScreen(): JSX.Element {
@@ -30,13 +33,34 @@ function ListenScreen(): JSX.Element {
 	const navigation = useNavigation<PodcastScreenNavigationProp>();
 	const [podcasts, setPodcasts] = useState<Podcast[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
+	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+	const [breakingData, setBreakingData] = useState<any>(null);
 
 	useEffect(() => {
 		fetchHPMPodcasts()
 			.then(setPodcasts)
 			.finally(() => setLoading(false));
 	}, []);
+	const loadBannerData = async () => {
+		try {
+			const data = await fetchPriorityData();
 
+			setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+			setBreakingData(data?.breaking || null);
+		} catch (e) {
+			console.log('ListenLive load failed', e);
+		}
+	};
+	useFocusEffect(
+		useCallback(() => {
+			loadBannerData();
+			const interval = setInterval(() => {
+				loadBannerData();
+			}, 60 * 1000);
+
+			return () => clearInterval(interval);
+		}, [])
+	);
 	if (isLoading && loading) {
 		return (
 			<View style={styles.container}>
@@ -80,8 +104,8 @@ function ListenScreen(): JSX.Element {
 
 	return (
 		<>
-			<BreakingBanner />
-			<TalkshowBanner />
+			<BreakingBanner data={breakingData} />
+			<TalkshowBanner data={talkshowData} />
 			<ScreenHeader 
 				title="Listen"
 				description="Live radio streams and podcasts at your fingertips"

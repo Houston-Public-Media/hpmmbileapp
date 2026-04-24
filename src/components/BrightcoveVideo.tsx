@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { View, FlatList, Dimensions, ActivityIndicator, StyleSheet, Text } from "react-native";
 import { WebView } from "react-native-webview";
 import SectionTitle from './SectionTitle';
-import { fetchBCVideos } from "../services/newsApi";
 import { BrightcoveVideo as VideoType } from "../type";
 
 const { width } = Dimensions.get("window");
@@ -10,34 +9,20 @@ const CARD_WIDTH = width * 0.5;
 const CARD_HEIGHT = (CARD_WIDTH * 16) / 9;
 const ITEM_MARGIN = 16;
 
-export default function BrightcoveVideo() {
-  const [videos, setVideos] = useState<VideoType[]>([]);
-  const [loading, setLoading] = useState(true);
+type Props = {
+  videos: any[];
+};
+
+export default function BrightcoveVideo({ videos }: Props) {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
 
-  useEffect(() => {
-    loadVideos();
-  }, []);
-
-  const loadVideos = async () => {
-    try {
-      const data = await fetchBCVideos();
-      setVideos(data);
-    } catch (error) {
-      console.log("Error loading videos:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+if (!videos || videos.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
-
   const renderItem = ({ item }: { item: VideoType }) => {
     return (
       <View style={[styles.card, { marginRight: ITEM_MARGIN }]}>
@@ -50,9 +35,6 @@ export default function BrightcoveVideo() {
           mediaPlaybackRequiresUserAction={false}
           scrollEnabled={false}
         />
-        {/* <View style={styles.overlay}>
-          <Text style={styles.title}>{item.name}</Text>
-        </View> */}
       </View>
     );
   };

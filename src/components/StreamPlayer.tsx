@@ -5,7 +5,8 @@ import { Image, StyleSheet, Text, TouchableOpacity, View, Alert, Animated } from
 import { MaterialIcons } from '@expo/vector-icons';
 import { color } from '../utils/colorUtils';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
-import { AudioTrack, AudioState } from '../services/HPMAudioService';
+import { AudioTrack } from '../services/HPMAudioService';
+import { State } from 'react-native-track-player';
 
 interface StreamPlayerProps {
 	track: AudioTrack;
@@ -33,7 +34,7 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 
 	// Optimized rotation animation for loading spinner
 	useEffect(() => {
-		if (state === AudioState.LOADING) {
+		if (state === State.Loading || State.Buffering) {
 			rotateAnim.setValue(0);
 			const animation = Animated.loop(
 				Animated.timing(rotateAnim, {
@@ -59,7 +60,7 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 			}
 
 			// Don't allow new actions while already loading
-			if (state === AudioState.LOADING && currentTrackId && currentTrackId !== trackId) {
+			if ( (state === State.Loading || state === State.Buffering ) && currentTrackId && currentTrackId !== trackId) {
 				return;
 			}
 			await togglePlayPause(trackId);
@@ -87,33 +88,11 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 		}
 	};
 
-	// Handle seek forward
-	// const handleSeekForward = async () => {
-	// 	 if (currentTrackId && canSeek) {
-	// 		 try {
-	// 			 await seekForward(10);
-	// 		 } catch (error) {
-	// 			 console.error('Error seeking forward:', error);
-	// 		 }
-	// 	 }
-	// };
-
-	// Handle seek backward
-	// const handleSeekBackward = async () => {
-	// 	 if (currentTrackId && canSeek) {
-	// 		 try {
-	// 			 await seekBackward(10);
-	// 		 } catch (error) {
-	// 			 console.error('Error seeking backward:', error);
-	// 		 }
-	// 	 }
-	// };
-
 	const renderItem = (item: AudioTrack) => {
 		const isCurrent = currentTrackId === item.id;
-		const isCurrentlyPlaying = isCurrent && state === AudioState.PLAYING && tracksReady;
+		const isCurrentlyPlaying = isCurrent && state === State.Playing && tracksReady;
 		// Only show loading if this is the current track AND (it's actually loading OR tracks are being loaded)
-		const isCurrentlyLoading = isCurrent && (state === AudioState.LOADING || (!tracksReady && currentTrackId !== null));
+		const isCurrentlyLoading = isCurrent && (state === State.Loading || state === State.Buffering || (!tracksReady && currentTrackId !== null));
 		const isDisabled = !tracksReady;
 
 		return (
@@ -178,21 +157,6 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 					</View>	
 						{/* Bottom of right: Controls */}
 					<View style={styles.controlsSection}>
-						{/* <TouchableOpacity
-							style={[
-								styles.seekButton,
-								(!isCurrent || isCurrentlyLoading) && styles.disabledButton
-							]}
-							onPress={handleSeekBackward}
-							disabled={!isCurrent || isCurrentlyLoading}
-						>
-							<MaterialIcons 
-								name="replay-10" 
-								size={18} 
-								color={isCurrent && !isCurrentlyLoading ? (canSeek ? color.primary : '#888') : '#bbb'} 
-							/>
-						</TouchableOpacity> */}
-						
 						<TouchableOpacity
 							style={[
 								styles.mainPlayButton,
@@ -236,21 +200,6 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ track }) => {
 								)}
 							</View>
 						</TouchableOpacity>
-						
-						{/* <TouchableOpacity
-							style={[
-								styles.seekButton,
-								(!isCurrent || isCurrentlyLoading) && styles.disabledButton
-							]}
-							onPress={handleSeekForward}
-							disabled={!isCurrent || isCurrentlyLoading}
-						>
-							<MaterialIcons 
-								name="forward-10" 
-								size={18} 
-								color={isCurrent && !isCurrentlyLoading ? (canSeek ? color.primary : '#888') : '#bbb'} 
-							/>
-						</TouchableOpacity> */}
 					</View>
 				</View>
 			</View>

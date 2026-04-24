@@ -1,21 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  Linking,
-  StyleSheet,
-  Image,
-  ScrollView
-} from 'react-native';
-import {
-  fetchHPMPodcastDetails,
-  fetchHPMPodcasts,
-  PodcastDetails,
-  Podcast
-} from '../services/podcastApi';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, StyleSheet, Image, ScrollView } from 'react-native';
+import { fetchHPMPodcastDetails, fetchHPMPodcasts, PodcastDetails, Podcast } from '../services/podcastApi';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import PodcastEpisodeCard from '../components/PodcastEpisodeCard';
 import { PodcastStackParamList } from '../navigation/PodcastStack';
@@ -23,6 +8,8 @@ import { cleanText } from '../utils/htmlUtils';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
 import AudioFooter from '../components/AudioFooter';
+import { fetchPriorityData } from '../services/newsApi';
+import { TalkshowEntry } from '../type';
 
 type PodcastDetailsRouteProp = RouteProp<PodcastStackParamList, 'PodcastDetails'>;
 
@@ -33,48 +20,42 @@ const PodcastDetailsScreen: React.FC = () => {
   const [podcastDetail, setPodcastDetail] = useState<PodcastDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [externalLinks, setExternalLinks] = useState<Podcast['external_links'] | null>(null);
-  
-  // Get universal audio context
-  // Note: No need to manually pause here - the universal service handles conflicts automatically
+  const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+  const [breakingData, setBreakingData] = useState<any>(null);
 
   const handleEpisodePress = (episodeId: number, episodeTitle: string) => {
-    // Navigate to NewsDetailScreen in HomeStack
-    // Using the episodeId as postId since they likely share the same WordPress ID system
     (navigation as any).navigate('NewsDetail', {
       postId: episodeId,
       title: cleanText(episodeTitle)
     });
   };
 
-
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Fetch podcast details
         if (podcast.feed_json) {
           const details = await fetchHPMPodcastDetails(podcast.feed_json);
           setPodcastDetail(details);
         }
-
-        // Fetch external links from main podcasts API
         const podcasts = await fetchHPMPodcasts();
         const matchingPodcast = podcasts.find(p => p.id === podcast.id);
         if (matchingPodcast) {
           setExternalLinks(matchingPodcast.external_links);
         }
+        const data = await fetchPriorityData();
+        setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+        setBreakingData(data?.breaking || null);
+
       } catch (error) {
         console.error('Error loading podcast data:', error);
       } finally {
         setLoading(false);
       }
     };
-
     loadData();
   }, [podcast]);
 
-
-
-  if (loading) {
+    if (loading) {
     return (
       <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />
     );
@@ -116,60 +97,59 @@ const PodcastDetailsScreen: React.FC = () => {
 
   return (
     <>
-      <BreakingBanner />
-      <TalkshowBanner />
-      <ScrollView style={styles.container}>
-        
-        {/* Podcast Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            {podcastDetail?.data?.feed?.title || podcast.name}
-          </Text>
-          <Image 
-            source={{ uri: podcastDetail?.data?.feed?.icon || podcast.image.medium.url }} 
-            style={styles.podcastImage} 
-          />
-          
-          <Text style={styles.description}>
-            {(podcastDetail?.data?.feed?.description || podcast.description).replace(/<[^>]+>/g, '')}
-          </Text>
-          
-          {/* Platform Icons */}
-          <View style={styles.platformsContainer}>
-            {renderPlatformIcon('itunes', externalLinks?.itunes || podcast.external_links.itunes || '')}
-            {renderPlatformIcon('spotify', externalLinks?.spotify || podcast.external_links.spotify || '')}
-            {renderPlatformIcon('npr', externalLinks?.npr || podcast.external_links.npr || '')}
-            {renderPlatformIcon('pcast', externalLinks?.pcast || podcast.external_links.pcast || '')}
-            {renderPlatformIcon('amazon', externalLinks?.amazon || podcast.external_links.amazon || '')}
-          </View>
+    <ScrollView style={styles.container}>
+      <BreakingBanner data={breakingData} />
+      <TalkshowBanner data={talkshowData} />
+      {/* Podcast Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>
+          {podcastDetail?.data?.feed?.title || podcast.name}
+        </Text>
+        <Image
+          source={{ uri: podcastDetail?.data?.feed?.icon || podcast.image.medium.url }}
+          style={styles.podcastImage}
+        />
 
+        <Text style={styles.description}>
+          {(podcastDetail?.data?.feed?.description || podcast.description).replace(/<[^>]+>/g, '')}
+        </Text>
 
+        {/* Platform Icons */}
+        <View style={styles.platformsContainer}>
+          {renderPlatformIcon('spotify', externalLinks?.spotify || podcast.external_links.spotify || '')}
+          {renderPlatformIcon('npr', externalLinks?.npr || podcast.external_links.npr || '')}
+          {renderPlatformIcon('pcast', externalLinks?.pcast || podcast.external_links.pcast || '')}
+          {renderPlatformIcon('amazon', externalLinks?.amazon || podcast.external_links.amazon || '')}
+          {renderPlatformIcon('itunes', externalLinks?.itunes || podcast.external_links.itunes || '')}
         </View>
 
-        {/* Episodes List */}
-        <View style={styles.episodesSection}>        
-          {podcastDetail?.data?.feed?.items && podcastDetail.data.feed.items.length > 0 ? (
-            <FlatList
-              data={podcastDetail.data.feed.items}
-              keyExtractor={(item) => item.id.toString()}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <PodcastEpisodeCard 
+
+      </View>
+
+      {/* Episodes List */}
+      <View style={styles.episodesSection}>
+        {podcastDetail?.data?.feed?.items && podcastDetail.data.feed.items.length > 0 ? (
+          <FlatList
+            data={podcastDetail.data.feed.items}
+            keyExtractor={(item) => item.id.toString()}
+            scrollEnabled={false}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <PodcastEpisodeCard
                   episode={item}
-                  podName={podcast.name}
                   onPress={() => handleEpisodePress(item.id, item.title)}
-                />
-              )}
-            />
-          ) : (
-            <View style={styles.noEpisodesContainer}>
-              <Text style={styles.noEpisodesText}>No episodes available</Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
-      <AudioFooter />
+                  podName={item.title}
+              />
+            )}
+          />
+        ) : (
+          <View style={styles.noEpisodesContainer}>
+            <Text style={styles.noEpisodesText}>No episodes available</Text>
+          </View>
+        )}
+      </View>
+    </ScrollView>
+    <AudioFooter />
     </>
   );
 };

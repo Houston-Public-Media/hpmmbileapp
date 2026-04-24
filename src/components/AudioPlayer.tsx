@@ -3,7 +3,7 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
-import { AudioState } from '../services/HPMAudioService'
+import { State } from 'react-native-track-player';
 
 interface AudioPlayerProps {
 	src: string;
@@ -46,9 +46,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, subtitle, thumbna
 	const onPlayPause = async () => {
 		try {
 			if (isThisAudio) {
-				if (state === AudioState.PLAYING) {
+				if (state === State.Playing) {
 					await pause();
-				} else if (state === AudioState.PAUSED) {
+				} else if (state === State.Paused) {
 					await resume();
 				} else {
 					await playPodcast(audioId, src, title, subtitle, "Houston Public Media");
@@ -77,7 +77,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, subtitle, thumbna
 		<View style={styles.container}>
 			<View style={styles.content}>
 				<TouchableOpacity onPress={onPlayPause} style={styles.playButton}>
-					<MaterialIcons name={state === AudioState.PLAYING ? 'play-arrow' : 'pause'} size={24} color="black" />
+					<MaterialIcons name={state === State.Playing ? 'play-arrow' : 'pause'} size={24} color="black" />
 				</TouchableOpacity>
 				<View style={styles.progressContainer}>
 					<Slider

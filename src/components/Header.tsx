@@ -8,7 +8,7 @@ import { Weather } from '../type';
 // Function to decode HTML entities
 import { cleanText } from '../utils/htmlUtils';
 
-const LogoBar: React.FC = () => {
+export const Header: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<any>>();
   const [weather, setWeather] = useState<Weather>({
     icon: '',
@@ -118,5 +118,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   }
 })
-
-export default LogoBar

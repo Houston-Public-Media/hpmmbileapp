@@ -4,8 +4,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { color } from '../utils/colorUtils';
 import { PodcastEpisode } from '../services/podcastApi';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
-import { AudioState } from '../services/HPMAudioService'
 import { decodeHtmlEntities } from '../utils/htmlUtils';
+import { State } from "react-native-track-player";
 
 interface PodcastEpisodeCardProps {
   episode: PodcastEpisode;
@@ -28,7 +28,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podNam
   // Check if this is the current episode
   const podcastId = `podcast_${episode.id}`;
   const isCurrentEpisode = isCurrentTrack(podcastId);
-  const isPlayingNow = isCurrentEpisode && state === AudioState.PLAYING;
+  const isPlayingNow = isCurrentEpisode && state === State.Playing;
   const isLoadingAudio = isCurrentEpisode && isLoading;
 
   // Optimized rotation animation for loading spinner
@@ -86,7 +86,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podNam
     <TouchableOpacity 
       style={[
         styles.card,
-        isCurrentEpisode && state === AudioState.PLAYING && styles.activeCard
+        isCurrentEpisode && state === State.Playing && styles.activeCard
       ]}
       onPress={onPress ? onPress : () => Linking.openURL(episode.permalink)}
       activeOpacity={0.7}
@@ -121,7 +121,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podNam
           
           try {
             if (episode.attachments?.url) {
-              if (isCurrentEpisode && state === AudioState.PLAYING) {
+              if (isCurrentEpisode && state === State.Playing) {
                 // Pause if currently playing
                 await pause();
               } else {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { fetchPriorityData } from '../services/newsApi';
+import { fetchPriorityData, fetchBrightcoveVideos } from '../services/newsApi';
 import NewsCard from '../components/NewsCard';
 import { color } from '../utils/colorUtils';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -10,7 +10,6 @@ import RadioSection from '../components/RadioSection';
 import TalkshowBanner from '../components/TalkshowBanner';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowCard from '../components/TalkshowCard';
-import { NewsArticle, TalkshowEntry } from '../type';
 import AdBanner from '../components/AdBanner';
 import { getSelectedCategories } from '../utils/categoryStorage';
 import SectionTitle from '../components/SectionTitle';
@@ -19,35 +18,38 @@ import AudioFooter from '../components/AudioFooter';
 import { useAds } from '../hooks/useAds';
 import BrightcoveVideo from '../components/BrightcoveVideo';
 import { useScreenTracking } from '../hooks/useAnalytics';
+import { NewsArticle, TalkshowEntry } from '../type';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 type Props = {
-	navigation: HomeScreenNavigationProp;
+  navigation: HomeScreenNavigationProp;
 };
 
 type SectionItem =
-	| { type: 'adBanner' }
-	| { type: 'featured'; data: NewsArticle }
-	| { type: 'borderNewsList'; data: NewsArticle[] }
-	| { type: 'newsList'; data: NewsArticle[] }
-	| { type: 'lastNewsList'; data: NewsArticle[] }
-	| { type: 'talkshow'; data: { showSlug: string; talkshow: TalkshowEntry }[] }
-	| { type: 'radio' }
-	| { type: 'brightcove' }
-	| { type: 'selected_category'; data:{id:string, name:string};}
+  | { type: 'adBanner' }
+  | { type: 'featured'; data: NewsArticle }
+  | { type: 'borderNewsList'; data: NewsArticle[] }
+  | { type: 'newsList'; data: NewsArticle[] }
+  | { type: 'lastNewsList'; data: NewsArticle[] }
+  | { type: 'talkshow'; data: { showSlug: string; talkshow: TalkshowEntry }[] }
+  | { type: 'radio' }
+  | { type: 'brightcove' }
+  | { type: 'selected_category'; data:{id:string, name:string};}
 
 export default function HomeScreen({ navigation }: Props) {
-	  // Track screen view
-  	useScreenTracking('Home');
-	const [articles, setArticles] = useState<NewsArticle[]>([]);
-	const [loading, setLoading] = useState<boolean>(true);
-	const [refreshing, setRefreshing] = useState<boolean>(false);
-	const [selectedCategories, setSelectedCategories] = useState<{ id: string; name: string }[]>([]);
-	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
-	const [breakingData, setBreakingData] = useState<any>(null);
+  // Track screen view
+  useScreenTracking('Home');
 
-	const { showInterstitialAd, isInterstitialLoaded } = useAds();
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [selectedCategories, setSelectedCategories] = useState<{ id: string; name: string }[]>([]);
+  const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+  const [breakingData, setBreakingData] = useState<any>(null);
+  const [brightcoveVideos, setBrightcoveVideos] = useState<any[]>([]);
+  const { showInterstitialAd, isInterstitialLoaded } = useAds();
+
 
 	const featured = articles[0];
 	const borderNewsList = articles.slice(1, 5);
@@ -55,260 +57,261 @@ export default function HomeScreen({ navigation }: Props) {
 	const lastNewsList = articles.slice(8);
 	const categoryList = selectedCategories.map(category => ({ type: "selected_category", data: category } as const));
 
-	const liveTalkshows = talkshowData
-		.filter(talkshow => talkshow.live)
-		.map(talkshow => ({
-			showSlug: talkshow.showSlug,
-			talkshow
-		}));
+  const liveTalkshows = talkshowData
+    .filter(talkshow => talkshow.live)
+    .map(talkshow => ({
+      showSlug: talkshow.showSlug,
+      talkshow
+    }));
 
-	const sections: SectionItem[] = [
-		{ type: 'adBanner' },
-		featured && { type: 'featured', data: featured },
-		{ type: 'borderNewsList', data: borderNewsList },
-		{ type: 'newsList', data: newsList },
-		...(liveTalkshows.length > 0
-			? [{ type: 'talkshow' as const, data: liveTalkshows }]
-			: [{ type: 'lastNewsList' as const, data: lastNewsList }]
-		),
-		{ type: 'radio' },
-		{ type: 'brightcove' },
-		...categoryList
-	].filter(Boolean) as SectionItem[];
+  const sections: SectionItem[] = [
+    { type: 'adBanner' },
+    featured && { type: 'featured', data: featured },
+    { type: 'borderNewsList', data: borderNewsList },
+    { type: 'newsList', data: newsList },
+    ...(liveTalkshows.length > 0
+      ? [{ type: 'talkshow' as const, data: liveTalkshows }]
+      : [{ type: 'lastNewsList' as const, data: lastNewsList }]
+    ),
+    { type: 'radio' },
+    { type: 'brightcove' },
+    ...categoryList
+  ].filter(Boolean) as SectionItem[];
 
-	const handleNewsNavigation = async (postId: number, title: string) => {
-		try {
-			if (isInterstitialLoaded && Math.random() < 0.3) {
-				await showInterstitialAd();
-			}
-			navigation.navigate('NewsDetail', { postId, title });
-		} catch {
-			navigation.navigate('NewsDetail', { postId, title });
-		}
-	};
+  const handleNewsNavigation = async (postId: number, title: string) => {
+    try {
+      if (isInterstitialLoaded && Math.random() < 0.3) {
+        await showInterstitialAd();
+      }
+      navigation.navigate('NewsDetail', { postId, title });
+    } catch {
+      navigation.navigate('NewsDetail', { postId, title });
+    }
+  };
 
-	const loadData = async () => {
-		try {
-			const data = await fetchPriorityData();
+const loadData = async () => {
+  try {
+    const data = await fetchPriorityData();
 
-			setArticles(Array.isArray(data?.articles) ? data.articles : []);
-			setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
-			setBreakingData(data?.breaking || null);
+    setArticles(Array.isArray(data?.articles) ? data.articles : []);
+    setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+    setBreakingData(data?.breaking || null);
+    const videos = await fetchBrightcoveVideos({ playlist: false, limit: 12, offset: 0, screen: false,});
+    setBrightcoveVideos(Array.isArray(videos) ? videos : []);
 
-			const categories = await getSelectedCategories();
-			setSelectedCategories(
-				categories.map(cat => ({ id: cat.id, name: cat.name }))
-			);
-			//console.log('State updated');
-		} catch (e) {
-			console.log('Home load failed', e);
-		} finally {
-			setLoading(false);
-			setRefreshing(false);
-			//console.log('loadData finished');
-		}
-	};
+    const categories = await getSelectedCategories();
+    setSelectedCategories(
+      categories.map(cat => ({ id: cat.id, name: cat.name }))
+    );
+     //console.log('State updated');
+  } catch (e) {
+    console.log('Home load failed', e);
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+    //console.log('loadData finished');
+  }
+};
 
-	useFocusEffect(
-		React.useCallback(() => {
-			loadData(); 
-			const interval = setInterval(() => {
-			loadData();
-			}, 5 * 60 * 1000); 
+useFocusEffect(
+  React.useCallback(() => {
+    loadData();
+    const interval = setInterval(() => {
+      loadData();
+    }, 5 * 60 * 1000);
 
-			return () => clearInterval(interval);
-		}, [])
-	);
+    return () => clearInterval(interval);
+  }, [])
+);
 
-	const handleRefresh = () => {
-		setRefreshing(true);
-		loadData();
-	};
+  const handleRefresh = () => {
+    loadData();
+  };
 
-	const renderSection = ({ item }: { item: SectionItem }) => {
-		switch (item.type) {
-			case 'adBanner':
-				return <View style={{ justifyContent: 'center', alignItems: 'center' }}><AdBanner /></View>;
+  const renderSection = ({ item }: { item: SectionItem }) => {
+    switch (item.type) {
+      case 'adBanner':
+        return <View style={{ justifyContent: 'center', alignItems: 'center' }}><AdBanner /></View>;
 
-			case 'featured':
-				return (
-					<View style={[styles.section, { paddingVertical: 0 }]}>
-						<NewsCard
-							onPress={() => handleNewsNavigation(item.data.id, item.data.title)}
-							onTitlePress={() => navigation.navigate('CategoryList', {
-								categoryId: item.data.primary_category.id,
-								title: item.data.primary_category.name
-							})}
-							title={item.data.primary_category.name}
-							summary={item.data.title}
-							image={item.data.picture}
-							summaryStyle={styles.featuredSummary}
-							imageContainerStyle={styles.featuredImage}
-							cardStyle={styles.featured}
-							summaryLines={3}
-						/>
-					</View>
-				);
+      case 'featured':
+        return (
+          <View style={[styles.section, { paddingVertical: 0 }]}>
+            <NewsCard
+              onPress={() => handleNewsNavigation(item.data.id, item.data.title)}
+              onTitlePress={() => navigation.navigate('CategoryList', {
+                categoryId: item.data.primary_category.id,
+                title: item.data.primary_category.name
+              })}
+              title={item.data.primary_category.name}
+              summary={item.data.title}
+              image={item.data.picture}
+              summaryStyle={styles.featuredSummary}
+              imageContainerStyle={styles.featuredImage}
+              cardStyle={styles.featured}
+              summaryLines={3}
+            />
+          </View>
+        );
 
-			case 'borderNewsList':
-				return (
-					<View style={styles.section}>
-						{item.data.map((article, idx) => (
-							<NewsCard
-								key={idx}
-								onPress={() => handleNewsNavigation(article.id, article.title)}
-								onTitlePress={() => navigation.navigate('CategoryList', {
-									categoryId: article.primary_category.id,
-									title: article.primary_category.name
-								})}
-								title={article.primary_category.name}
-								summary={article.title}
-								cardStyle={{
-									borderColor: '#ececec',
-									borderWidth: 1,
-									padding: 8,
-									marginBottom: 16
-								}}
-							/>
-						))}
-					</View>
-				);
+      case 'borderNewsList':
+        return (
+          <View style={styles.section}>
+            {item.data.map((article, idx) => (
+              <NewsCard
+                key={idx}
+                onPress={() => handleNewsNavigation(article.id, article.title)}
+                onTitlePress={() => navigation.navigate('CategoryList', {
+                  categoryId: article.primary_category.id,
+                  title: article.primary_category.name
+                })}
+                title={article.primary_category.name}
+                summary={article.title}
+                cardStyle={{
+                  borderColor: '#ececec',
+                  borderWidth: 1,
+                  padding: 8,
+                  marginBottom: 16
+                }}
+              />
+            ))}
+          </View>
+        );
 
-			case 'newsList':
-				return (
-					<View style={[styles.section, { paddingTop: 0, paddingBottom: 16 }]}>
-						{item.data.map((article, idx) => (
-							<NewsCard
-								key={idx}
-								onPress={() => handleNewsNavigation(article.id, article.title)}
-								onTitlePress={() => navigation.navigate('CategoryList', {
-									categoryId: article.primary_category.id,
-									title: article.primary_category.name
-								})}
-								title={article.primary_category.name}
-								summary={article.title}
-								image={article.picture}
-							/>
-						))}
-					</View>
-				);
+      case 'newsList':
+        return (
+          <View style={[styles.section, { paddingTop: 0, paddingBottom: 16 }]}>
+            {item.data.map((article, idx) => (
+              <NewsCard
+                key={idx}
+                onPress={() => handleNewsNavigation(article.id, article.title)}
+                onTitlePress={() => navigation.navigate('CategoryList', {
+                  categoryId: article.primary_category.id,
+                  title: article.primary_category.name
+                })}
+                title={article.primary_category.name}
+                summary={article.title}
+                image={article.picture}
+              />
+            ))}
+          </View>
+        );
 
-			case 'lastNewsList':
-				return (
-					<View style={styles.section}>
-						{item.data.map((article, idx) => (
-							<NewsCard
-								key={idx}
-								onPress={() => handleNewsNavigation(article.id, article.title)}
-								onTitlePress={() => handleNewsNavigation(article.id, article.title)}
-								title={article.title}
-								image={article.picture}
-								imageContainerStyle={{
-									width: "50%",
-									minHeight: 120,
-									marginRight: 10
-								}}
-								titleLines={10}
-								titleStyle={{
-									fontWeight: 'bold',
-									fontSize: 14,
-									marginBottom: 4,
-									color: color.secondary,
-									textTransform: 'none'
-								}}
-								cardStyle={{
-									borderColor: '#bdb9b9',
-									borderWidth: 1,
-									padding: 8,
-									marginBottom: 16,
-									backgroundColor: '#f9f6f6'
-								}}
-							/>
-						))}
-					</View>
-				);
+      case 'lastNewsList':
+        return (
+          <View style={styles.section}>
+            {item.data.map((article, idx) => (
+              <NewsCard
+                key={idx}
+                onPress={() => handleNewsNavigation(article.id, article.title)}
+                onTitlePress={() => handleNewsNavigation(article.id, article.title)}
+                title={article.title}
+                image={article.picture}
+                imageContainerStyle={{
+                  width: "50%",
+                  minHeight: 120,
+                  marginRight: 10
+                }}
+                titleLines={10}
+                titleStyle={{
+                  fontWeight: 'bold',
+                  fontSize: 14,
+                  marginBottom: 4,
+                  color: color.secondary,
+                  textTransform: 'none'
+                }}
+                cardStyle={{
+                  borderColor: '#bdb9b9',
+                  borderWidth: 1,
+                  padding: 8,
+                  marginBottom: 16,
+                  backgroundColor: '#f9f6f6'
+                }}
+              />
+            ))}
+          </View>
+        );
 
-			case 'talkshow':
-				return (
-					<View style={styles.section}>
-						{item.data.map((show, idx) => (
-							<TalkshowCard
-								key={idx}
-								talkshow={show.talkshow}
-								showSlug={show.showSlug}
-								onPress={() => {
+      case 'talkshow':
+        return (
+          <View style={styles.section}>
+            {item.data.map((show, idx) => (
+              <TalkshowCard
+                key={idx}
+                talkshow={show.talkshow}
+                showSlug={show.showSlug}
+                onPress={() => {
 
-								}}
-							/>
-						))}
-					</View>
-				);
+                }}
+              />
+            ))}
+          </View>
+        );
 
-			case 'radio':
-				return (
-					<View style={styles.section}>
-						<RadioSection />
-					</View>
-				);
+      case 'radio':
+        return (
+          <View style={styles.section}>
+            <RadioSection />
+          </View>
+        );
 
-			case 'brightcove':
-				return (
-					<View style={styles.section}>
-						<BrightcoveVideo />
-						<TouchableOpacity onPress={() => navigation.navigate('VerticalVideosScreen', {data: {breaking: breakingData, talkshow: talkshowData}})} style={styles.seeAllButton}>
-							<Text style={styles.seeAll}>View all</Text>
-						</TouchableOpacity> 
-					</View>
-				);
+		case 'brightcove':
+        return (
+        <View style={styles.section}>
+          <BrightcoveVideo videos={brightcoveVideos} />
+          <TouchableOpacity onPress={() => navigation.navigate('VerticalVideosScreen', {})} style={styles.seeAllButton}>
+            <Text style={styles.seeAll}>View all</Text>
+          </TouchableOpacity>
+        </View>
 
-			case 'selected_category':
-				return (
-					<View style={[styles.section, { paddingTop: 16 }]}>
-						<SectionTitle title={item.data.name} line={true} />
-						<CategorySection categoryId={item.data.id} categoryName={item.data.name} />
-					</View>
-				);
+      );
 
-			default:
-				return null;
-		}
-	};
+      case 'selected_category':
+        return (
+          <View style={[styles.section, { paddingTop: 16 }]}>
+            <SectionTitle title={item.data.name} line={true} />
+            <CategorySection categoryId={item.data.id} categoryName={item.data.name} />
+          </View>
+        );
 
-	if (loading && articles.length === 0) {
-		return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
-	}
+      default:
+        return null;
+    }
+  };
 
-	return (
-		<View style={styles.container}>
-			<BreakingBanner data={breakingData} />
-			<TalkshowBanner data={talkshowData}/>
-			<FlatList
-				data={sections}
-				renderItem={renderSection}
-				keyExtractor={(item, index) => `${item.type}-${index}`}
-				contentContainerStyle={styles.mainContent}
-				refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-			/>
-			{/* <SectionFooter /> */}
-			<AudioFooter />
-		</View>
-	);
+  if (loading && articles.length === 0) {
+    return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
+
+  return (
+    <View style={styles.container}>
+      <BreakingBanner data={breakingData} />
+      <TalkshowBanner data={talkshowData} />
+      <FlatList
+        data={sections}
+        renderItem={renderSection}
+        keyExtractor={(item, index) => `${item.type}-${index}`}
+        contentContainerStyle={styles.mainContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      />
+      <AudioFooter />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, backgroundColor: '#fff' },
-	mainContent: { paddingHorizontal: 16 },
-	featured: { paddingVertical: 16, flexDirection: 'column', borderBottomWidth: 0 },
-	featuredImage: { width: '100%', height: 180, marginBottom: 16 },
-	featuredSummary: { fontWeight: 'bold', fontSize: 18, marginTop: 4 },
-	section: { paddingVertical: 8 },
-	seeAllButton: {
-		padding: 8,
-		alignSelf: 'flex-end',
-	},
-	seeAll: {
-		color: '#1976d2',
-		fontWeight: '500',
-		fontSize: 13,
-	}
+  container: { flex: 1, backgroundColor: '#fff' },
+  mainContent: { paddingHorizontal: 16 },
+  featured: { paddingVertical: 16, flexDirection: 'column', borderBottomWidth: 0 },
+  featuredImage: { width: '100%', height: 180, marginBottom: 16 },
+  featuredSummary: { fontWeight: 'bold', fontSize: 18, marginTop: 4 },
+  section: { paddingVertical: 8 },
+  seeAllButton: {
+    padding: 8,
+    alignSelf: 'flex-end',
+  },
+  seeAll: {
+    color: '#1976d2',
+    fontWeight: '500',
+    fontSize: 13,
+  },
 });

@@ -1,40 +1,38 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { View, StyleSheet, FlatList,Dimensions, ActivityIndicator } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, FlatList,Dimensions, ActivityIndicator,Text} from "react-native";
 import { WebView } from "react-native-webview";
 import ScreenHeader from "../components/ScreenHeader";
 import BreakingBanner from "../components/BreakingBanner";
 import TalkshowBanner from "../components/TalkshowBanner";
-import { fetchBCVideoGrid } from "../services/newsApi";
-import { BrightcoveVideo, Breaking, TalkshowEntry } from '../type';
+import { fetchBrightcoveVideos } from "../services/newsApi";
+import { fetchPriorityData } from '../services/newsApi';
+import { NewsArticle, TalkshowEntry } from '../type';
+import { BrightcoveVideo } from '../type';
 
 const { width } = Dimensions.get("window");
 const NUM_COLUMNS = 2;
 const ITEM_MARGIN = 8; // spacing between cards
 
-type Props = {
-  data: {
-    breaking: Breaking | null,
-    talkshow: TalkshowEntry[]
-  }
-};
+const VerticalVideosScreen = () => {
+const [videos, setVideos] = useState<BrightcoveVideo[]>([]);
+const [offset, setOffset] = useState(0);
+const [loading, setLoading] = useState(false);
+const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+const [breakingData, setBreakingData] = useState<any>(null);
 
-const VerticalVideosScreen: React.FC<Props> = ({ data }) => {
-  const talkshow = useMemo(() => data.talkshow, [data]);
-  const breaking = useMemo(() => data.breaking, [data]);
-  const [videos, setVideos] = useState<BrightcoveVideo[]>([]);
-  const [offset, setOffset] = useState(0);
-  const [loading, setLoading] = useState(false);
-
-  const loadVideos = async () => {
+const loadVideos = async () => {
     if (loading) return;
     setLoading(true);
+    const data = await fetchPriorityData();
 
-    const newVideos = await fetchBCVideoGrid(offset);
+    setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+    setBreakingData(data?.breaking || null);
+
+    const newVideos = await fetchBrightcoveVideos({ playlist: false, limit: 0, offset: offset, screen: true, });
     const validVideos = newVideos.filter(v => v.id);
 
-    setVideos(prev => [...prev, ...validVideos]);
-   setOffset(prev => prev + newVideos.length);
-
+  setVideos(prev => [...prev, ...validVideos]);
+  setOffset(prev => prev + newVideos.length);
     setLoading(false);
   };
 
@@ -54,17 +52,14 @@ const VerticalVideosScreen: React.FC<Props> = ({ data }) => {
           scrollEnabled={false}
           backgroundColor="transparent"
         />
-        {/* <View style={styles.overlay}>
-          <Text style={styles.title}>{item.name}</Text>
-        </View> */}
       </View>
     );
   };
 
   return (
     <>
-      <BreakingBanner data={breaking} />
-      <TalkshowBanner data={talkshow} />
+      <BreakingBanner data={breakingData} />
+      <TalkshowBanner data={talkshowData} />
       <ScreenHeader title="HPM Shorts" description="" />
 
       <View style={styles.container}>

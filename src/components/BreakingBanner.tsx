@@ -9,15 +9,12 @@ type Props = {
   data: Breaking | null;
 };
 
-
-
 const BreakingBanner: React.FC<Props> = ({ data }) => {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const breaking = useMemo(() => data, [data]);
   if (!breaking || breaking.id === 0 || !breaking.title) {
     return null;
   }
-
   const getViewStyle = (newstype: string): ViewStyle => {
     switch (newstype) {
       case 'breakingnews':
@@ -41,7 +38,11 @@ const BreakingBanner: React.FC<Props> = ({ data }) => {
   };
 
   return (
-    <TouchableOpacity onPress={() => navigation.navigate('NewsDetail', { postId: breaking.id })}>
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate('NewsDetail', { postId: breaking.id })
+      }
+    >
       <View style={[styles.banner, getViewStyle(breaking.type)]}>
         <Text style={[styles.bannerText, getTextStyle(breaking.type)]}>
           {breaking.title}

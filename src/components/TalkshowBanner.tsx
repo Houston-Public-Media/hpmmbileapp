@@ -12,7 +12,7 @@ const TalkshowBanner: React.FC<Props> = ({ data }) => {
   }, [data]);
   if (!liveTalkshow) return null;
 
-const { id, showName, phone, backgroundColor, textColor, } = liveTalkshow;
+  const { id, showName, phone, backgroundColor, textColor, } = liveTalkshow;
   const youtubeUrl = `https://www.youtube.com/watch?v=${id}`;
   const description = `${showName} is on air now!`;
 

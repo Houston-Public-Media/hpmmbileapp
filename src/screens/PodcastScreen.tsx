@@ -8,6 +8,8 @@ import PodcastCard from '../components/PodcastCard';
 import ScreenHeader from '../components/ScreenHeader';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
+import { fetchPriorityData } from '../services/newsApi';
+import { NewsArticle, TalkshowEntry } from '../type';
 
 type PodcastScreenNavigationProp = StackNavigationProp<PodcastStackParamList, 'PodcastList'>;
 
@@ -15,11 +17,21 @@ const PodcastScreen = () => {
   const navigation = useNavigation<PodcastScreenNavigationProp>();
   const [podcasts, setPodcasts] = useState<Podcast[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+  const [breakingData, setBreakingData] = useState<any>(null);
 
   useEffect(() => {
     fetchHPMPodcasts()
       .then(setPodcasts)
       .finally(() => setLoading(false));
+
+    fetchPriorityData()
+    .then(data => {
+      setBreakingData(data?.breaking || null);
+      setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+    })
+    .catch(err => console.log(err));
+
   }, []);
 
   if (loading) {
@@ -28,9 +40,9 @@ const PodcastScreen = () => {
 
   return (
     <>
-      <BreakingBanner />
-      <TalkshowBanner />
-      <ScreenHeader 
+      <BreakingBanner data={breakingData} />
+      <TalkshowBanner data={talkshowData} />
+      <ScreenHeader
         title="Podcasts"
         description="All of Houston Public Media's podcasting information, including links, content, and more"
       />
@@ -41,7 +53,7 @@ const PodcastScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
         renderItem={({ item }) => (
-          <PodcastCard 
+          <PodcastCard
             podcast={item}
             onPress={() => navigation.navigate('PodcastDetails', { podcast: item })}
           />

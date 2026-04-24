@@ -7,6 +7,7 @@ google-services.json
 package-lock.json
 Podfile.lock
 .vscode/
+.idea/
 
 # Expo
 .expo/

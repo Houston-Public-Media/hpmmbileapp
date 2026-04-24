@@ -4,22 +4,16 @@ import TrackPlayer, {
 	AppKilledPlaybackBehavior,
 	Capability,
 	Event,
-	State,
-	Track as TPTrack,
 	RepeatMode,
+	State,
+	IOSCategoryOptions,
+	Track as TPTrack,
 } from 'react-native-track-player';
 
 // Audio source types
 export enum AudioType {
 	LIVE_STREAM = 'hls',
 	PODCAST = 'default'
-}
-
-export enum AudioState {
-	STOPPED = 'STOPPED',
-	PLAYING = 'PLAYING',
-	PAUSED = 'PAUSED',
-	LOADING = 'LOADING'
 }
 
 // Track interface with extended metadata
@@ -41,7 +35,7 @@ export interface AudioTrack {
 // Player state interface
 export interface HPMAudioState {
 	currentTrack: AudioTrack | null;
-	state: AudioState;
+	state: State;
 	position: number;
 	duration: number;
 	canSeek: boolean;
@@ -69,12 +63,12 @@ export interface Station {
 class HPMAudioService {
 	private state: HPMAudioState = {
 		currentTrack: null,
-		state: AudioState.STOPPED,
+		state: State.Stopped,
 		position: 0,
 		duration: 0,
 		canSeek: false,
 		queue: [],
-		repeatMode: RepeatMode.Off,
+		repeatMode: RepeatMode.Off
 	};
 
 	private isInitialized = false;
@@ -89,7 +83,7 @@ class HPMAudioService {
 	 */
 	async initialize(): Promise<boolean> {
 		if (this.isInitialized) {
-			console.log('HPM Audio Service already initialized');
+			//console.log('HPM Audio Service already initialized');
 			return true;
 		}
 
@@ -100,7 +94,10 @@ class HPMAudioService {
 			console.log('HPM Audio Service: Setting up TrackPlayer...');
 			await TrackPlayer.setupPlayer({
 				autoHandleInterruptions: true,
-				autoUpdateMetadata: true
+				autoUpdateMetadata: true,
+				iosCategoryOptions: [
+					IOSCategoryOptions.AllowAirPlay,
+				]
 			});
 			console.log('HPM Audio Service: TrackPlayer setup complete');
 
@@ -133,7 +130,7 @@ class HPMAudioService {
 		} catch (error) {
 			// If already initialized, that's okay
 			if (error instanceof Error && error.message.includes('already been initialized')) {
-				console.log('HPM Audio Service was already initialized');
+				//console.log('HPM Audio Service was already initialized');
 				this.isInitialized = true;
 				return true;
 			}
@@ -153,15 +150,7 @@ class HPMAudioService {
 		// Listen to playback state changes
 		TrackPlayer.addEventListener(Event.PlaybackState, async (event) => {
 			const { state } = event;
-			if (state === State.Playing) {
-				this.state.state = AudioState.PLAYING;
-			} else if (state === State.Buffering || state === State.Loading) {
-				this.state.state = AudioState.LOADING;
-			} else if (state === State.Paused) {
-				this.state.state = AudioState.PAUSED;
-			} else if (state === State.Stopped || state === State.Ready) {
-				this.state.state = AudioState.STOPPED;
-			}
+			this.state.state = state as State;
 			this.notifyStateChange();
 		});
 
@@ -184,7 +173,6 @@ class HPMAudioService {
 		// Listen to playback errors
 		TrackPlayer.addEventListener(Event.PlaybackError, (event) => {
 			console.error('Playback error:', event);
-			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
 		});
 
@@ -202,8 +190,33 @@ class HPMAudioService {
 
 		// Listen to queue end
 		TrackPlayer.addEventListener(Event.PlaybackQueueEnded, () => {
-			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
+		});
+
+		TrackPlayer.addEventListener(Event.MetadataTimedReceived, (event) => {
+			const meta = event.metadata[0].raw;
+			meta.forEach((item) => {
+				if (item.keySpace === 'org.id3') {
+					const url = new URL('https://www.houstonpublicmedia.org/?' + item.value);
+					const artist= url.searchParams.get('artist') || '';
+					const title = url.searchParams.get('title') || '';
+					const album = url.searchParams.get('album') || '';
+					if (artist !== '' && title !== '' && this.state.currentTrack !== null) {
+						this.state.currentTrack.artist = artist;
+						this.state.currentTrack.title = title;
+						TrackPlayer.getActiveTrack().then(r => {
+							let track = r;
+							if (track !== undefined && track.artist !== artist && track.title !== title) {
+								track.artist = artist;
+								track.title = title;
+								TrackPlayer.updateNowPlayingMetadata(track);
+							}
+						})
+						this.notifyStateChange();
+					}
+				}
+			});
+
 		});
 	}
 
@@ -225,8 +238,7 @@ class HPMAudioService {
 		this.liveStreamsPromise = this._loadLiveStreamsInternal();
 
 		try {
-			const tracks = await this.liveStreamsPromise;
-			return tracks;
+			return await this.liveStreamsPromise;
 		} catch (error) {
 			this.liveStreamsPromise = null;
 			throw error;
@@ -238,24 +250,19 @@ class HPMAudioService {
 	 */
 	private async _loadLiveStreamsInternal(): Promise<AudioTrack[]> {
 		try {
-			console.log('HPMAudioService: Fetching audio metadata from S3...');
-		
 			// Fetch audio metadata with timeout
 			const audioResponse = await Promise.race([
 				fetch('https://cdn.houstonpublicmedia.org/assets/nowplay/all.json'),
 				new Promise<never>((_, reject) => 
-					setTimeout(() => reject(new Error('Timeout fetching audio metadata')), 10000)
+					setTimeout(() => reject(new Error('Timeout fetching Now Playing')), 10000)
 				)
 			]);
 		
 			if (!audioResponse.ok) {
-				throw new Error(`Failed to fetch audio metadata: ${audioResponse.status} ${audioResponse.statusText}`);
+				throw new Error(`Failed to fetch Now Playing: ${audioResponse.status} ${audioResponse.statusText}`);
 			}
 		
 			const audioData = await audioResponse.json();
-			console.log('HPMAudioService: Audio metadata fetched successfully');
-
-			console.log('HPMAudioService: Fetching streams list from CDN...');
 			if ( this.playListData.length === 0 ) {
 				// Fetch streams with timeout
 				const response = await Promise.race([
@@ -269,7 +276,6 @@ class HPMAudioService {
 					throw new Error(`Failed to fetch streams list: ${response.status} ${response.statusText}`);
 				}
 				const playListDataPull: { audio: any[] } = await response.json();
-				console.log(`HPMAudioService: Fetched ${playListDataPull.audio?.length || 0} stream(s) from CDN`);
 
 				if (!playListDataPull.audio || playListDataPull.audio.length === 0) {
 					throw new Error('No audio streams found in playlist data');
@@ -292,12 +298,9 @@ class HPMAudioService {
 					url: track.hlsSource,
 					isLiveStream: true
 				};
-				console.log(`HPMAudioService: Track ${index + 1}: ${audioTrack.title} - URL: ${audioTrack.url ? 'Valid' : 'Missing'}`);
 				return audioTrack;
 			})
 			.filter((track) => track.url && track.url.trim() !== '');
-
-			console.log(`HPMAudioService: Filtered to ${tracks.length} valid tracks`);
 
 			if (tracks.length === 0) {
 				throw new Error('No valid live stream tracks found - all tracks missing URLs');
@@ -306,8 +309,6 @@ class HPMAudioService {
 			// Cache tracks
 			this.liveStreamTracks = tracks;
 			tracks.forEach((track) => this.trackRegistry.set(track.id, track));
-
-			console.log(`HPMAudioService: Successfully loaded ${tracks.length} live stream tracks`);
 			return tracks;
 		} catch (error) {
 			console.error('HPMAudioService: Error loading live stream tracks:', error);
@@ -330,8 +331,7 @@ class HPMAudioService {
 		this.liveStreamsPromise = this._loadLiveStreamsInternal();
 
 		try {
-			const tracks = await this.liveStreamsPromise;
-			return tracks;
+			return await this.liveStreamsPromise;
 		} catch (error) {
 			this.liveStreamsPromise = null;
 			throw error;
@@ -366,7 +366,6 @@ class HPMAudioService {
 			}
 
 			// Set loading state
-			this.state.state = AudioState.LOADING;
 			this.state.currentTrack = track;
 			this.notifyStateChange();
 
@@ -402,19 +401,16 @@ class HPMAudioService {
 			}
 
 			// Update state
-			this.state.state = AudioState.PLAYING;
 			this.state.currentTrack = track;
 
 			// Add timeout to clear loading state if playback doesn't start
 			setTimeout(() => {
-				if (this.state.state === AudioState.LOADING && this.state.currentTrack?.id === track.id) {
-					this.state.state = AudioState.PLAYING;
+				if (this.state.state === State.Loading && this.state.currentTrack?.id === track.id) {
 					this.notifyStateChange();
 				}
 			}, 3000);
 		} catch (error) {
 			console.error('Error playing track:', error);
-			this.state.state = AudioState.STOPPED;
 			this.state.currentTrack = null;
 			this.notifyStateChange();
 			throw error;
@@ -481,7 +477,7 @@ class HPMAudioService {
 			
 			// If same track, toggle play/pause
 			if (currentTrack && currentTrack.id === trackId) {
-				if (this.state.state = AudioState.PLAYING) {
+				if (this.state.state === State.Playing) {
 					await this.pause();
 				} else {
 					await this.resume();
@@ -511,14 +507,12 @@ class HPMAudioService {
 	 */
 	async pause(): Promise<void> {
 		try {
-			if (this.state.state = AudioState.PLAYING) {
+			if (this.state.state === State.Playing) {
 				await TrackPlayer.pause();
-				this.state.state = AudioState.PAUSED;
 				this.notifyStateChange();
 			}
 		} catch (error) {
 			console.error('Error pausing track:', error);
-			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
 		}
 	}
@@ -529,11 +523,9 @@ class HPMAudioService {
 	async resume(): Promise<void> {
 		try {
 			await TrackPlayer.play();
-			this.state.state = AudioState.PLAYING;
 			this.notifyStateChange();
 		} catch (error) {
 			console.error('Error resuming track:', error);
-			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
 			throw error;
 		}
@@ -544,15 +536,13 @@ class HPMAudioService {
 	 */
 	async stop(): Promise<void> {
 		try {
-			if (this.state.state === AudioState.PLAYING) {
+			if (this.state.state === State.Playing) {
 				await TrackPlayer.stop();
-				this.state.state = AudioState.STOPPED;
 				this.state.currentTrack = null;
 				this.notifyStateChange();
 			}
 		} catch (error) {
 			console.error('Error stopping track:', error);
-			this.state.state = AudioState.STOPPED;
 			this.notifyStateChange();
 		}
 	}
@@ -574,9 +564,8 @@ class HPMAudioService {
 	 */
 	async seekForward(seconds: number = 10): Promise<void> {
 		try {
-			const position = await TrackPlayer.getPosition();
-			const duration = await TrackPlayer.getDuration();
-			const newPosition = Math.min(position + seconds, duration || position + seconds);
+			const progress = await TrackPlayer.getProgress();
+			const newPosition = Math.min(progress.position + seconds, progress.duration || progress.position + seconds);
 			await this.seekTo(newPosition);
 		} catch (error) {
 			console.error('Error seeking forward:', error);
@@ -589,8 +578,8 @@ class HPMAudioService {
 	 */
 	async seekBackward(seconds: number = 10): Promise<void> {
 		try {
-			const position = await TrackPlayer.getPosition();
-			const newPosition = Math.max(position - seconds, 0);
+			const progress = await TrackPlayer.getProgress();
+			const newPosition = Math.max(progress.position - seconds, 0);
 			await this.seekTo(newPosition);
 		} catch (error) {
 			console.error('Error seeking backward:', error);
@@ -678,7 +667,7 @@ class HPMAudioService {
 	isTrackPlaying(trackId: string): boolean {
 		return (
 			this.state.currentTrack?.id === trackId &&
-			this.state.state === AudioState.PLAYING
+			this.state.state === State.Playing
 		);
 	}
 
@@ -720,12 +709,12 @@ class HPMAudioService {
 
 			this.state = {
 				currentTrack: null,
-				state: AudioState.STOPPED,
+				state: State.Stopped,
 				position: 0,
 				duration: 0,
 				canSeek: false,
 				queue: [],
-				repeatMode: RepeatMode.Off,
+				repeatMode: RepeatMode.Off
 			};
 
 			this.stateChangeListeners.clear();

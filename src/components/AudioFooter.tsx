@@ -3,7 +3,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-na
 import { useHPMAudio } from '../contexts/HPMAudioContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { color } from '../utils/colorUtils';
-import { AudioState } from '../services/HPMAudioService'
+import { State } from 'react-native-track-player';
 
 const AudioFooter = () => {
 	// Use universal audio context
@@ -40,7 +40,7 @@ const AudioFooter = () => {
 			Alert.alert('Playback Error', errorMessage);
 		}
 	};
-	if ( state !== AudioState.PLAYING && state !== AudioState.PAUSED ) {
+	if ( state !== State.Playing && state !== State.Paused && state !== State.Buffering && state !== State.Loading ) {
 		return;
 	}
 	if (currentTrack === null) {
@@ -83,14 +83,14 @@ const AudioFooter = () => {
 					<TouchableOpacity
 						style={[
 							styles.mainPlayButton,
-							state === AudioState.PLAYING && styles.pauseButton,
+							state === State.Playing && styles.pauseButton,
 						]}
 						onPress={() => onPlayPausePress(currentTrack.id)}
 					>
 						<View style={styles.buttonIconContainer}>
 							<View style={styles.iconWrapper}>
 								<MaterialIcons 
-									name={state === AudioState.PLAYING ? 'pause' : 'play-arrow'} 
+									name={state === State.Playing ? 'pause' : 'play-arrow'}
 									size={22} 
 									color="#fff" 
 								/>

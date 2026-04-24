@@ -1,15 +1,9 @@
-// [FIXME] There are 2 audio contexts (Universal & Listen Live), with 5 services (HTML Audio, Track Player, Universal Audio, Listen Live, and Playback)
-// Can we collapse these down to 1 context and 1 service? The app currently exists inside of the Universal Audio Context so using the Universal Service would make sense
-// Let's see if we can build one service off of the React Native Track Player to handle the 2 audio types we have (live stream and static MP3s) [FIXME]
-
 // src/contexts/HPMAudioContext.tsx
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
 	hpmAudioService,
 	AudioTrack,
-	AudioType,
-	AudioState,
 	HPMAudioState,
 } from '../services/HPMAudioService';
 

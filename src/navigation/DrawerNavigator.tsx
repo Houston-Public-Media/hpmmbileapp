@@ -2,7 +2,7 @@ import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import BottomTabNavigator from './BottomTabNavigator';
 import SettingsScreen from '../screens/ProfileScreen';
-import LogoBar from '../components/LogoBar';
+import { Header } from '../components/Header';
 
 const Drawer = createDrawerNavigator();
 
@@ -10,7 +10,7 @@ const DrawerNavigator = () => (
   <Drawer.Navigator
     screenOptions={{
       headerShown: true,
-      header: () => <LogoBar />,
+      header: () => <Header />,
       drawerType: 'slide',
       drawerStyle: { width: 220 },
     }}
