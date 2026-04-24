@@ -80,7 +80,7 @@ export const UniversalAudioProvider: React.FC<UniversalAudioProviderProps> = ({ 
         const success = await universalAudioService.initialize();
         if (success) {
           setIsInitialized(true);
-          console.log('UniversalAudioContext: Universal Audio Service initialized successfully');
+          //console.log('UniversalAudioContext: Universal Audio Service initialized successfully');
         } else {
           const errorMsg = 'Failed to initialize audio service';
           console.error('UniversalAudioContext:', errorMsg);

@@ -31,13 +31,13 @@ export const ListenLiveProvider: React.FC<ListenLiveProviderProps> = ({ children
       
       // Wait for audio service to be ready (it's initialized by UniversalAudioProvider)
       // Just load the live stream tracks
-      console.log('ListenLive: Loading live stream tracks...');
+      //console.log('ListenLive: Loading live stream tracks...');
       const fetchedTracks = await universalAudioService.loadLiveStreams();
-      console.log('ListenLive: Loaded tracks:', fetchedTracks.length);
+     // console.log('ListenLive: Loaded tracks:', fetchedTracks.length);
       
       setTracks(fetchedTracks);
       setIsPlayerReady(true);
-      console.log(`ListenLive initialized successfully with ${fetchedTracks.length} tracks`);
+      //console.log(`ListenLive initialized successfully with ${fetchedTracks.length} tracks`);
     } catch (error) {
       console.error("ListenLive setup error:", error);
       
@@ -61,7 +61,7 @@ export const ListenLiveProvider: React.FC<ListenLiveProviderProps> = ({ children
       setError(errorMessage);
     } finally {
       setIsLoading(false);
-      console.log('ListenLive: Initialization complete');
+      //console.log('ListenLive: Initialization complete');
     }
   };
 
@@ -72,7 +72,7 @@ export const ListenLiveProvider: React.FC<ListenLiveProviderProps> = ({ children
   useEffect(() => {
     // Add a small delay to ensure UniversalAudioProvider is initialized first
     const timeoutId = setTimeout(() => {
-      console.log('ListenLive: Starting delayed initialization...');
+      //console.log('ListenLive: Starting delayed initialization...');
       initializeListenLiveService();
     }, 100);
 

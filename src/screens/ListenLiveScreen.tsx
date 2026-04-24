@@ -8,7 +8,7 @@ import ScreenHeader from '../components/ScreenHeader';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
 import { fetchPriorityData } from '../services/newsApi';
-import { NewsArticle, TalkshowEntry } from '../type';
+import { TalkshowEntry } from '../type';
 import { useFocusEffect } from '@react-navigation/native';
 
 function ListenLiveScreen(): JSX.Element {
@@ -20,7 +20,6 @@ function ListenLiveScreen(): JSX.Element {
   const { isPlayerReady, tracks, error, isLoading, refreshListenLiveData } = useListenLive();
   const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
   const [breakingData, setBreakingData] = useState<any>(null);
-
 
   const loadBannerData = async () => {
     try {

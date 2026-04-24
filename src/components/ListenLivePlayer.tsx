@@ -136,11 +136,7 @@ const ListenLivePlayer: React.FC<ListenLivePlayerProps> = ({ tracks }) => {
                 <MaterialIcons name="music-note" size={32} color="#666" />
               </View>
             )}
-            {isCurrentlyPlaying && (
-              <View style={styles.playingIndicator}>
-                <MaterialIcons name="volume-up" size={12} color="#fff" />
-              </View>
-            )}
+
             {isCurrentlyLoading && (
               <View style={styles.loadingIndicator}>
                 <View style={styles.indicatorIconContainer}>
