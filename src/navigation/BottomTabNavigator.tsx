@@ -17,7 +17,7 @@ const BottomTabNavigator = () => (
   <Tab.Navigator
     screenOptions={({ route }) => ({
       headerShown: false,
-      tabBarActiveTintColor: '#0077b6',
+      tabBarActiveTintColor: '#C8102E',
       tabBarInactiveTintColor: '#888',
       tabBarStyle: {
         backgroundColor: '#fff',
@@ -54,7 +54,7 @@ const BottomTabNavigator = () => (
         }
       },
        tabBarLabel: ({ focused, color }) => {        
-         return <Text style={{ color, fontSize: 13 }}>{route.name}</Text>;
+         return <Text style={{ color, fontSize: 12 }}>{route.name}</Text>;
        },
     })}
     screenListeners={{
