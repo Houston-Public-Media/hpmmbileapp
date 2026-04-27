@@ -138,7 +138,7 @@ const PodcastDetailsScreen: React.FC = () => {
               <PodcastEpisodeCard
                   episode={item}
                   onPress={() => handleEpisodePress(item.id, item.title)}
-                  podName={item.title}
+                  podName={podcast.name}
               />
             )}
           />

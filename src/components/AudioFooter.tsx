@@ -1,9 +1,10 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
-import { useHPMAudio } from '../contexts/HPMAudioContext';
-import { MaterialIcons } from '@expo/vector-icons';
-import { color } from '../utils/colorUtils';
-import { State } from 'react-native-track-player';
+import {Alert, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {useHPMAudio} from '../contexts/HPMAudioContext';
+import {MaterialIcons} from '@expo/vector-icons';
+import {color} from '../utils/colorUtils';
+import {State} from 'react-native-track-player';
+import {AudioType} from "../services/HPMAudioService";
 
 const AudioFooter = () => {
 	// Use universal audio context
@@ -46,6 +47,10 @@ const AudioFooter = () => {
 	if (currentTrack === null) {
 		return;
 	}
+	let nowPlay = currentTrack?.artist + " - " + currentTrack?.title;
+	if (currentTrack.type === AudioType.PODCAST || currentTrack.artist.includes('Houston Public Media') ) {
+		nowPlay = currentTrack.title;
+	}
 
 	return (
 		<View style={styles.trackItem}>
@@ -73,7 +78,7 @@ const AudioFooter = () => {
 						<Text style={[
 							styles.artist, styles.currentTrackArtist
 						]} numberOfLines={2}>
-							{currentTrack?.artist} - {currentTrack?.title}
+							{nowPlay}
 						</Text>
 
 					</View>
@@ -114,20 +119,15 @@ const styles = StyleSheet.create({
 		borderColor: '#e7e7e7',
 	},
 	trackItem: {
-		margin: 8,
+		// margin: 8,
 		backgroundColor: '#fff',
-		borderRadius: 14,
-		padding: 12,
-		borderWidth: 2,
-		borderColor: 'transparent',
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 0,
-			height: 3,
-		},
-		shadowOpacity: 0.1,
-		shadowRadius: 6,
-		elevation: 4,
+		paddingHorizontal: 12,
+		paddingVertical: 10,
+		borderWidth: 1,
+		borderLeftWidth: 0,
+		borderRightWidth: 0,
+		borderColor: '#808080',
+		elevation: 4
 	},
 
 	cardLayout: {
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
 		color: '#1a1a1a',
 		fontSize: 16,
 		fontWeight: '700',
-		marginBottom: 6,
+		marginBottom: 2,
 		lineHeight: 20,
 	},
 	artist: {
@@ -213,7 +213,6 @@ const styles = StyleSheet.create({
 		fontWeight: '500',
 		lineHeight: 16,
 	},
-
 	currentTrackItem: {
 		borderColor: color.primary,
 		borderWidth: 2,
@@ -233,7 +232,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 		paddingHorizontal: 8,
-		paddingTop: 8,
+		paddingTop: 0,
 		width: 48
 	},
 	seekButton: {
@@ -257,8 +256,8 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.05,
 	},
 	mainPlayButton: {
-		width: 36,
-		height: 36,
+		width: 32,
+		height: 32,
 		backgroundColor: color.primary,
 		borderRadius: 24,
 		justifyContent: 'center',
