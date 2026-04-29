@@ -11,8 +11,6 @@ import { TalkshowEntry } from '../type';
 const WatchLiveScreen = () => {
 	const userAgent =
 		Platform.OS === 'ios'
-			// ? 'HPM iOS/iPad Test App (Safari/WebKit)'
-			// : 'HPM Android Test App (Blink/Chrome)'
 			? 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
 			: 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36';
 
