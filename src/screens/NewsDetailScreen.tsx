@@ -87,56 +87,58 @@ const NewsDetailScreen = () => {
 	));
 
 	return (
-		<ScrollView
-			style={styles.container}
-			refreshControl={
-				<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-			}
-		>
-			<View style={styles.safeArea}>
-				<BreakingBanner data={breakingData} />
-				<TalkshowBanner data={talkshowData} />
-				<ScrollView style={styles.container}>
-					<View style={styles.headerContainer}>
-						<HtmlRenderer
-							htmlContent={post.title.rendered}
-							numberOfLines={4}
-							baseStyle={styles.title}
-						/>
-						<Text style={styles.date}>
+		<>
+			<ScrollView
+				style={styles.container}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+				}
+			>
+				<View style={styles.safeArea}>
+					<BreakingBanner data={breakingData} />
+					<TalkshowBanner data={talkshowData} />
+					<ScrollView style={styles.container}>
+						<View style={styles.headerContainer}>
+							<HtmlRenderer
+								htmlContent={post.title.rendered}
+								numberOfLines={4}
+								baseStyle={styles.title}
+							/>
+							<Text style={styles.date}>
 
-							{authorName
-								? authorName
-								: ''} | {new Date(post.date).toLocaleDateString('en-US', {
-							month: 'long',
-							day: 'numeric',
-							year: 'numeric',
-							hour: 'numeric',
-							minute: '2-digit',
-							hour12: true
-						})}
-						</Text>
-					</View>
-					<HtmlRenderer
-						htmlContent={post.content.rendered}
-						baseStyle={styles.htmlContent}
-						renderTextOnly={false}
-					/>
-					<View style={styles.content}>
-						{coauthors.length > 0 && (
-							<View style={styles.coauthorsSection}>
-								{coauthors.map((author, index) => (
-									<View style={styles.coauthorsItem} key={index}>
-										<CoauthorCard author={author} />
-									</View>
-								))}
-							</View>
-						)}
-					</View>
-				</ScrollView>
-			</View>
+								{authorName
+									? authorName
+									: ''} | {new Date(post.date).toLocaleDateString('en-US', {
+								month: 'long',
+								day: 'numeric',
+								year: 'numeric',
+								hour: 'numeric',
+								minute: '2-digit',
+								hour12: true
+							})}
+							</Text>
+						</View>
+						<HtmlRenderer
+							htmlContent={post.content.rendered}
+							baseStyle={styles.htmlContent}
+							renderTextOnly={false}
+						/>
+						<View style={styles.content}>
+							{coauthors.length > 0 && (
+								<View style={styles.coauthorsSection}>
+									{coauthors.map((author, index) => (
+										<View style={styles.coauthorsItem} key={index}>
+											<CoauthorCard author={author} />
+										</View>
+									))}
+								</View>
+							)}
+						</View>
+					</ScrollView>
+				</View>
+			</ScrollView>
 			<AudioFooter />
-		</ScrollView>
+		</>
 	);
 };
 

@@ -83,7 +83,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, subtitle, thumbna
 		<View style={styles.container}>
 			<View style={styles.content}>
 				<TouchableOpacity onPress={onPlayPause} style={styles.playButton}>
-					<MaterialIcons name={state === State.Playing ? 'pause' : 'play-arrow'} size={24} color="black" />
+					<MaterialIcons name={(state === State.Playing && isThisAudio) ? 'pause' : 'play-arrow'} size={24} color="black" />
 				</TouchableOpacity>
 				<View style={styles.progressContainer}>
 					<Slider

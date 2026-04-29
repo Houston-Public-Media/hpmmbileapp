@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, FlatList, ActivityIndicator, ScrollView, RefreshControl} from "react-native";
+import { View, StyleSheet, FlatList, ActivityIndicator } from "react-native";
 import { WebView } from "react-native-webview";
 import ScreenHeader from "../components/ScreenHeader";
 import BreakingBanner from "../components/BreakingBanner";
@@ -7,6 +7,8 @@ import TalkshowBanner from "../components/TalkshowBanner";
 import { fetchBrightcoveVideos, fetchPriorityData } from '../services/newsApi';
 import { TalkshowEntry, BrightcoveVideo } from '../type';
 import AudioFooter from "../components/AudioFooter";
+import { useHPMAudio } from "../contexts/HPMAudioContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 const NUM_COLUMNS = 2;
 const ITEM_MARGIN = 8; // spacing between cards
@@ -18,6 +20,7 @@ const VerticalVideosScreen = () => {
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 	const [breakingData, setBreakingData] = useState<any>(null);
 	const [refreshing, setRefreshing] = useState(false);
+	const { pause } = useHPMAudio();
 	const loadVideos = async () => {
 		if (loading) return;
 		setLoading(true);
@@ -35,12 +38,12 @@ const VerticalVideosScreen = () => {
 		setRefreshing(true);
 		await loadVideos();
 		setRefreshing(false);
-	}, []);
+	}, [loadVideos]);
 
 
 	useEffect(() => {
 		loadVideos();
-	}, []);
+	}, [loadVideos]);
 
 	const renderItem = ({ item }: { item: BrightcoveVideo }) => {
 		return (
