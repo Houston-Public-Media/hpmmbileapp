@@ -17,7 +17,7 @@ class InterstitialAdService {
 
 	async loadInterstitialAd(): Promise<boolean> {
 		if (this.isLoading) {
-			//console.log('⚠️ Interstitial ad is already loading');
+			//console.log('⚠Interstitial ad is already loading');
 			return false;
 		}
 
@@ -37,17 +37,17 @@ class InterstitialAdService {
 
 			// Set up event listeners
 			this.interstitialAd.addAdEventListener(AdEventType.LOADED, () => {
-				//console.log('✅ Interstitial ad loaded successfully');
+				//console.log('Interstitial ad loaded successfully');
 				this.isLoading = false;
 			});
 
 			this.interstitialAd.addAdEventListener(AdEventType.ERROR, (error) => {
-				// console.error('❌ Interstitial ad error:', error);
+				// console.error('Interstitial ad error:', error);
 				this.isLoading = false;
 			});
 
 			this.interstitialAd.addAdEventListener(AdEventType.CLOSED, () => {
-				// console.log('📱 Interstitial ad closed');
+				// console.log('Interstitial ad closed');
 				this.interstitialAd = null;
 			});
 
@@ -55,7 +55,7 @@ class InterstitialAdService {
 			await this.interstitialAd.load();
 			return true;
 		} catch (error) {
-			//console.error('❌ Error loading interstitial ad:', error);
+			//console.error('Error loading interstitial ad:', error);
 			this.isLoading = false;
 			return false;
 		}
@@ -63,7 +63,7 @@ class InterstitialAdService {
 
 	async showInterstitialAd(): Promise<boolean> {
 		if (!this.interstitialAd) {
-			console.log('⚠️ No interstitial ad loaded');
+			console.log('No interstitial ad loaded');
 			return false;
 		}
 
@@ -71,7 +71,7 @@ class InterstitialAdService {
 			await this.interstitialAd.show();
 			return true;
 		} catch (error) {
-			//console.error('❌ Error showing interstitial ad:', error);
+			//console.error('Error showing interstitial ad:', error);
 			return false;
 		}
 	}

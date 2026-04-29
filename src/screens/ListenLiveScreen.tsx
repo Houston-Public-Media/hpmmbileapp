@@ -1,5 +1,5 @@
-import React, { JSX, useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { JSX, useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity, ScrollView, RefreshControl, FlatList } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ListenLivePlayer from '../components/ListenLivePlayer';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
@@ -9,17 +9,17 @@ import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
 import { fetchPriorityData } from '../services/newsApi';
 import { TalkshowEntry } from '../type';
-import { useFocusEffect } from '@react-navigation/native';
 import AudioFooter from '../components/AudioFooter';
 
 function ListenLiveScreen(): JSX.Element {
 	const { isPlayerReady, error, tracks, isLoading, loadLiveStreams } = useHPMAudio();
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 	const [breakingData, setBreakingData] = useState<any>(null);
-
+	const [refreshing, setRefreshing] = useState(false);
 	const loadBannerData = async () => {
 		try {
 			const data = await fetchPriorityData();
+
 			setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
 			setBreakingData(data?.breaking || null);
 		} catch (e) {
@@ -27,16 +27,14 @@ function ListenLiveScreen(): JSX.Element {
 		}
 	};
 
-	useFocusEffect(
-		useCallback(() => {
-			loadBannerData();
-			const interval = setInterval(() => {
-				loadBannerData();
-			}, 60 * 1000);
-
-			return () => clearInterval(interval);
-		}, [])
-	);
+	useEffect(() => {
+		loadBannerData();
+	}, []);
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await loadBannerData();
+		setRefreshing(false);
+	}, []);
 
 	if (isLoading) {
 		return (
@@ -81,18 +79,31 @@ function ListenLiveScreen(): JSX.Element {
 
 	return (
 		<>
-			<BreakingBanner data={breakingData} />
-			<TalkshowBanner data={talkshowData} />
-			<ScreenHeader
-				title="Listen Live"
-				description="Stream Houston Public Media's live radio channels including News 88.7, Classical, and more"
-			/>
-			<ScrollView style={styles.container}>
-				<Text style={styles.header}>Live Streams</Text>
-				{
-					tracks.map((track, index) => <ListenLivePlayer key={index} track={track} /> )
+			<FlatList
+				data={[]} // no actual list items
+				keyExtractor={(_, i) => i.toString()}
+				renderItem={null}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
 				}
-			</ScrollView>
+				ListHeaderComponent={
+					<>
+						<BreakingBanner data={breakingData} />
+						<TalkshowBanner data={talkshowData} />
+						<ScreenHeader
+							title="Listen Live"
+							description="Stream Houston Public Media's live radio channels including News 88.7, Classical, and more"
+						/>
+						<ScrollView style={styles.container}>
+							<Text style={styles.header}>Live Streams</Text>
+							{
+								tracks.map((track, index) => <ListenLivePlayer key={index} track={track} /> )
+							}
+						</ScrollView>
+
+					</>
+				}
+			/>
 			<AudioFooter />
 		</>
 	);

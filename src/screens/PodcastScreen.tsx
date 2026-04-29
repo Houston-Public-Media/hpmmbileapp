@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, ActivityIndicator, StyleSheet } from 'react-native';
+import { FlatList, ActivityIndicator, StyleSheet, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { fetchHPMPodcasts, Podcast } from '../services/podcastApi';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -20,20 +20,28 @@ const PodcastScreen = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 	const [breakingData, setBreakingData] = useState<any>(null);
+	const [refreshing, setRefreshing] = useState(false);
 
+	const loadData = async () => {
+		try {
+			const podcastData = await fetchHPMPodcasts();
+			setPodcasts(podcastData);
+			const priorityData = await fetchPriorityData();
+			setBreakingData(priorityData?.breaking || null);
+			setTalkshowData(Array.isArray(priorityData?.talkshow) ? priorityData.talkshow : []);
+		} catch (err) {
+			console.log(err);
+		}
+	};
 	useEffect(() => {
-		fetchHPMPodcasts()
-			.then(setPodcasts)
-			.finally(() => setLoading(false));
-
-		fetchPriorityData()
-			.then(data => {
-				setBreakingData(data?.breaking || null);
-				setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
-			})
-			.catch(err => console.log(err));
-
+		loadData().finally(() => setLoading(false));
 	}, []);
+
+	const onRefresh = async () => {
+		setRefreshing(true);
+		await loadData();
+		setRefreshing(false);
+	};
 
 	if (loading) {
 		return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
@@ -41,18 +49,24 @@ const PodcastScreen = () => {
 
 	return (
 		<>
-			<BreakingBanner data={breakingData} />
-			<TalkshowBanner data={talkshowData} />
-			<ScreenHeader
-				title="Podcasts"
-				description="All of Houston Public Media's podcasting information, including links, content, and more"
-			/>
-
 			<FlatList
 				data={podcasts}
 				keyExtractor={item => item.id.toString()}
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={styles.listContainer}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+				}
+				ListHeaderComponent={
+					<>
+						<BreakingBanner data={breakingData} />
+						<TalkshowBanner data={talkshowData} />
+						<ScreenHeader
+							title="Podcasts"
+							description="All of Houston Public Media's podcasting information, including links, content, and more"
+						/>
+					</>
+				}
 				renderItem={({ item }) => (
 					<PodcastCard
 						podcast={item}

@@ -27,42 +27,36 @@ const CategoryListScreen = () => {
 	const categoryId = route.params?.categoryId || 0;
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 	const [breakingData, setBreakingData] = useState<any>(null);
+	const [refreshing, setRefreshing] = useState(false);
 
-	useEffect(() => {
-		fetchPriorityData()
-			.then(data => {
-				setBreakingData(data?.breaking || null);
-				setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
-			})
-			.catch(err => console.log(err));
-
-	}, []);
-
-	// Number of lines to show in the list view
 	const numberOfLines = 3;
 	const title = route.params?.title || "";
 
+	const loadArticles = async () => {
+		try {
+			setLoading(true);
+			const data = await fetchPriorityData();
+			setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+			setBreakingData(data?.breaking || null);
+			const categoryArticles = await fetchNewsByCategoryId(categoryId);
+			setArticles(categoryArticles);
+		} catch (error) {
+		} finally {
+			setLoading(false);
+		}
+	};
 	useEffect(() => {
-		// Set the header title to the category name
 		navigation.setOptions({
 			title: `${title}`,
 		});
-
-		// Fetch articles by category
-		const loadArticles = async () => {
-			try {
-				setLoading(true);
-				const categoryArticles = await fetchNewsByCategoryId(categoryId);
-				setArticles(categoryArticles);
-			} catch (error) {
-				//console.error('Error loading category articles:', error);
-			} finally {
-				setLoading(false);
-			}
-		};
-
 		loadArticles();
 	}, [categoryId, title, navigation]);
+
+	const onRefresh = async () => {
+		setRefreshing(true);
+		await loadArticles();
+		setRefreshing(false);
+	};
 
 	if (loading) {
 		return <ActivityIndicator size="large" style={styles.loader} />;
@@ -81,6 +75,8 @@ const CategoryListScreen = () => {
 			<BreakingBanner data={breakingData} />
 			<TalkshowBanner data={talkshowData} />
 			<FlatList
+				refreshing={refreshing}
+				onRefresh={onRefresh}
 				data={articles}
 				keyExtractor={item => item.id.toString()}
 				renderItem={({ item }) => (

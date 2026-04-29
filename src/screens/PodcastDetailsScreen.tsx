@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, StyleSheet, Image, ScrollView, RefreshControl } from 'react-native';
 import { fetchHPMPodcastDetails, fetchHPMPodcasts, PodcastDetails, Podcast } from '../services/podcastApi';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import PodcastEpisodeCard from '../components/PodcastEpisodeCard';
@@ -22,6 +22,7 @@ const PodcastDetailsScreen: React.FC = () => {
 	const [externalLinks, setExternalLinks] = useState<Podcast['external_links'] | null>(null);
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 	const [breakingData, setBreakingData] = useState<any>(null);
+	const [refreshing, setRefreshing] = useState(false);
 
 	const handleEpisodePress = (episodeId: number, episodeTitle: string) => {
 		(navigation as any).navigate('NewsDetail', {
@@ -30,30 +31,38 @@ const PodcastDetailsScreen: React.FC = () => {
 		});
 	};
 
-	useEffect(() => {
-		const loadData = async () => {
-			try {
-				if (podcast.feed_json) {
-					const details = await fetchHPMPodcastDetails(podcast.feed_json);
-					setPodcastDetail(details);
-				}
-				const podcasts = await fetchHPMPodcasts();
-				const matchingPodcast = podcasts.find(p => p.id === podcast.id);
-				if (matchingPodcast) {
-					setExternalLinks(matchingPodcast.external_links);
-				}
-				const data = await fetchPriorityData();
-				setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
-				setBreakingData(data?.breaking || null);
-
-			} catch (error) {
-				console.error('Error loading podcast data:', error);
-			} finally {
-				setLoading(false);
+	const loadData = async () => {
+		try {
+			if (podcast.feed_json) {
+				const details = await fetchHPMPodcastDetails(podcast.feed_json);
+				setPodcastDetail(details);
 			}
-		};
-		loadData();
+			const podcasts = await fetchHPMPodcasts();
+			const matchingPodcast = podcasts.find(p => p.id === podcast.id);
+			if (matchingPodcast) {
+				setExternalLinks(matchingPodcast.external_links);
+			}
+			const data = await fetchPriorityData();
+			setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+			setBreakingData(data?.breaking || null);
+
+		} catch (error) {
+			console.error('Error loading podcast data:', error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		loadData().finally(() => setLoading(false));
 	}, [podcast]);
+
+	const onRefresh = async () => {
+		setRefreshing(true);
+		await loadData();
+		setRefreshing(false);
+	};
+
 
 	if (loading) {
 		return (
@@ -99,8 +108,12 @@ const PodcastDetailsScreen: React.FC = () => {
 	podDesc = decodeHtmlEntities(podDesc);
 
 	return (
-		<>
-			<ScrollView style={styles.container}>
+		<ScrollView
+			style={styles.container}
+			contentContainerStyle={{ flexGrow: 1 }}
+			refreshControl={
+				<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+			}>
 				<BreakingBanner data={breakingData} />
 				<TalkshowBanner data={talkshowData} />
 				{/* Podcast Header */}
@@ -151,9 +164,8 @@ const PodcastDetailsScreen: React.FC = () => {
 						</View>
 					)}
 				</View>
-			</ScrollView>
 			<AudioFooter />
-		</>
+		</ScrollView>
 	);
 };
 
