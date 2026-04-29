@@ -43,11 +43,11 @@ const WatchLiveScreen = () => {
 
 	return (
 		<>
-			<ScrollView contentContainerStyle={{ flexGrow: 1 }}
-				refreshControl={
-					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-				}
-			>
+			{/*<ScrollView contentContainerStyle={{ flexGrow: 1 }}*/}
+			{/*	refreshControl={*/}
+			{/*		<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />*/}
+			{/*	}*/}
+			{/*>*/}
 				<BreakingBanner data={breakingData} />
 				<TalkshowBanner data={talkshowData} />
 				<ScreenHeader
@@ -76,7 +76,7 @@ const WatchLiveScreen = () => {
 						userAgent={userAgent}
 					/>
 				</View>
-			</ScrollView>
+			{/*</ScrollView>*/}
 			<AudioFooter />
 		</>
 	);

@@ -9,6 +9,7 @@ import TrackPlayer, {
 	State,
 	Track as TPTrack,
 } from 'react-native-track-player';
+import {Platform} from "react-native";
 
 // Audio source types
 export enum AudioType {
@@ -279,7 +280,7 @@ class HPMAudioService {
 					artist: audioData.radio?.[index]?.artist || 'Houston Public Media',
 					album: track.name || audioData.radio?.[index]?.album || '',
 					artwork: track.artwork,
-					url: track.hlsSource,
+					url: Platform.OS === 'ios' ? track.hlsSource : track.aacSource,
 					isLiveStream: true
 				};
 			})

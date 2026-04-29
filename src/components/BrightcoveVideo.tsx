@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, FlatList, Dimensions, ActivityIndicator, StyleSheet, Text } from "react-native";
+import { View, FlatList, Dimensions, ActivityIndicator, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
 import SectionTitle from './SectionTitle';
 import { BrightcoveVideo as VideoType } from "../type";
+import { useHPMAudio } from "../contexts/HPMAudioContext";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.5;
@@ -15,6 +16,7 @@ type Props = {
 
 export default function BrightcoveVideo({ videos }: Props) {
 	const [currentIndex, setCurrentIndex] = useState<number>(0);
+	const { pause } = useHPMAudio();
 
 	if (!videos || videos.length === 0) {
 		return (
@@ -24,12 +26,25 @@ export default function BrightcoveVideo({ videos }: Props) {
 		);
 	}
 	const renderItem = ({ item }: { item: VideoType }) => {
+		const INJECTED_JAVASCRIPT = `(function() {
+			document.body.style.backgroundColor = 'transparent';
+			document.querySelector('video').addEventListener('play', (event) => {
+				window.ReactNativeWebView.postMessage(JSON.stringify({'message':'video_played'}));
+			});
+		})();`;
 		return (
 			<View style={[styles.card, { marginRight: ITEM_MARGIN }]}>
 				<WebView
 					source={{ uri: item.playerUrl }}
 					style={{ width: "100%", height: "100%" }}
 					javaScriptEnabled
+					injectedJavaScript={INJECTED_JAVASCRIPT}
+					onMessage={(event) => {
+						let data = JSON.parse( event.nativeEvent.data );
+						if (data.message === 'video_played') {
+							pause();
+						}
+					}}
 					allowsFullscreenVideo
 					allowsInlineMediaPlayback
 					mediaPlaybackRequiresUserAction={false}
