@@ -1,4 +1,4 @@
-import React, { JSX, useCallback, useState } from 'react';
+import React, { JSX, useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity, ScrollView, RefreshControl, FlatList } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ListenLivePlayer from '../components/ListenLivePlayer';
@@ -15,6 +15,7 @@ function ListenLiveScreen(): JSX.Element {
   const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
   const [breakingData, setBreakingData] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+
   const loadBannerData = async () => {
     try {
       const data = await fetchPriorityData();
@@ -26,6 +27,9 @@ function ListenLiveScreen(): JSX.Element {
     }
   };
 
+  useEffect(() => {
+    loadBannerData();
+  }, []);
   const onRefresh = useCallback(async () => {
           setRefreshing(true);
           await loadBannerData();

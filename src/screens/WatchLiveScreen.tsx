@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet, Platform, ScrollView, RefreshControl } from 'react-native';
 import { WebView } from 'react-native-webview';
 import ScreenHeader from '../components/ScreenHeader';
@@ -25,6 +25,11 @@ const WatchLiveScreen = () => {
           console.log('ListenLive load failed', e);
         }
       };
+
+      useEffect(() => {
+        loadBannerData();
+      }, []);
+
       const onRefresh = useCallback(async () => {
         setRefreshing(true);
         await loadBannerData();

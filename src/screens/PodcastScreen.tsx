@@ -60,33 +60,32 @@ const onRefresh = async () => {
 
   return (
     <>
-    <FlatList
-        data={[]} // no actual list items
-        keyExtractor={(_, i) => i.toString()}
-        renderItem={null}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        />
-<BreakingBanner data={breakingData} />      
+   
+<FlatList
+  data={podcasts}
+  keyExtractor={item => item.id.toString()}
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={styles.listContainer}
+  refreshControl={
+    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+  }
+  ListHeaderComponent={
+    <>
+      <BreakingBanner data={breakingData} />
       <TalkshowBanner data={talkshowData} />
       <ScreenHeader 
         title="Podcasts"
         description="All of Houston Public Media's podcasting information, including links, content, and more"
       />
-      
-      <FlatList
-        data={podcasts}
-        keyExtractor={item => item.id.toString()}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
-        renderItem={({ item }) => (
-          <PodcastCard 
-            podcast={item}
-            onPress={() => navigation.navigate('PodcastDetails', { podcast: item })}
-          />
-        )}
-      />
+    </>
+  }
+  renderItem={({ item }) => (
+    <PodcastCard 
+      podcast={item}
+      onPress={() => navigation.navigate('PodcastDetails', { podcast: item })}
+    />
+  )}
+/>
       
     </>
   );
