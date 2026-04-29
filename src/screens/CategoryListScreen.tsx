@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Image, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '../navigation/HomeStack';
@@ -10,7 +10,8 @@ import HtmlRenderer from '../components/HtmlRenderer';
 import { decodeHtmlEntities } from '../utils/htmlUtils';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
-
+import { fetchPriorityData } from '../services/newsApi';
+import { NewsArticle, TalkshowEntry } from '../type';
 
 const stripHtml = (html: string) =>
   decodeHtmlEntities(html.replace(/<[^>]*>?/gm, ''));
@@ -24,32 +25,39 @@ const CategoryListScreen = () => {
   const [articles, setArticles] = useState<NewsDetail[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const categoryId = route.params?.categoryId || 0;
+  const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+  const [breakingData, setBreakingData] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Number of lines to show in the list view
   const numberOfLines = 3;
   const title = route.params?.title || "";
 
-  useEffect(() => {
-    // Set the header title to the category name
-    navigation.setOptions({
-      title: `${title}`,
-    });
-
-    // Fetch articles by category
-    const loadArticles = async () => {
-      try {
-        setLoading(true);
+  const loadArticles = async () => {
+    try {
+      setLoading(true);
+       const data = await fetchPriorityData();    
+          setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+          setBreakingData(data?.breaking || null);
         const categoryArticles = await fetchNewsByCategoryId(categoryId);
         setArticles(categoryArticles);
-      } catch (error) {
-        //console.error('Error loading category articles:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    } catch (error) {
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    navigation.setOptions({
+    title: `${title}`,
+  });
     loadArticles();
   }, [categoryId, title, navigation]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadArticles();
+    setRefreshing(false);
+  };
 
   if (loading) {
     return <ActivityIndicator size="large" style={styles.loader} />;
@@ -65,15 +73,15 @@ const CategoryListScreen = () => {
 
   return (
     <>
-    <BreakingBanner />
-    <TalkshowBanner />
-    <FlatList
+    <BreakingBanner data={breakingData} />      
+    <TalkshowBanner data={talkshowData} />
+    <FlatList refreshing={refreshing} onRefresh={onRefresh}
       data={articles}
       keyExtractor={item => item.id.toString()}
       renderItem={({ item }) => (
         <TouchableOpacity onPress={() => navigation.navigate('NewsDetail', { postId: item.id, title: item.title.rendered })}>
           <View style={styles.articleCard}>
-            <Image
+                       <Image
               source={{ uri: item.featured_media_url }}
               style={styles.articleImage}
               resizeMode="cover"
@@ -104,7 +112,9 @@ const CategoryListScreen = () => {
         </TouchableOpacity>
       )}
     />
+   
     </>
+    
   );
 };
 

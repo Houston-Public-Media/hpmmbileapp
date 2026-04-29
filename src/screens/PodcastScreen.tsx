@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchHPMPodcasts, Podcast } from '../services/podcastApi';
 import { useNavigation } from '@react-navigation/native';
@@ -21,6 +21,8 @@ const PodcastScreen = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
   const [breakingData, setBreakingData] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
 
   // Pause Listen Live audio when Shows screen comes into focus
   useFocusEffect(
@@ -30,20 +32,27 @@ const PodcastScreen = () => {
     }, [])
   );
 
+  const loadData = async () => {
+  try {
+    const podcastData = await fetchHPMPodcasts();
+    setPodcasts(podcastData);
+    const priorityData = await fetchPriorityData();
+    setBreakingData(priorityData?.breaking || null);
+    setTalkshowData(Array.isArray(priorityData?.talkshow) ? priorityData.talkshow : []);
+  } catch (err) {
+    console.log(err);
+  }
+};
   useEffect(() => {
-    
-    fetchHPMPodcasts()
-      .then(setPodcasts)
-      .finally(() => setLoading(false));
-
-    fetchPriorityData()
-    .then(data => {
-      setBreakingData(data?.breaking || null);
-      setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
-    })
-    .catch(err => console.log(err));
-
+  loadData().finally(() => setLoading(false));
   }, []);
+  
+const onRefresh = async () => {
+  setRefreshing(true);
+  await loadData();
+  setRefreshing(false);
+};
+
 
   if (loading) {
     return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
@@ -51,6 +60,14 @@ const PodcastScreen = () => {
 
   return (
     <>
+    <FlatList
+        data={[]} // no actual list items
+        keyExtractor={(_, i) => i.toString()}
+        renderItem={null}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        />
 <BreakingBanner data={breakingData} />      
       <TalkshowBanner data={talkshowData} />
       <ScreenHeader 
@@ -70,6 +87,7 @@ const PodcastScreen = () => {
           />
         )}
       />
+      
     </>
   );
 };

@@ -55,13 +55,11 @@ export async function fetchNewsByCategoryId(
     const ids = categoryIds;
     const url = `https://www.houstonpublicmedia.org/wp-json/wp/v2/posts/?categories=${ids}&per_page=${perPage}`;
     const response = await fetch(url);
-
     if (!response.ok) {
       const error = new Error(`HTTP error! status: ${response.status}`);
       (error as any).response = response;
       throw error;
     }
-
     const data = await response.json();
     return data;
   } catch (error) {

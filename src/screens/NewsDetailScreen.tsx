@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  ActivityIndicator,
-  StyleSheet,
-  useWindowDimensions,
-} from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, useWindowDimensions, RefreshControl, } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { fetchNewsArticleById } from '../services/newsApi';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -18,7 +11,7 @@ import TalkshowBanner from '../components/TalkshowBanner';
 import BreakingBanner from '../components/BreakingBanner';
 import { decodeHtmlEntities } from '../utils/htmlUtils';
 import { fetchPriorityData } from '../services/newsApi';
-import { NewsArticle, TalkshowEntry } from '../type';
+import { TalkshowEntry } from '../type';
 
 // Define the params expected for this screen
 type NewsDetailParams = {
@@ -36,39 +29,44 @@ const NewsDetailScreen = () => {
   const [loading, setLoading] = useState(true);
   const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
   const [breakingData, setBreakingData] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch post data
-  useEffect(() => {
-    navigation.setOptions({
-      title: decodeHtmlEntities(title || ''),
-    });
-
-    const loadPost = async () => {
-      try {
-        const data = await fetchNewsArticleById(postId);
-        const bannerData = await fetchPriorityData();
-        // console.log('data', data);
-        setPost(data);
-        if (data?.coauthors && Array.isArray(data.coauthors)) {
-          setCoauthors(data.coauthors);
-        } else {
-          //console.warn('No coauthors field found in response.');
-          setCoauthors([]); // optional: clear previous coauthors if needed
-        }
-        setTalkshowData(Array.isArray(bannerData?.talkshow) ? bannerData.talkshow : []);
+  const loadPost = async () => {
+    try {
+      const data = await fetchNewsArticleById(postId);
+      const bannerData = await fetchPriorityData();       
+      setPost(data);
+      if (data?.coauthors && Array.isArray(data.coauthors)) {
+        setCoauthors(data.coauthors);
+       } else {
+        setCoauthors([]);
+      }
+      setTalkshowData(Array.isArray(bannerData?.talkshow) ? bannerData.talkshow : []);
         setBreakingData(bannerData?.breaking || null);
-
       } catch (error) {
-        //console.error('Error loading post:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadPost();
+  useEffect(() => {
+    navigation.setOptions({
+      title: decodeHtmlEntities(title || ''),
+    });
+    const init = async () => {
+      setLoading(true);
+      await loadPost();
+      setLoading(false);
+    };
+    init();
   }, [postId, title, navigation]);
 
-  // Loading state
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadPost();
+    setRefreshing(false);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -77,7 +75,6 @@ const NewsDetailScreen = () => {
     );
   }
 
-  // Error state
   if (!post) {
     return (
       <View style={styles.errorContainer}>
@@ -90,8 +87,13 @@ const NewsDetailScreen = () => {
     author.display_name + (index < coauthors.length - 1 ? ', ' : '')
   ));
 
-  // Render post content
   return (
+    <ScrollView
+  style={styles.container}
+  refreshControl={
+    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+  }
+>
     <View style={styles.safeArea}>
       <BreakingBanner data={breakingData} />      
       <TalkshowBanner data={talkshowData} />
@@ -134,6 +136,7 @@ const NewsDetailScreen = () => {
         </View>
       </ScrollView>
     </View>
+    </ScrollView>
   );
 };
 

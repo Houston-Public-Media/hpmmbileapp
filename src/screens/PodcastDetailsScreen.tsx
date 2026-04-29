@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Linking, StyleSheet, Image, ScrollView, RefreshControl } from 'react-native';
 import { fetchHPMPodcastDetails, fetchHPMPodcasts, PodcastDetails, Podcast } from '../services/podcastApi';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import PodcastEpisodeCard from '../components/PodcastEpisodeCard';
@@ -22,6 +22,7 @@ const PodcastDetailsScreen: React.FC = () => {
   const [externalLinks, setExternalLinks] = useState<Podcast['external_links'] | null>(null);
   const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
   const [breakingData, setBreakingData] = useState<any>(null);  
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleEpisodePress = (episodeId: number, episodeTitle: string) => {
     (navigation as any).navigate('NewsDetail', {
@@ -30,8 +31,7 @@ const PodcastDetailsScreen: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    const loadData = async () => {
+const loadData = async () => {
       try {
         if (podcast.feed_json) {
           const details = await fetchHPMPodcastDetails(podcast.feed_json);
@@ -52,8 +52,17 @@ const PodcastDetailsScreen: React.FC = () => {
         setLoading(false);
       }
     };
-    loadData();
+
+  useEffect(() => { 
+    loadData().finally(() => setLoading(false));;
   }, [podcast]);
+
+const onRefresh = async () => {
+  setRefreshing(true);
+  await loadData();
+  setRefreshing(false);
+};
+
 
     if (loading) {
     return (
@@ -96,7 +105,10 @@ const PodcastDetailsScreen: React.FC = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }>
       <BreakingBanner data={breakingData} />      
       <TalkshowBanner data={talkshowData} />
       {/* Podcast Header */}

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet, FlatList,Dimensions, ActivityIndicator,Text} from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, StyleSheet, FlatList,Dimensions, ActivityIndicator,Text, ScrollView, RefreshControl} from "react-native";
 import { WebView } from "react-native-webview";
 import ScreenHeader from "../components/ScreenHeader";
 import BreakingBanner from "../components/BreakingBanner";
@@ -19,22 +19,26 @@ const [offset, setOffset] = useState(0);
 const [loading, setLoading] = useState(false);
 const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 const [breakingData, setBreakingData] = useState<any>(null);
-
+const [refreshing, setRefreshing] = useState(false);
 const loadVideos = async () => {
     if (loading) return;
     setLoading(true);
-    const data = await fetchPriorityData();
-    
+    const data = await fetchPriorityData();    
     setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
     setBreakingData(data?.breaking || null);
-
     const newVideos = await fetchBrightcoveVideos({ playlist: false, limit: 0, offset: offset, screen: true, });
     const validVideos = newVideos.filter(v => v.id);
-
-  setVideos(prev => [...prev, ...validVideos]);
-  setOffset(prev => prev + newVideos.length);
+    setVideos(prev => [...prev, ...validVideos]);
+    setOffset(prev => prev + newVideos.length);
     setLoading(false);
   };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadVideos();
+    setRefreshing(false);
+  }, []);
+  
 
   useEffect(() => {
     loadVideos();
@@ -74,7 +78,7 @@ const loadVideos = async () => {
             onEndReached={loadVideos}
             onEndReachedThreshold={0.5}
             columnWrapperStyle={{ justifyContent: "space-between" }}
-            contentContainerStyle={{ padding: ITEM_MARGIN }}
+            contentContainerStyle={{ padding: ITEM_MARGIN }} refreshing={refreshing} onRefresh={onRefresh}
           />
         )}
       </View>

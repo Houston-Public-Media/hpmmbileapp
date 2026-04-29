@@ -1,5 +1,5 @@
 import React, { JSX, useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity, ScrollView, RefreshControl, FlatList } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ListenLivePlayer from '../components/ListenLivePlayer';
 import { useListenLive } from '../contexts/ListenLiveContext';
@@ -9,18 +9,12 @@ import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
 import { fetchPriorityData } from '../services/newsApi';
 import { TalkshowEntry } from '../type';
-import { useFocusEffect } from '@react-navigation/native';
 
 function ListenLiveScreen(): JSX.Element {
-   useFocusEffect(
-    useCallback(() => {
-      //analyticsService.logScreenView('ListenLiveScreen', 'ListenLiveScreen');
-    }, [])
-  );
   const { isPlayerReady, tracks, error, isLoading, refreshListenLiveData } = useListenLive();
   const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
   const [breakingData, setBreakingData] = useState<any>(null);
-
+  const [refreshing, setRefreshing] = useState(false);
   const loadBannerData = async () => {
     try {
       const data = await fetchPriorityData();
@@ -31,16 +25,12 @@ function ListenLiveScreen(): JSX.Element {
       console.log('ListenLive load failed', e);
     }
   };
-  useFocusEffect(
-    useCallback(() => {
-      loadBannerData();
-      const interval = setInterval(() => {
-        loadBannerData();
-      }, 60 * 1000);
 
-      return () => clearInterval(interval);
-    }, [])
-  ); 
+  const onRefresh = useCallback(async () => {
+          setRefreshing(true);
+          await loadBannerData();
+          setRefreshing(false);
+        }, []);
 
   if (isLoading) {
     return (
@@ -53,6 +43,7 @@ function ListenLiveScreen(): JSX.Element {
 
   if (error) {
     return (
+      
       <View style={styles.container}>
         <MaterialIcons name="error-outline" size={64} color="#e74c3c" />
         <Text style={styles.errorText}>{error}</Text>
@@ -85,13 +76,25 @@ function ListenLiveScreen(): JSX.Element {
 
   return (
     <>
-      <BreakingBanner data={breakingData} />      
-      <TalkshowBanner data={talkshowData} />
-      <ScreenHeader 
-        title="Listen Live"
-        description="Stream Houston Public Media's live radio channels including News 88.7, Classical, and more"
-      />
-      <ListenLivePlayer tracks={tracks} />
+      <FlatList
+    data={[]} // no actual list items
+    keyExtractor={(_, i) => i.toString()}
+    renderItem={null}
+    refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+    }
+    ListHeaderComponent={
+      <>
+        <BreakingBanner data={breakingData} />
+        <TalkshowBanner data={talkshowData} />
+        <ScreenHeader 
+          title="Listen Live"
+          description="Stream Houston Public Media's live radio channels including News 88.7, Classical, and more"
+        />
+        <ListenLivePlayer tracks={tracks} />
+      </>
+    }
+  />
     </>
   );
 }
