@@ -108,12 +108,13 @@ const PodcastDetailsScreen: React.FC = () => {
 	podDesc = decodeHtmlEntities(podDesc);
 
 	return (
-		<ScrollView
-			style={styles.container}
-			contentContainerStyle={{ flexGrow: 1 }}
-			refreshControl={
-				<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-			}>
+		<>
+			<ScrollView
+				style={styles.container}
+				contentContainerStyle={{ flexGrow: 1 }}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+				}>
 				<BreakingBanner data={breakingData} />
 				<TalkshowBanner data={talkshowData} />
 				{/* Podcast Header */}
@@ -138,8 +139,6 @@ const PodcastDetailsScreen: React.FC = () => {
 						{renderPlatformIcon('amazon', externalLinks?.amazon || podcast.external_links.amazon || '')}
 						{renderPlatformIcon('itunes', externalLinks?.itunes || podcast.external_links.itunes || '')}
 					</View>
-
-
 				</View>
 
 				{/* Episodes List */}
@@ -164,8 +163,9 @@ const PodcastDetailsScreen: React.FC = () => {
 						</View>
 					)}
 				</View>
+			</ScrollView>
 			<AudioFooter />
-		</ScrollView>
+		</>
 	);
 };
 

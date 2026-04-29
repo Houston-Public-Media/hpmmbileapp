@@ -58,7 +58,7 @@ const NewsDetailScreen = () => {
 			setLoading(false);
 		};
 		init();
-	}, [postId, title, navigation, loadPost]);
+	}, [postId, title, navigation]);
 
 	const onRefresh = async () => {
 		setRefreshing(true);
@@ -134,8 +134,8 @@ const NewsDetailScreen = () => {
 						)}
 					</View>
 				</ScrollView>
-				<AudioFooter />
 			</View>
+			<AudioFooter />
 		</ScrollView>
 	);
 };
