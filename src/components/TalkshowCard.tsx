@@ -1,7 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Linking, ImageBackground, Image } from 'react-native';
-import YouTubePlayer from './YouTubePlayer';
-import { color } from '../utils/colorUtils';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  ImageBackground,
+  Image,
+} from 'react-native';
 import { TalkshowEntry } from '../type';
 import YoutubePlayerNew from 'react-native-youtube-iframe';
 
@@ -11,117 +17,86 @@ interface TalkshowCardProps {
   onPress?: () => void;
 }
 
-const TalkshowCard: React.FC<TalkshowCardProps> = ({ 
-  talkshow, 
-  showSlug, 
-  onPress 
+const TalkshowCard: React.FC<TalkshowCardProps> = ({
+  talkshow,
+  showSlug,
+  onPress,
 }) => {
-  const { live, id, title, description } = talkshow;
+  const { live, id, title } = talkshow;
   const displayName = (talkshow.showName || '').toString();
   const isHelloHouston = showSlug.includes('hello-houston');
-  const numberOfLines = 10;
+
   const playerHeight = 200;
   const liveBadgeText = 'LIVE';
   const watchLiveLabel = 'WATCH LIVE';
-  
+
   const screenWidth = Dimensions.get('window').width;
   const cardPadding = 24;
   const containerMargin = 32;
   const videoWidth = screenWidth - cardPadding - containerMargin;
 
-  return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
-      {isHelloHouston ? (
-        <ImageBackground
-          source={{ uri: 'https://cdn.houstonpublicmedia.org/assets/images/Hello-Houston_Dot-Pattern-v3.png.webp' }}
-          imageStyle={styles.bgImage}
-          style={[styles.container, styles.helloBg]}
-        >
-          <Image
-            source={{ uri: 'https://cdn.houstonpublicmedia.org/assets/images/icons/hello-houston-logo.webp' }}
-            style={styles.cornerLogo}
-          />
-          <View style={styles.innerPad}>
-            <View style={styles.header}>
-              <Text style={styles.watchLiveLabel}>{watchLiveLabel}</Text>
-              <Text style={styles.showNameLink}>{displayName}</Text>
-              {title && (
-                <Text style={styles.episodeTitle}>{title}</Text>
-              )}
-              {live && (
-                <View style={styles.liveBadge}><Text style={styles.liveText}>{liveBadgeText}</Text></View>
-              )}
-            </View>
-
-            {id && (
-              // <View style={styles.videoContainer}>
-              //   <YouTubePlayer
-              //     src={`https://www.youtube.com/embed/${id}`}
-              //     width={videoWidth}
-              //     height={playerHeight}
-              //   />
-              // </View>
-              
-      <YoutubePlayerNew
-    width={"100%"}
-    height={playerHeight}
-    play={false}   
-    videoId={id}
-    webViewProps={{
-      allowsInlineMediaPlayback: true,
-      javaScriptEnabled: true,
-      domStorageEnabled: true,
-    }}
-  />
-    
-            )}
-
-            
-          </View>
-        </ImageBackground>
-      ) : (
-        <View style={[styles.container, styles.hmBg]}>
-          <Image
-            source={{ uri: 'https://cdn.houstonpublicmedia.org/assets/images/icons/houston-matters-logo.webp' }}
-            style={styles.cornerLogo}
-          />
-          <View style={styles.header}>
-            <Text style={styles.watchLiveLabel}>{watchLiveLabel}</Text>
-            <Text style={styles.showNameLink}>{displayName}</Text>
-            {title && (
-              <Text style={styles.episodeTitle}>{title}</Text>
-            )}
-            {live && (
-              <View style={styles.liveBadge}><Text style={styles.liveText}>{liveBadgeText}</Text></View>
-            )}
-          </View>
-
-          {id && (
-            <View style={styles.videoContainer}>
-              {/* <YouTubePlayer
-                src={`https://www.youtube.com/watch?v=${id}`}
-                width={videoWidth}
-                height={playerHeight}
-              /> */}
-             
-              <YoutubePlayerNew
-    width={"100%"}
-    height={playerHeight}
-    play={false}   
-    videoId={id}
-    webViewProps={{
-      allowsInlineMediaPlayback: true,
-      javaScriptEnabled: true,
-      domStorageEnabled: true,
-    }}
-  />
-            </View>
-          )}
-
-          
+  const HeaderContent = () => (
+    <View style={styles.header}>
+      <Text style={styles.watchLiveLabel}>{watchLiveLabel}</Text>
+      <Text style={styles.showNameLink}>{displayName}</Text>
+      {title && <Text style={styles.episodeTitle}>{title}</Text>}
+      {live && (
+        <View style={styles.liveBadge}>
+          <Text style={styles.liveText}>{liveBadgeText}</Text>
         </View>
       )}
-    </TouchableOpacity>
+    </View>
+  );
+
+  const VideoPlayer = () =>
+    id ? (
+      <View style={styles.videoContainer}>
+        <YoutubePlayerNew
+          width={videoWidth}
+          height={playerHeight}
+          play={false}
+          videoId={id}
+          webViewProps={{
+            allowsInlineMediaPlayback: true,
+            javaScriptEnabled: true,
+            domStorageEnabled: true,
+          }}
+        />
+      </View>
+    ) : null;
+
+  return (
+    <View style={[styles.container, isHelloHouston ? styles.helloBg : styles.hmBg]}>
+      <Image
+        source={{
+          uri: isHelloHouston
+            ? 'https://cdn.houstonpublicmedia.org/assets/images/icons/hello-houston-logo.webp'
+            : 'https://cdn.houstonpublicmedia.org/assets/images/icons/houston-matters-logo.webp',
+        }}
+        style={styles.cornerLogo}
+      />
+
+      {/* HEADER ONLY IS CLICKABLE (safe for Samsung) */}
+      <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+        <HeaderContent />
+      </TouchableOpacity>
+
+      {isHelloHouston ? (
+        <ImageBackground
+          source={{
+            uri: 'https://cdn.houstonpublicmedia.org/assets/images/Hello-Houston_Dot-Pattern-v3.png.webp',
+          }}
+          imageStyle={styles.bgImage}
+          style={styles.innerPad}
+        >
+          <VideoPlayer />
+        </ImageBackground>
+      ) : (
+        <View style={styles.innerPad}>
+          <VideoPlayer />
+        </View>
+      )}
+    </View>
   );
 };
 
@@ -141,7 +116,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   helloBg: {
-    overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#cfcfe8',
     backgroundColor: 'rgb(119, 135, 247)',
@@ -165,7 +139,7 @@ const styles = StyleSheet.create({
   watchLiveLabel: {
     alignSelf: 'flex-start',
     backgroundColor: '#18316f',
-    color: '#ffffff',
+    color: '#fff',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 4,
@@ -187,7 +161,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   liveText: {
-    color: '#ffffff',
+    color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -198,19 +172,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   videoContainer: {
-    marginBottom: 4,
     borderRadius: 8,
     overflow: 'hidden',
     width: '100%',
     alignItems: 'center',
-  },
-  descriptionContainer: {
-    marginTop: 8,
-  },
-  description: {
-    fontSize: 13,
-    color: '#000',
-    lineHeight: 10,
   },
 });
 
