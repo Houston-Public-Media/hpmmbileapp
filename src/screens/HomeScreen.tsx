@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchPriorityData, fetchBrightcoveVideos } from '../services/newsApi';
@@ -14,11 +14,8 @@ import AdBanner from '../components/AdBanner';
 import { getSelectedCategories } from '../utils/categoryStorage';
 import SectionTitle from '../components/SectionTitle';
 import CategorySection from '../components/CategorySection';
-import SectionFooter from '../components/SectionFooter';
+import AudioFooter from '../components/AudioFooter';
 import { useAds } from '../hooks/useAds';
-import { listenLiveService } from '../services/ListenLiveServices';
-import { podcastAudioService } from '../services/PodcastAudioService';
-import { htmlAudioService } from '../services/HtmlAudioService';
 import BrightcoveVideo from '../components/BrightcoveVideo';
 import { useScreenTracking } from '../hooks/useAnalytics';
 import { NewsArticle, TalkshowEntry } from '../type';
@@ -52,21 +49,13 @@ export default function HomeScreen({ navigation }: Props) {
   const [breakingData, setBreakingData] = useState<any>(null);
   const [brightcoveVideos, setBrightcoveVideos] = useState<any[]>([]);
   const { showInterstitialAd, isInterstitialLoaded } = useAds();
-  
 
-  useFocusEffect(
-    React.useCallback(() => {
-      listenLiveService.pauseTrack();
-      podcastAudioService.pauseCurrentEpisode();
-      htmlAudioService.pauseCurrentAudio();
-    }, [])
-  );
 
-  const featured = articles[0];
-  const borderNewsList = articles.slice(1, 5);
-  const newsList = articles.slice(5, 8);
-  const lastNewsList = articles.slice(8);
-  const categoryList = selectedCategories.map(category => ({ type: "selected_category", data: category } as const));
+	const featured = articles[0];
+	const borderNewsList = articles.slice(1, 5);
+	const newsList = articles.slice(5, 8);
+	const lastNewsList = articles.slice(8);
+	const categoryList = selectedCategories.map(category => ({ type: "selected_category", data: category } as const));
 
   const liveTalkshows = talkshowData
     .filter(talkshow => talkshow.live)
@@ -126,10 +115,10 @@ const loadData = async () => {
 
 useFocusEffect(
   React.useCallback(() => {
-    loadData(); 
+    loadData();
     const interval = setInterval(() => {
       loadData();
-    }, 5 * 60 * 1000); 
+    }, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [])
@@ -251,7 +240,7 @@ useFocusEffect(
                 talkshow={show.talkshow}
                 showSlug={show.showSlug}
                 onPress={() => {
-                
+
                 }}
               />
             ))}
@@ -265,15 +254,15 @@ useFocusEffect(
           </View>
         );
 
-        case 'brightcove':
+		case 'brightcove':
         return (
         <View style={styles.section}>
           <BrightcoveVideo videos={brightcoveVideos} />
           <TouchableOpacity onPress={() => navigation.navigate('VerticalVideosScreen', {})} style={styles.seeAllButton}>
             <Text style={styles.seeAll}>View all</Text>
-          </TouchableOpacity> 
+          </TouchableOpacity>
         </View>
-        
+
       );
 
       case 'selected_category':
@@ -295,7 +284,7 @@ useFocusEffect(
 
   return (
     <View style={styles.container}>
-      <BreakingBanner data={breakingData} />      
+      <BreakingBanner data={breakingData} />
       <TalkshowBanner data={talkshowData} />
       <FlatList
         data={sections}
@@ -304,7 +293,7 @@ useFocusEffect(
         contentContainerStyle={styles.mainContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       />
-      <SectionFooter />
+      <AudioFooter />
     </View>
   );
 }

@@ -13,12 +13,6 @@ export interface NewsArticle {
   };
 }
 
-// export interface BrightcoveVideo {
-//   id: string;
-//   name: string;
-//   poster?: string;
-// };
-
 export interface BrightcoveVideo {
   id: string;
   name: string;
@@ -30,7 +24,7 @@ export interface BrightcoveVideo {
   source: string;
   type: string;
   playerUrl: string;
-};
+}
 
 export interface MediaDetails {
   source_url: string;

@@ -1,14 +1,13 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useRef, useEffect } from 'react';
 import { StatusBar, StyleSheet, LogBox, AppState } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import * as Notifications from 'expo-notifications';
-
 import { color } from './src/utils/colorUtils';
 import DrawerNavigator from './src/navigation/DrawerNavigator';
 import AdManager from './src/components/AdManager';
-import { ListenLiveProvider } from './src/contexts/ListenLiveContext';
-import { UniversalAudioProvider } from './src/contexts/UniversalAudioContext';
+import { HPMAudioProvider } from './src/contexts/HPMAudioContext';
 import { analyticsService } from './src/services/AnalyticsService';
 import PushNotificationService from './src/services/PushNotificationService';
 
@@ -25,7 +24,7 @@ function App() {
   const appStateRef = useRef(AppState.currentState);
   const sessionStartTime = useRef(Date.now());
 
-  
+
   useEffect(() => {
     const initPushNotifications = async () => {
       const token =
@@ -80,7 +79,7 @@ function App() {
 useEffect(() => {
     const subscription = AppState.addEventListener(
       'change',
-      async (nextAppState) => { 
+      async (nextAppState) => {
         if (
           appStateRef.current.match(/active/) &&
           nextAppState === 'background'
@@ -115,14 +114,13 @@ useEffect(() => {
 
   return (
     <SafeAreaProvider>
-      <UniversalAudioProvider>
-        <ListenLiveProvider>
-          <AdManager>
-            <SafeAreaView
-              style={styles.container}
-              edges={['top', 'left', 'right']}
-            >
-              <StatusBar barStyle={'light-content'} />
+      <HPMAudioProvider>
+        <AdManager>
+          <SafeAreaView
+            style={styles.container}
+            edges={['top', 'left', 'right']}
+          >
+            <StatusBar barStyle={'light-content'} />
 
               <NavigationContainer
                 ref={navigationRef}
@@ -155,12 +153,11 @@ useEffect(() => {
                   }
                 }}
               >
-                <DrawerNavigator />
-              </NavigationContainer>
-            </SafeAreaView>
-          </AdManager>
-        </ListenLiveProvider>
-      </UniversalAudioProvider>
+              <DrawerNavigator />
+            </NavigationContainer>
+          </SafeAreaView>
+        </AdManager>
+      </HPMAudioProvider>
     </SafeAreaProvider>
   );
 }

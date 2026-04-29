@@ -8,17 +8,16 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
-import { fetchNewsArticleById } from '../services/newsApi';
+import { fetchNewsArticleById, fetchPriorityData } from '../services/newsApi';
 import { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '../navigation/HomeStack';
-import { NewsDetail, Coauthor } from '../type';
+import { NewsDetail, Coauthor, TalkshowEntry } from '../type';
 import HtmlRenderer from '../components/HtmlRenderer';
 import CoauthorCard from '../components/CoauthorCard';
 import TalkshowBanner from '../components/TalkshowBanner';
 import BreakingBanner from '../components/BreakingBanner';
 import { decodeHtmlEntities } from '../utils/htmlUtils';
-import { fetchPriorityData } from '../services/newsApi';
-import { NewsArticle, TalkshowEntry } from '../type';
+import AudioFooter from "../components/AudioFooter";
 
 // Define the params expected for this screen
 type NewsDetailParams = {
@@ -93,7 +92,7 @@ const NewsDetailScreen = () => {
   // Render post content
   return (
     <View style={styles.safeArea}>
-      <BreakingBanner data={breakingData} />      
+      <BreakingBanner data={breakingData} />
       <TalkshowBanner data={talkshowData} />
       <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
@@ -133,6 +132,7 @@ const NewsDetailScreen = () => {
           )}
         </View>
       </ScrollView>
+      <AudioFooter />
     </View>
   );
 };

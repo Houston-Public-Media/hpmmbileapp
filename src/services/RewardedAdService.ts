@@ -2,99 +2,99 @@ import { RewardedAd, AdEventType, RewardedAdEventType, TestIds } from 'react-nat
 import { getAdUnitId, shouldShowTestAds } from '../config/adConfig';
 
 class RewardedAdService {
-  private static instance: RewardedAdService;
-  private rewardedAd: RewardedAd | null = null;
-  private isLoading = false;
+	private static instance: RewardedAdService;
+	private rewardedAd: RewardedAd | null = null;
+	private isLoading = false;
 
-  private constructor() {}
+	private constructor() {}
 
-  static getInstance(): RewardedAdService {
-    if (!RewardedAdService.instance) {
-      RewardedAdService.instance = new RewardedAdService();
-    }
-    return RewardedAdService.instance;
-  }
+	static getInstance(): RewardedAdService {
+		if (!RewardedAdService.instance) {
+			RewardedAdService.instance = new RewardedAdService();
+		}
+		return RewardedAdService.instance;
+	}
 
-  async loadRewardedAd(): Promise<boolean> {
-    if (this.isLoading) {
-      //console.log('⚠️ Rewarded ad is already loading');
-      return false;
-    }
+	async loadRewardedAd(): Promise<boolean> {
+		if (this.isLoading) {
+			//console.log('⚠️ Rewarded ad is already loading');
+			return false;
+		}
 
-    try {
-      this.isLoading = true;
-      
-      // Get the appropriate ad unit ID
-      const adUnitId = shouldShowTestAds() 
-        ? TestIds.REWARDED 
-        : getAdUnitId('rewarded');
+		try {
+			this.isLoading = true;
 
-      // Create new rewarded ad
-      this.rewardedAd = RewardedAd.createForAdRequest(adUnitId, {
-        requestNonPersonalizedAdsOnly: true,
-        keywords: ['news', 'media', 'public', 'radio'],
-      });
+			// Get the appropriate ad unit ID
+			const adUnitId = shouldShowTestAds()
+				? TestIds.REWARDED
+				: getAdUnitId('rewarded');
 
-      // Set up event listeners
-      this.rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
-        //console.log('✅ Rewarded ad loaded successfully');
-        this.isLoading = false;
-      });
+			// Create new rewarded ad
+			this.rewardedAd = RewardedAd.createForAdRequest(adUnitId, {
+				requestNonPersonalizedAdsOnly: true,
+				keywords: ['news', 'media', 'public', 'radio'],
+			});
 
-      this.rewardedAd.addAdEventListener(AdEventType.ERROR, (error) => {
-        //console.error('❌ Rewarded ad error:', error);
-        this.isLoading = false;
-      });
+			// Set up event listeners
+			this.rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
+				//console.log('✅ Rewarded ad loaded successfully');
+				this.isLoading = false;
+			});
 
-      this.rewardedAd.addAdEventListener(AdEventType.CLOSED, () => {
-        //console.log('📱 Rewarded ad closed');
-        this.rewardedAd = null;
-      });
+			this.rewardedAd.addAdEventListener(AdEventType.ERROR, (error) => {
+				//console.error('❌ Rewarded ad error:', error);
+				this.isLoading = false;
+			});
 
-      this.rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, (reward) => {
-        //console.log('🎁 User earned reward:', reward);
-        // Handle reward here (e.g., unlock premium content, give coins, etc.)
-      });
+			this.rewardedAd.addAdEventListener(AdEventType.CLOSED, () => {
+				//console.log('📱 Rewarded ad closed');
+				this.rewardedAd = null;
+			});
 
-      // Load the ad
-      await this.rewardedAd.load();
-      return true;
-    } catch (error) {
-      //console.error('❌ Error loading rewarded ad:', error);
-      this.isLoading = false;
-      return false;
-    }
-  }
+			this.rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, (reward) => {
+				//console.log('🎁 User earned reward:', reward);
+				// Handle reward here (e.g., unlock premium content, give coins, etc.)
+			});
 
-  async showRewardedAd(): Promise<boolean> {
-    if (!this.rewardedAd) {
-      //console.log('⚠️ No rewarded ad loaded');
-      return false;
-    }
+			// Load the ad
+			await this.rewardedAd.load();
+			return true;
+		} catch (error) {
+			//console.error('❌ Error loading rewarded ad:', error);
+			this.isLoading = false;
+			return false;
+		}
+	}
 
-    try {
-      await this.rewardedAd.show();
-      return true;
-    } catch (error) {
-      //console.error('❌ Error showing rewarded ad:', error);
-      return false;
-    }
-  }
+	async showRewardedAd(): Promise<boolean> {
+		if (!this.rewardedAd) {
+			//console.log('⚠️ No rewarded ad loaded');
+			return false;
+		}
 
-  isRewardedAdLoaded(): boolean {
-    return this.rewardedAd !== null;
-  }
+		try {
+			await this.rewardedAd.show();
+			return true;
+		} catch (error) {
+			//console.error('❌ Error showing rewarded ad:', error);
+			return false;
+		}
+	}
 
-  isRewardedAdLoading(): boolean {
-    return this.isLoading;
-  }
+	isRewardedAdLoaded(): boolean {
+		return this.rewardedAd !== null;
+	}
 
-  // Preload rewarded ad for better user experience
-  async preloadRewardedAd(): Promise<void> {
-    if (!this.isRewardedAdLoaded() && !this.isRewardedAdLoading()) {
-      await this.loadRewardedAd();
-    }
-  }
+	isRewardedAdLoading(): boolean {
+		return this.isLoading;
+	}
+
+	// Preload rewarded ad for better user experience
+	async preloadRewardedAd(): Promise<void> {
+		if (!this.isRewardedAdLoaded() && !this.isRewardedAdLoading()) {
+			await this.loadRewardedAd();
+		}
+	}
 }
 
 export default RewardedAdService; 

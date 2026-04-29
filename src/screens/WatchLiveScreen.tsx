@@ -1,50 +1,65 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import ScreenHeader from '../components/ScreenHeader';
 import BreakingBanner from '../components/BreakingBanner';
 import TalkshowBanner from '../components/TalkshowBanner';
+import AudioFooter from '../components/AudioFooter';
+import { fetchPriorityData } from "../services/newsApi";
+import { TalkshowEntry } from '../type';
 
 const WatchLiveScreen = () => {
-  const userAgent =
-    Platform.OS === 'ios'
-      ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
-      : 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36';
+	const userAgent =
+		Platform.OS === 'ios'
+			? 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
+			: 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36';
+	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
+	const [breakingData, setBreakingData] = useState<any>(null);
 
-  return (
-    <>
-    <BreakingBanner />
-        <TalkshowBanner />
-      <ScreenHeader
-        title="Watch Live"
-        description="Watch Houston Public Media's live television programming and special events"
-      />
+	useEffect(() => {
+		fetchPriorityData()
+			.then(data => {
+				setBreakingData(data?.breaking || null);
+				setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
+			})
+			.catch(err => console.log(err));
 
-       <View style={styles.container}>
-        
-        <WebView
-          style={styles.webview}
-          originWhitelist={["*"]}
-          source={{ uri: 'https://cdn.houstonpublicmedia.org/assets/watch-live.html' }}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          allowsInlineMediaPlayback={true}
-          mediaPlaybackRequiresUserAction={false}
-          allowsFullscreenVideo={true}
-          automaticallyAdjustContentInsets={false}
-          mixedContentMode="always"
-          sharedCookiesEnabled={true}
-          thirdPartyCookiesEnabled={true}
-          setSupportMultipleWindows={true}
-          onShouldStartLoadWithRequest={() => true}
-          allowsProtectedMedia={true}
-          scalesPageToFit={false}
-          userAgent={userAgent}
-        />
-      </View>
+	}, []);
+	return (
+		<>
+			<BreakingBanner data={breakingData} />
+			<TalkshowBanner data={talkshowData} />
+			<ScreenHeader
+				title="Watch Live"
+				description="Watch Houston Public Media's live television programming and special events"
+			/>
+
+			<View style={styles.container}>
+
+				<WebView
+					style={styles.webview}
+					originWhitelist={["*"]}
+					source={{ uri: 'https://cdn.houstonpublicmedia.org/assets/watch-live.html' }}
+					javaScriptEnabled={true}
+					domStorageEnabled={true}
+					allowsInlineMediaPlayback={true}
+					mediaPlaybackRequiresUserAction={false}
+					allowsFullscreenVideo={true}
+					automaticallyAdjustContentInsets={false}
+					mixedContentMode="always"
+					sharedCookiesEnabled={true}
+					thirdPartyCookiesEnabled={true}
+					setSupportMultipleWindows={true}
+					onShouldStartLoadWithRequest={() => true}
+					allowsProtectedMedia={true}
+					scalesPageToFit={false}
+					userAgent={userAgent}
+				/>
+			</View>
+			<AudioFooter />
 
 
-      {/* <View style={styles.container}>
+			{/* <View style={styles.container}>
         <WebView
           style={styles.webview}
           originWhitelist={['*']}
@@ -89,13 +104,13 @@ const WatchLiveScreen = () => {
           {...(Platform.OS === 'android' && __DEV__ ? { androidHardwareAccelerationDisabled: false } : {})}
         />
       </View> */}
-    </>
-  );
+		</>
+	);
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  webview: { flex: 1 },
+	container: { flex: 1 },
+	webview: { flex: 1 },
 });
 
 export default WatchLiveScreen;
