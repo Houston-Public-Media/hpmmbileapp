@@ -29,7 +29,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, subtitle, thumbna
 		seekTo,
 		isCurrentTrack,
 		resume,
-		stop
+		stop, getPosition, getDuration
 	} = useHPMAudio();
 
 	// Check if this is the current audio
@@ -48,6 +48,10 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, subtitle, thumbna
 	const onPlayPause = async () => {
 		try {
 			if (isThisAudio) {
+				let duration = await getDuration();
+				let position = await getPosition();
+				setDuration(duration);
+				setCurrentTime(position);
 				if (state === State.Playing) {
 					await pause();
 				} else if (state === State.Paused) {

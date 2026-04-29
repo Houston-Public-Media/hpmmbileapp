@@ -221,7 +221,7 @@ export class AnalyticsService {
 		await this.logEvent('app_open');
 	}
 	async trackAppBackground(sessionDuration: number) {
-		await this.logEvent('app_background', {
+		await this.logEvent('app_into_background', {
 			session_duration_seconds: sessionDuration,
 		});
 	}
