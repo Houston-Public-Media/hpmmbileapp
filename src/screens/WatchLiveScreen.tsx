@@ -7,18 +7,18 @@ import TalkshowBanner from '../components/TalkshowBanner';
 import AudioFooter from '../components/AudioFooter';
 import { fetchPriorityData } from "../services/newsApi";
 import { TalkshowEntry } from '../type';
-import { useHPMAudio } from "../contexts/HPMAudioContext";
 
 const WatchLiveScreen = () => {
 	const userAgent =
 		Platform.OS === 'ios'
+			// ? 'HPM iOS/iPad Test App (Safari/WebKit)'
+			// : 'HPM Android Test App (Blink/Chrome)'
 			? 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
 			: 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36';
 
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 	const [breakingData, setBreakingData] = useState<any>(null);
 	const [refreshing, setRefreshing] = useState(false);
-	const { pause } = useHPMAudio();
 	const loadBannerData = async () => {
 		try {
 			const data = await fetchPriorityData();
@@ -39,20 +39,13 @@ const WatchLiveScreen = () => {
 		setRefreshing(false);
 	}, []);
 
-	const INJECTED_JAVASCRIPT = `(function() {
-			document.body.style.backgroundColor = 'transparent';
-			document.querySelector('video').addEventListener('play', (event) => {
-				window.ReactNativeWebView.postMessage(JSON.stringify({'message':'video_played'}));
-			});
-		})();`;
-
 	return (
 		<>
-			<ScrollView contentContainerStyle={{ flexGrow: 1 }}
-				refreshControl={
-					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-				}
-			>
+			{/*<ScrollView contentContainerStyle={{ flexGrow: 1 }}*/}
+			{/*	refreshControl={*/}
+			{/*		<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />*/}
+			{/*	}*/}
+			{/*>*/}
 				<BreakingBanner data={breakingData} />
 				<TalkshowBanner data={talkshowData} />
 				<ScreenHeader
@@ -79,16 +72,9 @@ const WatchLiveScreen = () => {
 						allowsProtectedMedia={true}
 						scalesPageToFit={false}
 						userAgent={userAgent}
-						injectedJavaScript={INJECTED_JAVASCRIPT}
-						onMessage={(event) => {
-							let data = JSON.parse( event.nativeEvent.data );
-							if (data.message === 'video_played') {
-								pause();
-							}
-						}}
 					/>
 				</View>
-			</ScrollView>
+			{/*</ScrollView>*/}
 			<AudioFooter />
 		</>
 	);
