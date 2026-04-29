@@ -7,6 +7,7 @@ import TalkshowBanner from '../components/TalkshowBanner';
 import AudioFooter from '../components/AudioFooter';
 import { fetchPriorityData } from "../services/newsApi";
 import { TalkshowEntry } from '../type';
+import { useHPMAudio } from "../contexts/HPMAudioContext";
 
 const WatchLiveScreen = () => {
 	const userAgent =
@@ -17,6 +18,7 @@ const WatchLiveScreen = () => {
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 	const [breakingData, setBreakingData] = useState<any>(null);
 	const [refreshing, setRefreshing] = useState(false);
+	const { pause } = useHPMAudio();
 	const loadBannerData = async () => {
 		try {
 			const data = await fetchPriorityData();
@@ -36,6 +38,13 @@ const WatchLiveScreen = () => {
 		await loadBannerData();
 		setRefreshing(false);
 	}, []);
+
+	const INJECTED_JAVASCRIPT = `(function() {
+			document.body.style.backgroundColor = 'transparent';
+			document.querySelector('video').addEventListener('play', (event) => {
+				window.ReactNativeWebView.postMessage(JSON.stringify({'message':'video_played'}));
+			});
+		})();`;
 
 	return (
 		<>
@@ -70,6 +79,13 @@ const WatchLiveScreen = () => {
 						allowsProtectedMedia={true}
 						scalesPageToFit={false}
 						userAgent={userAgent}
+						injectedJavaScript={INJECTED_JAVASCRIPT}
+						onMessage={(event) => {
+							let data = JSON.parse( event.nativeEvent.data );
+							if (data.message === 'video_played') {
+								pause();
+							}
+						}}
 					/>
 				</View>
 			</ScrollView>

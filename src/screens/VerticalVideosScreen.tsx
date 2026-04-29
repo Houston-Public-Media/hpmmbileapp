@@ -8,7 +8,6 @@ import { fetchBrightcoveVideos, fetchPriorityData } from '../services/newsApi';
 import { TalkshowEntry, BrightcoveVideo } from '../type';
 import AudioFooter from "../components/AudioFooter";
 import { useHPMAudio } from "../contexts/HPMAudioContext";
-import { useFocusEffect } from "@react-navigation/native";
 
 const NUM_COLUMNS = 2;
 const ITEM_MARGIN = 8; // spacing between cards
@@ -46,6 +45,12 @@ const VerticalVideosScreen = () => {
 	}, [loadVideos]);
 
 	const renderItem = ({ item }: { item: BrightcoveVideo }) => {
+		const INJECTED_JAVASCRIPT = `(function() {
+			document.body.style.backgroundColor = 'transparent';
+			document.querySelector('video').addEventListener('play', (event) => {
+				window.ReactNativeWebView.postMessage(JSON.stringify({'message':'video_played'}));
+			});
+		})();`;
 		return (
 			<View style={styles.card}>
 				<WebView
@@ -53,7 +58,13 @@ const VerticalVideosScreen = () => {
 					style={styles.webview}
 					allowsFullscreenVideo
 					javaScriptEnabled
-					injectedJavaScript={`document.body.style.backgroundColor = 'transparent'; true;`}
+					injectedJavaScript={INJECTED_JAVASCRIPT}
+					onMessage={(event) => {
+						 let data = JSON.parse( event.nativeEvent.data );
+						 if (data.message === 'video_played') {
+							pause();
+						 }
+					}}
 					scrollEnabled={false}
 					backgroundColor="transparent"
 				/>
