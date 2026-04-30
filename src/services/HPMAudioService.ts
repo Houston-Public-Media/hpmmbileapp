@@ -327,7 +327,26 @@ class HPMAudioService {
 	async play(track: AudioTrack): Promise<void> {
 		try {
 			await this.initialize();
-
+			if (track.isLiveStream) {
+				await TrackPlayer.updateOptions({
+					capabilities: [
+						Capability.Play,
+						Capability.Pause,
+						Capability.Stop
+					]
+				});
+			} else {
+				await TrackPlayer.updateOptions({
+					capabilities: [
+						Capability.Play,
+						Capability.Pause,
+						Capability.Stop,
+						Capability.SeekTo,
+						Capability.JumpForward,
+						Capability.JumpBackward
+					]
+				});
+			}
 			// Set loading state
 			this.state.currentTrack = track;
 			this.notifyStateChange();
@@ -374,14 +393,6 @@ class HPMAudioService {
 			if (this.liveStreamTracks.length === 0) {
 				await this.loadLiveStreams();
 			}
-
-			await TrackPlayer.updateOptions({
-				capabilities: [
-					Capability.Play,
-					Capability.Pause,
-					Capability.Stop
-				]
-			});
 			await this.play(track);
 		} catch (error) {
 			console.error('Error playing live stream:', error);
@@ -413,17 +424,6 @@ class HPMAudioService {
 			isLiveStream: false,
 			episodeId,
 		};
-
-		await TrackPlayer.updateOptions({
-			capabilities: [
-				Capability.Play,
-				Capability.Pause,
-				Capability.Stop,
-				Capability.SeekTo,
-				Capability.JumpForward,
-				Capability.JumpBackward
-			]
-		});
 		await this.play(track);
 	}
 

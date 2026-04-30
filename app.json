@@ -52,8 +52,6 @@
           "userTrackingDescription": "This identifier will be used to deliver personalized ads to you."
         }
       ],
-      "expo-audio",
-      "expo-video",
       "@react-native-firebase/app"
     ],
     "notification": {
@@ -76,6 +74,7 @@
   },
 
   "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-2797448917961410~9781974870"
+    "android_app_id": "ca-app-pub-2797448917961410~9781974870",
+    "ios_app_id": "ca-app-pub-2797448917961410~9781974870"
   }
 }
