@@ -103,6 +103,8 @@ export interface TalkshowEntry {
   accentColor: string;
   backgroundColor: string;
   textColor: string;
+  showLogo: string;
+  patternImage: string;
 }
 
 export interface TalkshowResponse {

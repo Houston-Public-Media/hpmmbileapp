@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-	View,
-	Text,
-	StyleSheet,
-	TouchableOpacity,
-	Dimensions,
-	ImageBackground,
-	Image,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ImageBackground,	Image,} from 'react-native';
 import { TalkshowEntry } from '../type';
 import YoutubePlayerNew from 'react-native-youtube-iframe';
 
@@ -20,7 +12,14 @@ interface TalkshowCardProps {
 const TalkshowCard: React.FC<TalkshowCardProps> = ({ talkshow, showSlug, onPress }) => {
 	const { live, id, title } = talkshow;
 	const displayName = (talkshow.showName || '').toString();
-	const isHelloHouston = showSlug.includes('hello-houston');
+
+	const {
+		accentColor = '#20a68b',
+		backgroundColor = '#ffffff',
+		textColor = '#000000',
+		showLogo,
+		patternImage,
+	} = talkshow;
 
 	const playerHeight = 200;
 	const liveBadgeText = 'LIVE';
@@ -33,9 +32,20 @@ const TalkshowCard: React.FC<TalkshowCardProps> = ({ talkshow, showSlug, onPress
 
 	const HeaderContent = () => (
 		<View style={styles.header}>
-			<Text style={styles.watchLiveLabel}>{watchLiveLabel}</Text>
-			<Text style={styles.showNameLink}>{displayName}</Text>
-			{title && <Text style={styles.episodeTitle}>{title}</Text>}
+			<Text style={[styles.watchLiveLabel, { backgroundColor: accentColor }]}>
+				{watchLiveLabel}
+			</Text>
+
+			<Text style={[styles.showNameLink, { color: textColor }]}>
+				{displayName}
+			</Text>
+
+			{title && (
+				<Text style={[styles.episodeTitle, { color: textColor }]}>
+					{title}
+				</Text>
+			)}
+
 			{live && (
 				<View style={styles.liveBadge}>
 					<Text style={styles.liveText}>{liveBadgeText}</Text>
@@ -62,26 +72,27 @@ const TalkshowCard: React.FC<TalkshowCardProps> = ({ talkshow, showSlug, onPress
 		) : null;
 
 	return (
-		<View style={[styles.container, isHelloHouston ? styles.helloBg : styles.hmBg]}>
-			<Image
-				source={{
-					uri: isHelloHouston
-						? 'https://cdn.houstonpublicmedia.org/assets/images/icons/hello-houston-logo.webp'
-						: 'https://cdn.houstonpublicmedia.org/assets/images/icons/houston-matters-logo.webp',
-				}}
-				style={styles.cornerLogo}
-			/>
+		<View
+			style={[
+				styles.container,
+				{
+					backgroundColor,
+					borderColor: accentColor,
+					borderWidth: 1,
+				},
+			]}
+		>
+			{showLogo ? (
+				<Image source={{ uri: showLogo }} style={styles.cornerLogo} />
+			) : null}
 
-			{/* HEADER ONLY IS CLICKABLE (safe for Samsung) */}
 			<TouchableOpacity onPress={onPress} activeOpacity={0.8}>
 				<HeaderContent />
 			</TouchableOpacity>
 
-			{isHelloHouston ? (
+			{patternImage ? (
 				<ImageBackground
-					source={{
-						uri: 'https://cdn.houstonpublicmedia.org/assets/images/Hello-Houston_Dot-Pattern-v3.png.webp',
-					}}
+					source={{ uri: patternImage }}
 					imageStyle={styles.bgImage}
 					style={styles.innerPad}
 				>
@@ -106,16 +117,6 @@ const styles = StyleSheet.create({
 	innerPad: {
 		padding: 12,
 	},
-	hmBg: {
-		backgroundColor: '#4ee9c6',
-		borderColor: '#20a68b',
-		borderWidth: 1,
-	},
-	helloBg: {
-		borderWidth: 1,
-		borderColor: '#cfcfe8',
-		backgroundColor: 'rgb(119, 135, 247)',
-	},
 	bgImage: {
 		borderRadius: 8,
 		resizeMode: 'cover',
@@ -134,7 +135,6 @@ const styles = StyleSheet.create({
 	},
 	watchLiveLabel: {
 		alignSelf: 'flex-start',
-		backgroundColor: '#18316f',
 		color: '#fff',
 		paddingHorizontal: 10,
 		paddingVertical: 4,
@@ -145,7 +145,6 @@ const styles = StyleSheet.create({
 	showNameLink: {
 		fontSize: 20,
 		fontWeight: 'bold',
-		color: '#000',
 		textDecorationLine: 'underline',
 		marginBottom: 8,
 	},
@@ -164,7 +163,6 @@ const styles = StyleSheet.create({
 	episodeTitle: {
 		fontSize: 16,
 		fontWeight: '600',
-		color: '#000',
 		lineHeight: 20,
 	},
 	videoContainer: {
