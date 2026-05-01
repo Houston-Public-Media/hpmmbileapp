@@ -17,8 +17,8 @@ const TalkshowCard: React.FC<TalkshowCardProps> = ({ talkshow, showSlug, onPress
 		accentColor = '#20a68b',
 		backgroundColor = '#ffffff',
 		textColor = '#000000',
-		showLogo,
-		patternImage,
+		logo,
+		backgroundImage,
 	} = talkshow;
 
 	const playerHeight = 200;
@@ -82,17 +82,17 @@ const TalkshowCard: React.FC<TalkshowCardProps> = ({ talkshow, showSlug, onPress
 				},
 			]}
 		>
-			{showLogo ? (
-				<Image source={{ uri: showLogo }} style={styles.cornerLogo} />
+			{logo ? (
+				<Image source={{ uri: logo }} style={styles.cornerLogo} />
 			) : null}
 
 			<TouchableOpacity onPress={onPress} activeOpacity={0.8}>
 				<HeaderContent />
 			</TouchableOpacity>
 
-			{patternImage ? (
+			{backgroundImage ? (
 				<ImageBackground
-					source={{ uri: patternImage }}
+					source={{ uri: backgroundImage }}
 					imageStyle={styles.bgImage}
 					style={styles.innerPad}
 				>
