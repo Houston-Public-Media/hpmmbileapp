@@ -193,7 +193,7 @@ See the actual `eas.json` in the repo for full details.
 - **Bundle ID**: `com.houstonpublicmedia.hpm`
 - **Firebase Project**: `hpm-expo-app`
 - **EAS Project**: `cf763f1a-eb2d-47d1-a581-bc42dc2e6b55`
-- **Owner**: `smitapatel`
+- **Owner**: `houston-public-media`
 
 ## 🏗 Project Structure
 
