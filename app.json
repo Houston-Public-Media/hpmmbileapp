@@ -72,7 +72,6 @@
       "fallbackToCacheTimeout": 0
     }
   },
-
   "react-native-google-mobile-ads": {
     "android_app_id": "ca-app-pub-2797448917961410~9781974870",
     "ios_app_id": "ca-app-pub-2797448917961410~9781974870"
