@@ -2,6 +2,7 @@ import { getAnalytics, logEvent, setUserId, setUserProperties, setAnalyticsColle
 import { getApp } from '@react-native-firebase/app';
 
 const analytics = getAnalytics(getApp());
+const ANALYTICS_ENABLED = false;
 
 export class AnalyticsService {
 	private static instance: AnalyticsService;
@@ -9,24 +10,26 @@ export class AnalyticsService {
 	private constructor() {
 		this.initialize();
 	}
-
 	public static getInstance(): AnalyticsService {
 		if (!AnalyticsService.instance) {
 			AnalyticsService.instance = new AnalyticsService();
 		}
 		return AnalyticsService.instance;
 	}
-
 	private async initialize() {
 		try {
-			await setAnalyticsCollectionEnabled(analytics, true);
-			console.log('Firebase Analytics initialized');
+			await setAnalyticsCollectionEnabled(analytics, ANALYTICS_ENABLED);
+			console.log(
+				`Firebase Analytics ${ANALYTICS_ENABLED ? 'enabled' : 'disabled'}`
+			);
 		} catch (error) {
 			console.error('Analytics initialization error:', error);
 		}
 	}
 
 	async logEvent(eventName: string, params?: Record<string, any>) {
+		if (!ANALYTICS_ENABLED) return;
+
 		try {
 			await logEvent(analytics, eventName, params);
 		} catch (error) {
@@ -34,6 +37,8 @@ export class AnalyticsService {
 		}
 	}
 	async logScreenView(screenName: string, screenClass?: string) {
+		if (!ANALYTICS_ENABLED) return;
+
 		try {
 			await logEvent(analytics, 'screen_view', {
 				firebase_screen: screenName,
@@ -92,6 +97,8 @@ export class AnalyticsService {
 		});
 	}
 	async setUserId(userId: string) {
+		if (!ANALYTICS_ENABLED) return;
+
 		try {
 			await setUserId(analytics, userId);
 		} catch (error) {
@@ -99,6 +106,8 @@ export class AnalyticsService {
 		}
 	}
 	async setUserProperty(name: string, value: string) {
+		if (!ANALYTICS_ENABLED) return;
+
 		try {
 			await setUserProperties(analytics, {
 				[name]: value,
@@ -107,7 +116,6 @@ export class AnalyticsService {
 			console.error(error);
 		}
 	}
-
 	async resetAnalyticsData() {
 		await this.logEvent('reset_analytics');
 	}
@@ -117,7 +125,6 @@ export class AnalyticsService {
 			timestamp: Date.now(),
 		});
 	}
-
 	async trackListenLiveStopped(stationName: string, duration: number) {
 		await this.logEvent('listen_live_stopped', {
 			station_name: stationName,
