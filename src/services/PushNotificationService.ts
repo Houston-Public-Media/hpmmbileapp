@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 
 // Configure notification behavior for both foreground and background
 Notifications.setNotificationHandler({
@@ -174,11 +175,19 @@ export class PushNotificationService {
 
 				// Get the token that uniquely identifies this device
 				// This works for both Android and iOS
-				const tokenResponse = await Notifications.getExpoPushTokenAsync({
-					projectId: projectId || 'hpm-application', // Fallback to the project ID from Firebase config
-				});
+await messaging().registerDeviceForRemoteMessages();
 
-				token = tokenResponse.data;
+const authStatus = await messaging().requestPermission();
+const enabled =
+	authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+	authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+if (!enabled) {
+	console.log('Push permission not granted');
+	return null;
+}
+
+token = await messaging().getToken();
 				this.expoPushToken = token;
 				await this.saveTokenToServer(token);
 				console.log('Expo push token:', token);
