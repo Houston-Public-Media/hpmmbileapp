@@ -6,11 +6,10 @@ import { Platform } from 'react-native';
 // Configure notification behavior for both foreground and background
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
-		shouldShowAlert: true,
 		shouldPlaySound: true,
 		shouldSetBadge: true,
 		shouldShowBanner: true,
-		shouldShowList: true,
+		shouldShowList: true
 	}),
 });
 
@@ -185,7 +184,7 @@ export class PushNotificationService {
 				console.log('Expo push token:', token);
 
 				if (token) {
-					console.log('PPush token generated successfully');
+					console.log('Push token generated successfully');
 				} else {
 					console.error('Failed to generate push token');
 				}
@@ -247,7 +246,7 @@ export class PushNotificationService {
 	 */
 	addNotificationReceivedListener(
 		callback: (notification: Notifications.Notification) => void
-	): Notifications.Subscription {
+	): Notifications.EventSubscription {
 		return Notifications.addNotificationReceivedListener(callback);
 	}
 
@@ -257,7 +256,7 @@ export class PushNotificationService {
 	 */
 	addNotificationResponseReceivedListener(
 		callback: (response: Notifications.NotificationResponse) => void
-	): Notifications.Subscription {
+	): Notifications.EventSubscription {
 		return Notifications.addNotificationResponseReceivedListener(callback);
 	}
 
