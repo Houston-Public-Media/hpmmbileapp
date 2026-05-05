@@ -13,160 +13,138 @@ import PushNotificationService from './src/services/PushNotificationService';
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
-  'ViewPropTypes will be removed from React Native',
-  'AsyncStorage has been extracted',
-  '[expo-av]: Expo AV has been deprecated and will be removed in SDK 54. Use the `expo-audio` and `expo-video` packages to replace the required functionality.',
+	'ViewPropTypes will be removed from React Native',
+	'AsyncStorage has been extracted',
+	'[expo-av]: Expo AV has been deprecated and will be removed in SDK 54. Use the `expo-audio` and `expo-video` packages to replace the required functionality.',
 ]);
 
 function App() {
-  const routeNameRef = useRef<string | undefined>(undefined);
-  const navigationRef = useRef<any>(null);
-  const appStateRef = useRef(AppState.currentState);
-  const sessionStartTime = useRef(Date.now());
+	const routeNameRef = useRef<string | undefined>(undefined);
+	const navigationRef = useRef<any>(null);
+	const appStateRef = useRef(AppState.currentState);
+	const sessionStartTime = useRef(Date.now());
 
 
-  useEffect(() => {
-    const initPushNotifications = async () => {
-      const token =
-        await PushNotificationService.registerForPushNotifications();
-      console.log('Push notification token:', token);
-    };
+	useEffect(() => {
+		const initPushNotifications = async () => {
+			const token = await PushNotificationService.registerForPushNotifications();
+			console.log('Push notification token:', token);
+		};
 
-    initPushNotifications();
-  }, []);
+		initPushNotifications();
+	}, []);
 
-  useEffect(() => {
-    const subscription =
-      PushNotificationService.addNotificationResponseReceivedListener(
-        (response) => {
-          const data =
-            response.notification.request.content.data;
+	useEffect(() => {
+		const subscription = PushNotificationService.addNotificationResponseReceivedListener(
+			(response) => {
+				const data = response.notification.request.content.data;
+				handleNotificationNavigation(data);
+			}
+		);
+		return () => subscription.remove();
+	}, []);
 
-          handleNotificationNavigation(data);
-        }
-      );
+	useEffect(() => {
+		const checkInitialNotification = async () => {
+			const response = await Notifications.getLastNotificationResponseAsync();
 
-    return () => subscription.remove();
-  }, []);
+			if (!response) return;
 
-  useEffect(() => {
-    const checkInitialNotification = async () => {
-      const response =
-        await Notifications.getLastNotificationResponseAsync();
+			const data = response.notification.request.content.data;
+			handleNotificationNavigation(data);
+		};
 
-      if (!response) return;
+		checkInitialNotification();
+	}, []);
 
-      const data =
-        response.notification.request.content.data;
+	const handleNotificationNavigation = (data: any) => {
+		if (!navigationRef.current) return;
 
-      handleNotificationNavigation(data);
-    };
+		if (data?.screen === 'NewsDetail') {
+			navigationRef.current.navigate('NewsDetail', {
+				postId: Number(data.postId),
+				title: data.title,
+			});
+		}
+	};
 
-    checkInitialNotification();
-  }, []);
+	useEffect(() => {
+		const subscription = AppState.addEventListener(
+			'change',
+			async (nextAppState) => {
+				if (appStateRef.current.match(/active/) && nextAppState === 'background') {
+					const sessionDuration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+					analyticsService.trackAppBackground(sessionDuration);
+				} else if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
+					analyticsService.trackAppOpen();
+					sessionStartTime.current = Date.now();
+					await PushNotificationService.syncPushTokenWithServer();
+				}
 
-  const handleNotificationNavigation = (data: any) => {
-    if (!navigationRef.current) return;
+				appStateRef.current = nextAppState;
+			}
+		);
 
-    if (data?.screen === 'NewsDetail') {
-      navigationRef.current.navigate('NewsDetail', {
-        postId: Number(data.postId),
-        title: data.title,
-      });
-    }
-  };
+		return () => {
+			subscription.remove();
+		};
+	}, []);
 
-useEffect(() => {
-    const subscription = AppState.addEventListener(
-      'change',
-      async (nextAppState) => {
-        if (
-          appStateRef.current.match(/active/) &&
-          nextAppState === 'background'
-        ) {
-          const sessionDuration = Math.floor(
-            (Date.now() - sessionStartTime.current) / 1000
-          );
+	return (
+		<SafeAreaProvider>
+			<HPMAudioProvider>
+				<AdManager>
+					<SafeAreaView
+						style={styles.container}
+						edges={['top', 'left', 'right']}
+					>
+						<StatusBar barStyle={'light-content'} />
 
-          analyticsService.trackAppBackground(
-            sessionDuration
-          );
-        } else if (
-          appStateRef.current.match(
-            /inactive|background/
-          ) &&
-          nextAppState === 'active'
-        ) {
-          analyticsService.trackAppOpen();
-          sessionStartTime.current = Date.now();
+						<NavigationContainer
+							ref={navigationRef}
+							onReady={() => {
+								routeNameRef.current =
+									navigationRef.current?.getCurrentRoute()
+										?.name;
+							}}
+							onStateChange={async () => {
+								const previousRouteName = routeNameRef.current;
+								const currentRouteName =
+									navigationRef.current?.getCurrentRoute()?.name;
 
-          await PushNotificationService.syncPushTokenWithServer();
-        }
+								if (
+									currentRouteName &&
+									previousRouteName !== currentRouteName
+								) {
+									routeNameRef.current = currentRouteName;
 
-        appStateRef.current = nextAppState;
-      }
-    );
+									try {
+										await analyticsService.logScreenView(
+											currentRouteName,
+											currentRouteName
+										);
 
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
-  return (
-    <SafeAreaProvider>
-      <HPMAudioProvider>
-        <AdManager>
-          <SafeAreaView
-            style={styles.container}
-            edges={['top', 'left', 'right']}
-          >
-            <StatusBar barStyle={'light-content'} />
-
-              <NavigationContainer
-                ref={navigationRef}
-                onReady={() => {
-                  routeNameRef.current =
-                    navigationRef.current?.getCurrentRoute()
-                      ?.name;
-                }}
-                onStateChange={async () => {
-                  const previousRouteName = routeNameRef.current;
-                  const currentRouteName =
-                    navigationRef.current?.getCurrentRoute()?.name;
-
-                  if (
-                    currentRouteName &&
-                    previousRouteName !== currentRouteName
-                  ) {
-                    routeNameRef.current = currentRouteName;
-
-                    try {
-                      await analyticsService.logScreenView(
-                        currentRouteName,
-                        currentRouteName
-                      );
-
-                      console.log('Screen tracked:', currentRouteName);
-                    } catch (e) {
-                      console.log('Screen tracking failed:', e);
-                    }
-                  }
-                }}
-              >
-              <DrawerNavigator />
-            </NavigationContainer>
-          </SafeAreaView>
-        </AdManager>
-      </HPMAudioProvider>
-    </SafeAreaProvider>
-  );
+										console.log('Screen tracked:', currentRouteName);
+									} catch (e) {
+										console.log('Screen tracking failed:', e);
+									}
+								}
+							}}
+						>
+							<DrawerNavigator />
+						</NavigationContainer>
+					</SafeAreaView>
+				</AdManager>
+			</HPMAudioProvider>
+		</SafeAreaProvider>
+	);
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: color.dark,
-  },
+	container: {
+		flex: 1,
+		backgroundColor: color.dark,
+	},
 });
 
 export default App;
