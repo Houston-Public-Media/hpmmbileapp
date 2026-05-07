@@ -16,7 +16,13 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.jacapps.hpm",
       "buildNumber": "1",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      },
+      "entitlements": {
+        "aps-environment": "production"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -52,7 +58,8 @@
           "userTrackingDescription": "This identifier will be used to deliver personalized ads to you."
         }
       ],
-      "@react-native-firebase/app"
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
     ],
     "notification": {
       "icon": "./assets/notification-icon.png",
