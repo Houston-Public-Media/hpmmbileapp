@@ -1,8 +1,14 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
-import { Platform } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
+import {Platform} from 'react-native';
+import {
+	AuthorizationStatus,
+	getMessaging,
+	getToken,
+	registerDeviceForRemoteMessages,
+	requestPermission
+} from '@react-native-firebase/messaging';
 
 // Configure notification behavior for both foreground and background
 Notifications.setNotificationHandler({
@@ -107,6 +113,8 @@ export class PushNotificationService {
 	 */
 	async registerForPushNotifications(): Promise<string | null> {
 		let token: string | null = null;
+		let messaging = getMessaging();
+		let iOSSettings = {};
 
 		if (Platform.OS === 'android') {
 			// Android 13+ (API 33+) requires POST_NOTIFICATIONS permission at runtime
@@ -148,6 +156,17 @@ export class PushNotificationService {
 				enableVibrate: true,
 				showBadge: true,
 			});
+		} else {
+			iOSSettings = {
+				"alert": true,
+				"announcement": false,
+				"badge": true,
+				"criticalAlert": false,
+				"carPlay": true,
+				"provisional": false,
+				"sound": true,
+				"providesAppNotificationSettings": true
+			};
 		}
 
 		if (Device.isDevice) {
@@ -175,19 +194,19 @@ export class PushNotificationService {
 
 				// Get the token that uniquely identifies this device
 				// This works for both Android and iOS
-await messaging().registerDeviceForRemoteMessages();
+				await registerDeviceForRemoteMessages(messaging);
 
-const authStatus = await messaging().requestPermission();
-const enabled =
-	authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-	authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+				const authStatus = await requestPermission(messaging, iOSSettings);
+				const enabled =
+					authStatus === AuthorizationStatus.AUTHORIZED ||
+					authStatus === AuthorizationStatus.PROVISIONAL;
 
-if (!enabled) {
-	console.log('Push permission not granted');
-	return null;
-}
+				if (!enabled) {
+					console.log('Push permission not granted');
+					return null;
+				}
 
-token = await messaging().getToken();
+				token = await getToken(messaging);
 				this.expoPushToken = token;
 				await this.saveTokenToServer(token);
 				console.log('Expo push token:', token);
@@ -279,7 +298,8 @@ token = await messaging().getToken();
 		trigger?: Notifications.NotificationTriggerInput,
 		channelId?: string
 	): Promise<string> {
-		const identifier = await Notifications.scheduleNotificationAsync({
+		console.log("Local notification scheduled", data)
+		return await Notifications.scheduleNotificationAsync({
 			content: {
 				title,
 				body,
@@ -289,7 +309,6 @@ token = await messaging().getToken();
 			},
 			trigger: trigger || null,
 		});
-		return identifier;
 	}
 
 	async cancelScheduledNotification(identifier: string): Promise<void> {

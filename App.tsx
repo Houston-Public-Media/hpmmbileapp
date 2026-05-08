@@ -35,13 +35,20 @@ function App() {
 	}, []);
 
 	useEffect(() => {
-		const subscription = PushNotificationService.addNotificationResponseReceivedListener(
+		const notificationListener = PushNotificationService.addNotificationReceivedListener(notification => {
+			console.log("Push Notification Received: ", notification);
+		});
+		const responseListener = PushNotificationService.addNotificationResponseReceivedListener(
 			(response) => {
+				console.log('Push notification response received', response);
 				const data = response.notification.request.content.data;
 				handleNotificationNavigation(data);
 			}
 		);
-		return () => subscription.remove();
+		return () => {
+			notificationListener.remove();
+			responseListener.remove();
+		}
 	}, []);
 
 	useEffect(() => {
@@ -74,9 +81,9 @@ function App() {
 			async (nextAppState) => {
 				if (appStateRef.current.match(/active/) && nextAppState === 'background') {
 					const sessionDuration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
-					analyticsService.trackAppBackground(sessionDuration);
+					await analyticsService.trackAppBackground(sessionDuration);
 				} else if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
-					analyticsService.trackAppOpen();
+					await analyticsService.trackAppOpen();
 					sessionStartTime.current = Date.now();
 					await PushNotificationService.syncPushTokenWithServer();
 				}

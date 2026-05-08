@@ -80,3 +80,7 @@ target 'HPM' do
     end
   end
 end
+target 'ImageNotification' do
+	use_frameworks! :linkage => :static
+	pod 'Firebase/Messaging'
+end

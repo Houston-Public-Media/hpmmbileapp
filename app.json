@@ -47,7 +47,8 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "enableBackgroundRemoteNotifications": true
         }
       ],
       [
@@ -76,7 +77,9 @@
     "owner": "houston-public-media",
     "updates": {
       "url": "https://u.expo.dev/cf763f1a-eb2d-47d1-a581-bc42dc2e6b55",
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "runtimeVersion": "hpm-1",
+      "enabled": false
     }
   },
   "react-native-google-mobile-ads": {
