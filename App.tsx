@@ -1,15 +1,15 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useRef, useEffect } from 'react';
-import { StatusBar, StyleSheet, LogBox, AppState } from 'react-native';
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
-import * as Notifications from 'expo-notifications';
-import { color } from './src/utils/colorUtils';
+import React, {useEffect, useRef} from 'react';
+import {Alert, AppState, LogBox, StatusBar, StyleSheet} from 'react-native';
+import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
+import {NavigationContainer} from '@react-navigation/native';
+import {color} from './src/utils/colorUtils';
 import DrawerNavigator from './src/navigation/DrawerNavigator';
 import AdManager from './src/components/AdManager';
-import { HPMAudioProvider } from './src/contexts/HPMAudioContext';
-import { analyticsService } from './src/services/AnalyticsService';
+import {HPMAudioProvider} from './src/contexts/HPMAudioContext';
+import {analyticsService} from './src/services/AnalyticsService';
 import PushNotificationService from './src/services/PushNotificationService';
+import {onMessage, onNotificationOpenedApp, RemoteMessage} from "@react-native-firebase/messaging";
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
@@ -32,48 +32,33 @@ function App() {
 		};
 
 		initPushNotifications();
-	}, []);
-
-	useEffect(() => {
-		const notificationListener = PushNotificationService.addNotificationReceivedListener(notification => {
-			console.log("Push Notification Received: ", notification);
+		onNotificationOpenedApp(PushNotificationService.getMessaging(), remoteMessage => {
+			console.log('Push notification Information:', remoteMessage);
+			handleNotificationNavigation(remoteMessage);
 		});
-		const responseListener = PushNotificationService.addNotificationResponseReceivedListener(
-			(response) => {
-				console.log('Push notification response received', response);
-				const data = response.notification.request.content.data;
-				handleNotificationNavigation(data);
-			}
-		);
-		return () => {
-			notificationListener.remove();
-			responseListener.remove();
-		}
 	}, []);
 
 	useEffect(() => {
-		const checkInitialNotification = async () => {
-			const response = await Notifications.getLastNotificationResponseAsync();
-
-			if (!response) return;
-
-			const data = response.notification.request.content.data;
-			handleNotificationNavigation(data);
-		};
-
-		checkInitialNotification();
-	}, []);
-
-	const handleNotificationNavigation = (data: any) => {
-		if (!navigationRef.current) return;
-
-		if (data?.screen === 'NewsDetail') {
-			navigationRef.current.navigate('NewsDetail', {
-				postId: Number(data.postId),
-				title: data.title,
+		return onMessage(PushNotificationService.getMessaging(), remoteMessage => {
+			Alert.alert("New Story Alert", remoteMessage?.data?.title as string, [
+				{
+					text: 'Read Now',
+					onPress: () => handleNotificationNavigation(remoteMessage),
+					style: 'default'
+				},
+				{
+					text: 'Cancel',
+					onPress: () => console.log('User tapped dismiss button'),
+					style: 'cancel'
+				}
+			],
+			{
+				cancelable: true,
+				onDismiss: () => console.log('This alert was dismissed by tapping outside of the alert dialog.'),
 			});
-		}
-	};
+			console.log("Push Notification Received", remoteMessage);
+		});
+	}, []);
 
 	useEffect(() => {
 		const subscription = AppState.addEventListener(
@@ -96,6 +81,17 @@ function App() {
 			subscription.remove();
 		};
 	}, []);
+
+	const handleNotificationNavigation = (remoteMessage: RemoteMessage) => {
+		if (!navigationRef.current) return;
+
+		if (remoteMessage?.data?.screen === 'NewsDetail') {
+			navigationRef.current.navigate('NewsDetail', {
+				postId: Number(remoteMessage.data.postId),
+				title: remoteMessage.data.title,
+			});
+		}
+	};
 
 	return (
 		<SafeAreaProvider>

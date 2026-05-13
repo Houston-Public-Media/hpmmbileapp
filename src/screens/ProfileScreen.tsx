@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert, Li
 import * as Device from 'expo-device';
 import { Category, getCategories, toggleCategory } from '../utils/categoryStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// eslint-disable-next-line import/no-named-as-default
 import PushNotificationService from '../services/PushNotificationService';
 import AudioFooter from "../components/AudioFooter";
 
@@ -171,7 +172,7 @@ const ProfileScreen = () => {
 				);
 
 				let token: string | null = null;
-				if (perm.status === 'granted') {
+				if (perm) {
 					const hasToken = PushNotificationService.isPushTokenAvailable();
 					token = hasToken
 						? PushNotificationService.getPushToken?.() || 'cached-token'
@@ -226,10 +227,10 @@ const ProfileScreen = () => {
 
 			const hasToken = PushNotificationService.isPushTokenAvailable();
 
-			if (perm.status === 'granted' && hasToken) {
+			if (perm && hasToken) {
 				setNotificationStatus('working');
 				await AsyncStorage.setItem('notifications_status', 'working');
-			} else if (perm.status === 'granted' && !hasToken) {
+			} else if (perm && !hasToken) {
 				setNotificationStatus('error');
 				await AsyncStorage.setItem('notifications_status', 'error');
 			} else {
@@ -318,7 +319,7 @@ const ProfileScreen = () => {
 				);
 				let token: string | null = null;
 
-				if (perm.status === 'granted') {
+				if (perm) {
 					const hadToken = PushNotificationService.isPushTokenAvailable();
 					if (hadToken) {
 						token = PushNotificationService.getPushToken?.() || 'cached-token';

@@ -1,9 +1,14 @@
 import { registerRootComponent } from 'expo';
 import TrackPlayer from 'react-native-track-player';
 import { PlaybackService } from './src/services/HPMAudioService';
-
+// eslint-disable-next-line import/no-named-as-default
+import PushNotificationService from "./src/services/PushNotificationService";
+import { setBackgroundMessageHandler } from "@react-native-firebase/messaging";
 import App from './App';
 
+setBackgroundMessageHandler( PushNotificationService.getMessaging(), async remoteMessage => {
+	console.log('Message handled in the background!', remoteMessage);
+});
 // Register the playback service for background audio and remote controls
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
