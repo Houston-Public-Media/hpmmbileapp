@@ -166,7 +166,7 @@ const ProfileScreen = () => {
 				}
 
 				const perm = await withTimeout(
-					PushNotificationService.getPermissionsStatus(),
+					PushNotificationService.checkPermission(),
 					8000,
 					'getPermissionsStatus (initial default)'
 				);
@@ -220,7 +220,7 @@ const ProfileScreen = () => {
 			}
 
 			const perm = await withTimeout(
-				PushNotificationService.getPermissionsStatus(),
+				PushNotificationService.checkPermission(),
 				5000,
 				'getPermissionsStatus (check)'
 			);
@@ -313,7 +313,7 @@ const ProfileScreen = () => {
 				}
 
 				const perm = await withTimeout(
-					PushNotificationService.getPermissionsStatus(),
+					PushNotificationService.checkPermission(),
 					8000,
 					'getPermissionsStatus (toggle)'
 				);

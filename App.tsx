@@ -1,6 +1,6 @@
 /* eslint-disable import/no-named-as-default */
-import React, {useEffect, useRef} from 'react';
-import {Alert, AppState, LogBox, StatusBar, StyleSheet} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {AppState, LogBox, StatusBar, StyleSheet} from 'react-native';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
 import {color} from './src/utils/colorUtils';
@@ -9,7 +9,8 @@ import AdManager from './src/components/AdManager';
 import {HPMAudioProvider} from './src/contexts/HPMAudioContext';
 import {analyticsService} from './src/services/AnalyticsService';
 import PushNotificationService from './src/services/PushNotificationService';
-import {onMessage, onNotificationOpenedApp, RemoteMessage} from "@react-native-firebase/messaging";
+import {onNotificationOpenedApp, onMessage, RemoteMessage} from "@react-native-firebase/messaging";
+import ToastMessage, {ToastMessageRef} from "./src/components/ToastMessage";
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
@@ -23,40 +24,38 @@ function App() {
 	const navigationRef = useRef<any>(null);
 	const appStateRef = useRef(AppState.currentState);
 	const sessionStartTime = useRef(Date.now());
+	const [toastType, setToastType] = useState<RemoteMessage>();
 
+	const toastRef = useRef<ToastMessageRef>(null);
 
 	useEffect(() => {
 		const initPushNotifications = async () => {
-			const token = await PushNotificationService.registerForPushNotifications();
-			console.log('Push notification token:', token);
+			const hasPermission = await PushNotificationService.requestUserPermission();
+			if (hasPermission) {
+				console.log('Notification permission granted');
+				const token = await PushNotificationService.registerForPushNotifications();
+				console.log('Push notification token:', token);
+			} else {
+				console.log('Notification permission denied');
+			}
 		};
 
 		initPushNotifications();
 		onNotificationOpenedApp(PushNotificationService.getMessaging(), remoteMessage => {
-			console.log('Push notification Information:', remoteMessage);
-			handleNotificationNavigation(remoteMessage);
+			console.log('onNotificationOpenedApp:', remoteMessage);
+			if (remoteMessage.data) {
+				handleNotificationNavigation(remoteMessage);
+			}
 		});
 	}, []);
 
 	useEffect(() => {
 		return onMessage(PushNotificationService.getMessaging(), remoteMessage => {
-			Alert.alert("New Story Alert", remoteMessage?.data?.title as string, [
-				{
-					text: 'Read Now',
-					onPress: () => handleNotificationNavigation(remoteMessage),
-					style: 'default'
-				},
-				{
-					text: 'Cancel',
-					onPress: () => console.log('User tapped dismiss button'),
-					style: 'cancel'
-				}
-			],
-			{
-				cancelable: true,
-				onDismiss: () => console.log('This alert was dismissed by tapping outside of the alert dialog.'),
-			});
-			console.log("Push Notification Received", remoteMessage);
+			setToastType(remoteMessage);
+			if (toastRef.current) {
+				toastRef.current.show();
+			}
+			console.log('onMessage:', remoteMessage);
 		});
 	}, []);
 
@@ -82,10 +81,14 @@ function App() {
 		};
 	}, []);
 
-	const handleNotificationNavigation = (remoteMessage: RemoteMessage) => {
+	const handleNotificationNavigation = (remoteMessage?: RemoteMessage) => {
 		if (!navigationRef.current) return;
-
-		if (remoteMessage?.data?.screen === 'NewsDetail') {
+		if (!remoteMessage) return;
+		if (toastRef.current) {
+			toastRef.current.hide();
+		}
+		console.log('Notification Navigation:', remoteMessage);
+		if (remoteMessage.data?.screen === 'NewsDetail') {
 			navigationRef.current.navigate('NewsDetail', {
 				postId: Number(remoteMessage.data.postId),
 				title: remoteMessage.data.title,
@@ -102,7 +105,6 @@ function App() {
 						edges={['top', 'left', 'right']}
 					>
 						<StatusBar barStyle={'light-content'} />
-
 						<NavigationContainer
 							ref={navigationRef}
 							onReady={() => {
@@ -139,6 +141,7 @@ function App() {
 					</SafeAreaView>
 				</AdManager>
 			</HPMAudioProvider>
+			<ToastMessage ref={toastRef} message={toastType} onPress={() => handleNotificationNavigation(toastType)} />
 		</SafeAreaProvider>
 	);
 }

@@ -6,8 +6,8 @@ import PushNotificationService from "./src/services/PushNotificationService";
 import { setBackgroundMessageHandler } from "@react-native-firebase/messaging";
 import App from './App';
 
-setBackgroundMessageHandler( PushNotificationService.getMessaging(), async remoteMessage => {
-	console.log('Message handled in the background!', remoteMessage);
+setBackgroundMessageHandler( PushNotificationService.getMessaging(), async (remoteMessage) => {
+	console.log("Message handled in background", remoteMessage);
 });
 // Register the playback service for background audio and remote controls
 TrackPlayer.registerPlaybackService(() => PlaybackService);
