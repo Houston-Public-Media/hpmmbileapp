@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, Linking, Alert, Animated } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import {FontAwesome6, MaterialIcons} from '@expo/vector-icons';
 import { color } from '../utils/colorUtils';
 import { Podcast, PodcastEpisode } from '../services/podcastApi';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
@@ -158,11 +158,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 							}],
 						}}
 					>
-						<MaterialIcons
-							name="sync"
-							size={20}
-							color="#fff"
-						/>
+						<FontAwesome6 name="rotate" size={18} color="#fff" />
 					</Animated.View>
 				) : (
 					<MaterialIcons

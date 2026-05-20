@@ -2,7 +2,7 @@
 
 import React, {useEffect, useState, useRef} from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert, Animated} from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import {FontAwesome6, MaterialIcons} from '@expo/vector-icons';
 import { color } from '../utils/colorUtils';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
 import { AudioTrack } from '../services/HPMAudioService';
@@ -128,7 +128,7 @@ const ListenLivePlayer: React.FC<ListenLivePlayerProps> = ( { track } ) => {
 											}],
 										}}
 									>
-										<MaterialIcons name="sync" size={12} color="#fff" />
+										<FontAwesome6 name="rotate" size={12} color="#fff" />
 									</Animated.View>
 								</View>
 							</View>
@@ -182,11 +182,7 @@ const ListenLivePlayer: React.FC<ListenLivePlayerProps> = ( { track } ) => {
 											}
 										]}
 									>
-										<MaterialIcons
-											name="sync"
-											size={22}
-											color="#fff"
-										/>
+										<FontAwesome6 name="rotate" size={20} color="#fff" />
 									</Animated.View>
 								) : (
 									<View style={styles.iconWrapper}>

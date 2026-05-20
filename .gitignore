@@ -6,6 +6,7 @@ GoogleService-Info.plist
 google-services.json
 package-lock.json
 Podfile.lock
+yarn.lock
 .vscode/
 .idea/
 *.keystore

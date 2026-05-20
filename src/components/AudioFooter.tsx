@@ -1,7 +1,7 @@
-import React from 'react';
-import {Alert, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, {useRef} from 'react';
+import {Alert, Animated, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useHPMAudio} from '../contexts/HPMAudioContext';
-import {MaterialIcons} from '@expo/vector-icons';
+import {FontAwesome6, MaterialIcons} from '@expo/vector-icons';
 import {color} from '../utils/colorUtils';
 import {State} from 'react-native-track-player';
 import { AudioType, AudioTrack } from "../services/HPMAudioService";
@@ -16,6 +16,7 @@ const AudioFooter = () => {
 		seekForward,
 		seekBackward
 	} = useHPMAudio();
+	const rotateAnim = useRef(new Animated.Value(0)).current;
 
 	const onPlayPausePress = async (track: AudioTrack) => {
 		try {
@@ -107,17 +108,36 @@ const AudioFooter = () => {
 						style={[
 							styles.mainPlayButton,
 							state === State.Playing && styles.pauseButton,
+							(state === State.Loading || state === State.Buffering) && styles.disabledButton
 						]}
 						onPress={() => onPlayPausePress(currentTrack)}
 					>
 						<View style={styles.buttonIconContainer}>
-							<View style={styles.iconWrapper}>
-								<MaterialIcons 
-									name={state === State.Playing ? 'pause' : 'play-arrow'}
-									size={22} 
-									color="#fff" 
-								/>
-							</View>
+							{(state === State.Loading || state === State.Buffering) ? (
+								<Animated.View
+									style={[
+										styles.iconWrapper,
+										{
+											transform: [{
+												rotate: rotateAnim.interpolate({
+													inputRange: [0, 1],
+													outputRange: ['0deg', '360deg'],
+												}),
+											}],
+										}
+									]}
+								>
+									<FontAwesome6 name="rotate" size={20} color="#fff" />
+								</Animated.View>
+							) : (
+								<View style={styles.iconWrapper}>
+									<MaterialIcons
+										name={state === State.Playing ? 'pause' : 'play-arrow'}
+										size={22}
+										color="#fff"
+									/>
+								</View>
+							)}
 						</View>
 					</TouchableOpacity>
 					{!currentTrack.isLiveStream ? (
@@ -332,6 +352,6 @@ const styles = StyleSheet.create({
 		height: 12,
 		justifyContent: 'center',
 		alignItems: 'center',
-	},
+	}
 });
 export default AudioFooter;
