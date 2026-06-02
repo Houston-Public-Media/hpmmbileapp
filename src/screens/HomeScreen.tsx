@@ -19,6 +19,7 @@ import { useAds } from '../hooks/useAds';
 import BrightcoveVideo from '../components/BrightcoveVideo';
 import { useScreenTracking } from '../hooks/useAnalytics';
 import { NewsArticle, TalkshowEntry } from '../type';
+import VerticalVideosScreen from './VerticalVideosScreen';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -258,7 +259,7 @@ useFocusEffect(
         return (
         <View style={styles.section}>
           <BrightcoveVideo videos={brightcoveVideos} />
-          <TouchableOpacity onPress={() => navigation.navigate('VerticalVideosScreen', {})} style={styles.seeAllButton}>
+          <TouchableOpacity  onPress={() => navigation.getParent()?.navigate('Shorts')}  style={styles.seeAllButton}>
             <Text style={styles.seeAll}>View all</Text>
           </TouchableOpacity>
         </View>
