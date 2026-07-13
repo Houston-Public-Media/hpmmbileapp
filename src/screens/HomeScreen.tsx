@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   webViewContainer: {
-  height: 600,
+  height: 570,
   paddingLeft:-16
 },
 webView: {
