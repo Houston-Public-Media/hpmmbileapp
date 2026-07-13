@@ -19,6 +19,13 @@ export async function fetchPriorityData() {
 	}
 }
 
+export async function fetchBrightCoveEmbedURL() {
+  //const json = require('../data/list.json');
+  const response = await fetch('https://www.houstonpublicmedia.org/wp-json/hpm-video/v1/options');
+  const json = await response.json();
+  return json?.data?.homepage_video_url || {};
+}
+
 export async function fetchBrightcoveVideos({playlist = false, limit, offset = 0, screen = false }: {playlist?: boolean; limit?: number; offset?: number; screen?: boolean;}): Promise<BrightcoveVideo[]> {
 	try {
 		const params = new URLSearchParams();

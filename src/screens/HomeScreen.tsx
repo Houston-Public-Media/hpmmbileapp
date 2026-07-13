@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { fetchPriorityData, fetchBrightcoveVideos } from '../services/newsApi';
+import { fetchPriorityData, fetchBrightCoveEmbedURL } from '../services/newsApi';
 import NewsCard from '../components/NewsCard';
 import { color } from '../utils/colorUtils';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -16,10 +16,9 @@ import SectionTitle from '../components/SectionTitle';
 import CategorySection from '../components/CategorySection';
 import AudioFooter from '../components/AudioFooter';
 import { useAds } from '../hooks/useAds';
-import BrightcoveVideo from '../components/BrightcoveVideo';
 import { useScreenTracking } from '../hooks/useAnalytics';
 import { NewsArticle, TalkshowEntry } from '../type';
-import VerticalVideosScreen from './VerticalVideosScreen';
+import WebView from 'react-native-webview';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -48,9 +47,9 @@ export default function HomeScreen({ navigation }: Props) {
   const [selectedCategories, setSelectedCategories] = useState<{ id: string; name: string }[]>([]);
   const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
   const [breakingData, setBreakingData] = useState<any>(null);
-  const [brightcoveVideos, setBrightcoveVideos] = useState<any[]>([]);
+  const [brightcoveUrl, setBrightcoveUrl] = useState<string>('');
+  
   const { showInterstitialAd, isInterstitialLoaded } = useAds();
-
 
 	const featured = articles[0];
 	const borderNewsList = articles.slice(1, 5);
@@ -92,13 +91,17 @@ export default function HomeScreen({ navigation }: Props) {
 
 const loadData = async () => {
   try {
-    const data = await fetchPriorityData();
+   // const data = await fetchPriorityData();
+    const [data, brightcoveEmbedUrl] = await Promise.all([
+      fetchPriorityData(),
+      fetchBrightCoveEmbedURL(),
+    ]);
 
     setArticles(Array.isArray(data?.articles) ? data.articles : []);
     setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
     setBreakingData(data?.breaking || null);
-    const videos = await fetchBrightcoveVideos({ playlist: false, limit: 12, offset: 0, screen: false,});
-    setBrightcoveVideos(Array.isArray(videos) ? videos : []);
+    setBrightcoveUrl(brightcoveEmbedUrl || '');
+    
 
     const categories = await getSelectedCategories();
     setSelectedCategories(
@@ -257,12 +260,13 @@ useFocusEffect(
 
 		case 'brightcove':
         return (
-        <View style={styles.section}>
-          <BrightcoveVideo videos={brightcoveVideos} />
-          <TouchableOpacity  onPress={() => navigation.getParent()?.navigate('Shorts')}  style={styles.seeAllButton}>
-            <Text style={styles.seeAll}>View all</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={[styles.section, styles.webViewContainer]}>
+        <SectionTitle title="HPM" subtitle="Shorts" line={true} containerStyle={{ marginBottom: 16, paddingLeft:-16 }} titleStyle={{ color: 'black' }} subtitleStyle={{ color: '#c8102e' }} />
+        <WebView style={styles.webView} source={{ uri: 'https://site-59122660.ipx.bcvp0rtal.com' }} />
+        <TouchableOpacity  onPress={() => navigation.getParent()?.navigate('Shorts')}  style={styles.seeAllButton}>
+          <Text style={styles.seeAll}>View all</Text>
+        </TouchableOpacity>
+      </View>
 
       );
 
@@ -315,4 +319,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 13,
   },
+  webViewContainer: {
+  height: 600,
+  paddingLeft:-16
+},
+webView: {
+  flex: 1,
+},
 });
