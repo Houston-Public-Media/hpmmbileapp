@@ -2,7 +2,7 @@
   "expo": {
     "name": "HPM",
     "slug": "hpm",
-    "version": "9.1.1",
+    "version": "10.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.jacapps.hpm",
-      "buildNumber": "1",
+      "buildNumber": 14,
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": ["remote-notification"]
@@ -31,7 +31,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.jacobsmedia.KUHFV3",
-      "versionCode": 13,
+      "versionCode": 14,
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.RECORD_AUDIO",
