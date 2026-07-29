@@ -44,3 +44,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+src/data/priority-test.json
+src/services/PushNotificationService copy.ts
+src/components/BrightcoveVideo copy.tsx

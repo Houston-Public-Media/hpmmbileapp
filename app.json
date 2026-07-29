@@ -7,6 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "launchMode": "most-recent",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

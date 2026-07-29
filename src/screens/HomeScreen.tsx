@@ -262,7 +262,7 @@ useFocusEffect(
         return (
       <View style={[styles.section, styles.webViewContainer]}>
         <SectionTitle title="HPM" subtitle="Shorts" line={true} containerStyle={{ marginBottom: 16, paddingLeft:-16 }} titleStyle={{ color: 'black' }} subtitleStyle={{ color: '#c8102e' }} />
-        <WebView style={styles.webView} source={{ uri: 'https://site-59122660.ipx.bcvp0rtal.com' }} />
+        <WebView style={styles.webView} source={{ uri: brightcoveUrl }} />
         <TouchableOpacity  onPress={() => navigation.getParent()?.navigate('Shorts')}  style={styles.seeAllButton}>
           <Text style={styles.seeAll}>View all</Text>
         </TouchableOpacity>
