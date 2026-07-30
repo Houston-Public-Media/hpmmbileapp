@@ -2,7 +2,7 @@ import { getAnalytics, logEvent, setUserId, setUserProperties, setAnalyticsColle
 import { getApp } from '@react-native-firebase/app';
 
 const analytics = getAnalytics(getApp());
-const ANALYTICS_ENABLED = false;
+const ANALYTICS_ENABLED = true;
 
 export class AnalyticsService {
 	private static instance: AnalyticsService;
@@ -19,9 +19,7 @@ export class AnalyticsService {
 	private async initialize() {
 		try {
 			await setAnalyticsCollectionEnabled(analytics, ANALYTICS_ENABLED);
-			console.log(
-				`Firebase Analytics ${ANALYTICS_ENABLED ? 'enabled' : 'disabled'}`
-			);
+			//console.log(`Firebase Analytics ${ANALYTICS_ENABLED ? 'enabled' : 'disabled'}`);
 		} catch (error) {
 			console.error('Analytics initialization error:', error);
 		}
@@ -45,7 +43,7 @@ export class AnalyticsService {
 				firebase_screen_class: screenClass || screenName,
 			});
 
-			console.log('Screen logged:', screenName);
+			//console.log('Screen logged:', screenName);
 		} catch (error) {
 			console.error('Screen tracking error:', error);
 		}
@@ -53,15 +51,15 @@ export class AnalyticsService {
 
 	async trackHomeScreen() {
 		await this.logScreenView('Home', 'HomeScreen');
-		console.log("Home Screen analytics");
+		//console.log("Home Screen analytics");
 	}
 	async trackListenLiveScreen() {
 		await this.logScreenView('Listen Live', 'ListenLiveScreen');
-		console.log("Listen live Screen analytics");
+		//console.log("Listen live Screen analytics");
 	}
 	async trackWatchLiveScreen() {
 		await this.logScreenView('Watch Live', 'WatchLiveScreen');
-		console.log("Watchß Screen analytics");
+		//console.log("Watchß Screen analytics");
 	}
 	async trackPodcastScreen() {
 		await this.logScreenView('Podcast', 'PodcastScreen');

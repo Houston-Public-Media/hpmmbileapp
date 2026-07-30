@@ -32,9 +32,9 @@ function App() {
 		const initPushNotifications = async () => {
 			const hasPermission = await PushNotificationService.requestUserPermission();
 			if (hasPermission) {
-				console.log('Notification permission granted');
+				//console.log('Notification permission granted');
 				const token = await PushNotificationService.registerForPushNotifications();
-				console.log('Push notification token:', token);
+				//console.log('Push notification token:', token);
 			} else {
 				console.log('Notification permission denied');
 			}
@@ -42,7 +42,7 @@ function App() {
 
 		initPushNotifications();
 		onNotificationOpenedApp(PushNotificationService.getMessaging(), remoteMessage => {
-			console.log('onNotificationOpenedApp:', remoteMessage);
+			//console.log('onNotificationOpenedApp:', remoteMessage);
 			if (remoteMessage.data) {
 				handleNotificationNavigation(remoteMessage);
 			}
@@ -87,7 +87,7 @@ function App() {
 		if (toastRef.current) {
 			toastRef.current.hide();
 		}
-		console.log('Notification Navigation:', remoteMessage);
+		//console.log('Notification Navigation:', remoteMessage);
 		if (remoteMessage.data?.screen === 'NewsDetail') {
 			navigationRef.current.navigate('NewsDetail', {
 				postId: Number(remoteMessage.data.postId),
@@ -129,7 +129,7 @@ function App() {
 											currentRouteName
 										);
 
-										console.log('Screen tracked:', currentRouteName);
+										//console.log('Screen tracked:', currentRouteName);
 									} catch (e) {
 										console.log('Screen tracking failed:', e);
 									}

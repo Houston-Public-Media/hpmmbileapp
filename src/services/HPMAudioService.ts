@@ -97,10 +97,10 @@ class HPMAudioService {
 					IOSCategoryOptions.AllowAirPlay,
 				]
 			});
-			console.log('HPM Audio Service: TrackPlayer setup complete');
+			//console.log('HPM Audio Service: TrackPlayer setup complete');
 
 			// Configure capabilities for all audio types
-			console.log('HPM Audio Service: Configuring options...');
+			//console.log('HPM Audio Service: Configuring options...');
 			await TrackPlayer.updateOptions({
 				android: {
 					appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
@@ -115,15 +115,15 @@ class HPMAudioService {
 				compactCapabilities: [Capability.Play, Capability.Pause, Capability.Stop],
 				progressUpdateEventInterval: 1
 			});
-			console.log('HPM Audio Service: Options configured');
+			//console.log('HPM Audio Service: Options configured');
 
 			// Set up event listeners
-			console.log('HPM Audio Service: Setting up event listeners...');
+			//console.log('HPM Audio Service: Setting up event listeners...');
 			this.setupEventListeners();
-			console.log('HPM Audio Service: Event listeners setup complete');
+			//console.log('HPM Audio Service: Event listeners setup complete');
 
 			this.isInitialized = true;
-			console.log('HPM Audio Service initialized successfully');
+			//console.log('HPM Audio Service initialized successfully');
 			return true;
 		} catch (error) {
 			// If already initialized, that's okay
@@ -679,7 +679,7 @@ class HPMAudioService {
 
 			this.stateChangeListeners.clear();
 
-			console.log('HPM Audio Service cleaned up');
+			//console.log('HPM Audio Service cleaned up');
 		} catch (error) {
 			console.error('Error during cleanup:', error);
 		}
