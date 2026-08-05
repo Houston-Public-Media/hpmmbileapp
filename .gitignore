@@ -10,6 +10,7 @@ yarn.lock
 .vscode/
 .idea/
 *.keystore
+keystore.properties
 
 # Expo
 .expo/
