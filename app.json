@@ -33,6 +33,7 @@
       "edgeToEdgeEnabled": true,
       "package": "com.jacobsmedia.KUHFV3",
       "versionCode": 14,
+      
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.RECORD_AUDIO",

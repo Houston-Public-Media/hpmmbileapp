@@ -82,13 +82,42 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 // Creates a variable called keystorePropertiesFile, and initializes it to the
 // keystore.properties file.
-def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystorePropertiesFile = project.file("keystore.properties")
 
 // Initializes a new Properties() object called keystoreProperties.
 def keystoreProperties = new Properties()
 
 // Loads the keystore.properties file into the keystoreProperties object.
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+def vectorIconFontsDir = file("${projectRoot}/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts")
+def generatedVectorIconAssetsDir = file("${buildDir}/generated/assets/vector-icons")
+
+tasks.register("copyVectorIconFonts", Copy) {
+    into("${generatedVectorIconAssetsDir}/fonts")
+
+    from("${vectorIconFontsDir}/Ionicons.ttf") { rename { "ionicons.ttf" } }
+    from("${vectorIconFontsDir}/MaterialIcons.ttf") { rename { "material.ttf" } }
+    from("${vectorIconFontsDir}/MaterialCommunityIcons.ttf") { rename { "material-community.ttf" } }
+    from("${vectorIconFontsDir}/Feather.ttf") { rename { "feather.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome.ttf") { rename { "FontAwesome.ttf" } }
+
+    from("${vectorIconFontsDir}/FontAwesome5_Regular.ttf") { rename { "FontAwesome5Free-Regular.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome5_Regular.ttf") { rename { "FontAwesome5Free-Light.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome5_Solid.ttf") { rename { "FontAwesome5Free-Solid.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome5_Brands.ttf") { rename { "FontAwesome5Free-Brand.ttf" } }
+
+    from("${vectorIconFontsDir}/FontAwesome6_Regular.ttf") { rename { "FontAwesome6Free-Regular.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome6_Regular.ttf") { rename { "FontAwesome6Free-Light.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome6_Regular.ttf") { rename { "FontAwesome6Free-Thin.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome6_Solid.ttf") { rename { "FontAwesome6Free-Solid.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome6_Brands.ttf") { rename { "FontAwesome6Brands-Regular.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome6_Regular.ttf") { rename { "FontAwesome6Sharp-Regular.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome6_Regular.ttf") { rename { "FontAwesome6Sharp-Light.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome6_Solid.ttf") { rename { "FontAwesome6Sharp-Solid.ttf" } }
+    from("${vectorIconFontsDir}/FontAwesome6_Solid.ttf") { rename { "FontAwesome6Duotone-Solid.ttf" } }
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -102,6 +131,11 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 14
         versionName "10.0.0"
+    }
+    sourceSets {
+        main {
+            assets.srcDirs += generatedVectorIconAssetsDir
+        }
     }
     signingConfigs {
         debug {
@@ -139,6 +173,16 @@ android {
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("copyVectorIconFonts")
+}
+
+tasks.matching { task ->
+    task.name.startsWith("merge") && task.name.endsWith("Assets")
+}.configureEach {
+    dependsOn("copyVectorIconFonts")
 }
 
 // Apply static values from `gradle.properties` to the `android.packagingOptions`
