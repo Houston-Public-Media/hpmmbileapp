@@ -1,7 +1,5 @@
-import { getAnalytics, logEvent, setUserId, setUserProperties, setAnalyticsCollectionEnabled, } from '@react-native-firebase/analytics';
-import { getApp } from '@react-native-firebase/app';
+import analytics from '@react-native-firebase/analytics';
 
-const analytics = getAnalytics(getApp());
 const ANALYTICS_ENABLED = true;
 
 export class AnalyticsService {
@@ -18,7 +16,7 @@ export class AnalyticsService {
 	}
 	private async initialize() {
 		try {
-			await setAnalyticsCollectionEnabled(analytics, ANALYTICS_ENABLED);
+			await analytics().setAnalyticsCollectionEnabled(ANALYTICS_ENABLED);
 			//console.log(`Firebase Analytics ${ANALYTICS_ENABLED ? 'enabled' : 'disabled'}`);
 		} catch (error) {
 			console.error('Analytics initialization error:', error);
@@ -29,7 +27,7 @@ export class AnalyticsService {
 		if (!ANALYTICS_ENABLED) return;
 
 		try {
-			await logEvent(analytics, eventName, params);
+			await analytics().logEvent(eventName, params);
 		} catch (error) {
 			console.error(`Error logging event: ${eventName}`, error);
 		}
@@ -98,7 +96,7 @@ export class AnalyticsService {
 		if (!ANALYTICS_ENABLED) return;
 
 		try {
-			await setUserId(analytics, userId);
+			await analytics().setUserId(userId);
 		} catch (error) {
 			console.error(error);
 		}
@@ -107,7 +105,7 @@ export class AnalyticsService {
 		if (!ANALYTICS_ENABLED) return;
 
 		try {
-			await setUserProperties(analytics, {
+			await analytics().setUserProperties({
 				[name]: value,
 			});
 		} catch (error) {

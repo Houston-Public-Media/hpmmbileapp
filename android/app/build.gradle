@@ -88,7 +88,9 @@ def keystorePropertiesFile = project.file("keystore.properties")
 def keystoreProperties = new Properties()
 
 // Loads the keystore.properties file into the keystoreProperties object.
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
 
 def vectorIconFontsDir = file("${projectRoot}/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts")
 def generatedVectorIconAssetsDir = file("${buildDir}/generated/assets/vector-icons")
@@ -129,7 +131,7 @@ android {
         applicationId 'com.jacobsmedia.KUHFV3'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 14
+        versionCode 15
         versionName "10.0.0"
     }
     sourceSets {
@@ -145,11 +147,13 @@ android {
             keyPassword 'android'
         }
         release {
-			storeFile file(keystoreProperties['storeFile'])
-			storePassword keystoreProperties['storePassword']
-			keyAlias keystoreProperties['keyAlias']
-			keyPassword keystoreProperties['keyPassword']
-		}
+            if (keystoreProperties['storeFile'] != null) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
     }
     buildTypes {
         debug {
