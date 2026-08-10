@@ -4,6 +4,7 @@ import {
 	useWindowDimensions,
 	View,
 } from 'react-native';
+import Video from 'react-native-video';
 
 import RenderHTML, {
 	HTMLContentModel,
@@ -14,6 +15,7 @@ import RenderHTML, {
 	TBlock,
 	TNodeChildrenRenderer,
 } from 'react-native-render-html';
+import type { TNode } from 'react-native-render-html';
 import AudioPlayer from './AudioPlayer';
 import SplideCarousel from './SplideCarousel';
 import YouTubePlayer from './YouTubePlayer';
@@ -31,11 +33,16 @@ const HtmlRenderer: React.FC<HtmlRendererProps> = (
 ) => {
 	const { width } = useWindowDimensions();
 	const containerWidth = contentWidth || width;
+	const mediaWidth = Math.max(containerWidth - 30, 0);
+
+	const getChildAttribute = useCallback((tnode: TBlock, attribute: string): string | undefined => {
+		const sourceNode = tnode.children.find((child: TNode) => child.attributes?.[attribute]);
+		return sourceNode?.attributes?.[attribute];
+	}, []);
 
 	// Memoized custom renderer for <audio>
 	const audioRenderer: CustomBlockRenderer = useCallback(({ tnode }: CustomRendererProps<TBlock>) => {
-		const sourceNode = tnode.children.find((child: any) => child.attributes?.src);
-		const src = sourceNode?.attributes?.src;
+		const src = tnode.attributes.src || getChildAttribute(tnode, 'src');
 		const title = tnode.attributes['data-title'] || 'Untitled';
 		const subtitle = tnode.attributes['data-subtitle'] || 'Unknown';
 		const thumbnail = tnode.attributes['data-thumbnail'] || '';
@@ -50,7 +57,34 @@ const HtmlRenderer: React.FC<HtmlRendererProps> = (
 				thumbnail={{ uri: thumbnail }}
 			/>
 		);
-	}, []);
+	}, [getChildAttribute]);
+
+	const videoRenderer: CustomBlockRenderer = useCallback(({ tnode }: CustomRendererProps<TBlock>) => {
+		const src = tnode.attributes.src || getChildAttribute(tnode, 'src');
+
+		if (!src) return null;
+
+		const poster = tnode.attributes.poster;
+		const declaredWidth = Number(tnode.attributes.width);
+		const declaredHeight = Number(tnode.attributes.height);
+		const aspectRatio = declaredWidth > 0 && declaredHeight > 0
+			? declaredWidth / declaredHeight
+			: 16 / 9;
+		const videoHeight = mediaWidth / aspectRatio;
+
+		return (
+			<View style={[styles.videoContainer, { width: mediaWidth, height: videoHeight }]}>
+				<Video
+					source={{ uri: src }}
+					style={styles.video}
+					controls
+					paused
+					resizeMode="contain"
+					poster={poster ? { source: { uri: poster }, resizeMode: 'cover' } : undefined}
+				/>
+			</View>
+		);
+	}, [getChildAttribute, mediaWidth]);
 
 	// Memoized iframe renderer for YouTube and other video content
 	const iframeRenderer: CustomBlockRenderer = useCallback(({ tnode }: CustomRendererProps<TBlock>) => {
@@ -140,7 +174,8 @@ const HtmlRenderer: React.FC<HtmlRendererProps> = (
 		audio: audioRenderer,
 		div: splideRenderer,
 		iframe: iframeRenderer,
-	}), [audioRenderer, splideRenderer, iframeRenderer]);
+		video: videoRenderer,
+	}), [audioRenderer, splideRenderer, iframeRenderer, videoRenderer]);
 
 	// Memoized custom HTML element models with stable references
 	const customHTMLElementModels = useMemo(() => ({
@@ -150,6 +185,10 @@ const HtmlRenderer: React.FC<HtmlRendererProps> = (
 		}),
 		iframe: HTMLElementModel.fromCustomModel({
 			tagName: 'iframe',
+			contentModel: HTMLContentModel.block,
+		}),
+		video: HTMLElementModel.fromCustomModel({
+			tagName: 'video',
 			contentModel: HTMLContentModel.block,
 		}),
 	}), []);
@@ -205,6 +244,9 @@ const HtmlRenderer: React.FC<HtmlRendererProps> = (
 			resizeMode: 'cover',
 			objectFit: 'cover',
 			alignSelf: 'stretch',
+		},
+		video: {
+			marginVertical: 10,
 		},
 	}), [numberOfLines]);
 
@@ -277,6 +319,15 @@ const styles = StyleSheet.create({
 		marginLeft: -15,
 		overflow: 'hidden',
 		flex: 1,
+	},
+	videoContainer: {
+		marginVertical: 10,
+		backgroundColor: '#000',
+		overflow: 'hidden',
+	},
+	video: {
+		width: '100%',
+		height: '100%',
 	},
 });
 
