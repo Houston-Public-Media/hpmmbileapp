@@ -19,6 +19,7 @@ import type { TNode } from 'react-native-render-html';
 import AudioPlayer from './AudioPlayer';
 import SplideCarousel from './SplideCarousel';
 import YouTubePlayer from './YouTubePlayer';
+import WebView from 'react-native-webview';
 
 interface HtmlRendererProps {
 	htmlContent: string;
@@ -86,24 +87,69 @@ const HtmlRenderer: React.FC<HtmlRendererProps> = (
 		);
 	}, [getChildAttribute, mediaWidth]);
 
+const isYouTubeUrl = (url: string) => {
+    try {
+        const hostname = new URL(url).hostname.toLowerCase();
+
+        return (
+            hostname === 'youtube.com' ||
+            hostname.endsWith('.youtube.com') ||
+            hostname === 'youtu.be' ||
+            hostname.endsWith('.youtube-nocookie.com')
+        );
+    } catch {
+        return false;
+    }
+};
+
 	// Memoized iframe renderer for YouTube and other video content
-	const iframeRenderer: CustomBlockRenderer = useCallback(({ tnode }: CustomRendererProps<TBlock>) => {
-		const src = tnode.attributes.src;
-		if (!src) return null;
+	const iframeRenderer: CustomBlockRenderer = useCallback(
+    ({ tnode }: CustomRendererProps<TBlock>) => {
+        const src = tnode.attributes.src;
 
-		// Calculate appropriate dimensions
-		const iframeWidth = containerWidth - 30; // Account for padding
-		const aspectRatio = 16 / 9; // Standard video aspect ratio
-		const iframeHeight = iframeWidth / aspectRatio;
+        if (!src) return null;
 
-		return (
-			<YouTubePlayer
-				src={src}
-				width={iframeWidth}
-				height={iframeHeight}
-			/>
-		);
-	}, [containerWidth]);
+        const iframeWidth = Math.max(containerWidth - 30, 0);
+        const aspectRatio = 16 / 9;
+        const iframeHeight = iframeWidth / aspectRatio;
+
+        if (isYouTubeUrl(src)) {
+            return (
+                <YouTubePlayer
+                    src={src}
+                    width={iframeWidth}
+                    height={iframeHeight}
+                />
+            );
+        }
+
+        return (
+            <View
+                style={{
+                    width: iframeWidth,
+                    height: iframeHeight,
+                    marginVertical: 10,
+                    overflow: 'hidden',
+                }}
+            >
+                <WebView
+                    source={{ uri: src }}
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'transparent',
+                    }}
+                    javaScriptEnabled
+                    domStorageEnabled
+                    allowsInlineMediaPlayback
+                    mediaPlaybackRequiresUserAction={false}
+                    originWhitelist={['*']}
+                    startInLoadingState
+                />
+            </View>
+        );
+    },
+    [containerWidth]
+);
 
 	// Memoized Splide carousel renderer
 	const splideRenderer: CustomBlockRenderer = useCallback(({ tnode }: CustomRendererProps<TBlock>) => {
