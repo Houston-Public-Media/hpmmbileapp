@@ -1,11 +1,19 @@
 import * as Device from 'expo-device';
 import {PermissionsAndroid, Platform} from 'react-native';
-import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import {
+	AuthorizationStatus,
+	deleteToken,
+	getMessaging,
+	getToken, hasPermission,
+	Messaging,
+	requestPermission,
+	unregisterDeviceForRemoteMessages
+} from '@react-native-firebase/messaging';
 
 export class PushNotificationService {
 	private static instance: PushNotificationService;
 	private fcmPushToken: string | null = null;
-	private messaging = messaging();
+	private messaging: Messaging = getMessaging();
 
 	private constructor() {}
 
@@ -24,7 +32,7 @@ export class PushNotificationService {
 			// If permission revoked → remove token
 			if (!status) {
 				if (this.fcmPushToken) {
-					await this.messaging.unregisterDeviceForRemoteMessages();
+					await unregisterDeviceForRemoteMessages(this.messaging);
 					this.fcmPushToken = null;
 					console.log('Push disabled → token removed');
 				}
@@ -43,8 +51,8 @@ export class PushNotificationService {
 
 	async requestUserPermission() {
 		if (Platform.OS === 'ios') {
-			const authStatus = await this.messaging.requestPermission();
-			return authStatus === FirebaseMessagingTypes.AuthorizationStatus.AUTHORIZED || authStatus === FirebaseMessagingTypes.AuthorizationStatus.PROVISIONAL;
+			const authStatus = await requestPermission(this.messaging);
+			return authStatus === AuthorizationStatus.AUTHORIZED || authStatus === AuthorizationStatus.PROVISIONAL;
 		}
 
 		if (Platform.OS === 'android') {
@@ -60,8 +68,8 @@ export class PushNotificationService {
 	}
 
 	async checkPermission(): Promise<boolean> {
-		const authStatus = await this.messaging.hasPermission();
-		return authStatus === FirebaseMessagingTypes.AuthorizationStatus.AUTHORIZED || authStatus === FirebaseMessagingTypes.AuthorizationStatus.PROVISIONAL;
+		const authStatus = await hasPermission(this.messaging);
+		return authStatus === AuthorizationStatus.AUTHORIZED || authStatus === AuthorizationStatus.PROVISIONAL;
 	}
 
 	/**
@@ -84,7 +92,7 @@ export class PushNotificationService {
 		try {
 			// Get the token that uniquely identifies this device
 			// This works for both Android and iOS
-			token = await this.messaging.getToken();
+			token = await getToken(this.messaging);
 			this.fcmPushToken = token;
 
 			if (!token) {
@@ -111,14 +119,14 @@ export class PushNotificationService {
 		return !!this.fcmPushToken;
 	}
 
-	public getMessaging(): FirebaseMessagingTypes.Module {
+	public getMessaging(): Messaging {
 		return this.messaging;
 	}
 
 	async disablePushNotifications(): Promise<void> {
 		try {
-			await this.messaging.unregisterDeviceForRemoteMessages();
-			await this.messaging.deleteToken();
+			await unregisterDeviceForRemoteMessages(this.messaging);
+			await deleteToken(this.messaging);
 		} finally {
 			this.fcmPushToken = null;
 		}

@@ -9,7 +9,7 @@ import AdManager from './src/components/AdManager';
 import {HPMAudioProvider} from './src/contexts/HPMAudioContext';
 import {analyticsService} from './src/services/AnalyticsService';
 import PushNotificationService from './src/services/PushNotificationService';
-import messaging, {FirebaseMessagingTypes} from "@react-native-firebase/messaging";
+import {onNotificationOpenedApp, onMessage, RemoteMessage} from "@react-native-firebase/messaging";
 import ToastMessage, {ToastMessageRef} from "./src/components/ToastMessage";
 
 // Ignore specific warnings
@@ -24,7 +24,7 @@ function App() {
 	const navigationRef = useRef<any>(null);
 	const appStateRef = useRef(AppState.currentState);
 	const sessionStartTime = useRef(Date.now());
-	const [toastType, setToastType] = useState<FirebaseMessagingTypes.RemoteMessage>();
+	const [toastType, setToastType] = useState<RemoteMessage>();
 
 	const toastRef = useRef<ToastMessageRef>(null);
 
@@ -41,7 +41,7 @@ function App() {
 		};
 
 		initPushNotifications();
-		PushNotificationService.getMessaging().onNotificationOpenedApp(remoteMessage => {
+		onNotificationOpenedApp(PushNotificationService.getMessaging(), remoteMessage => {
 			//console.log('onNotificationOpenedApp:', remoteMessage);
 			if (remoteMessage.data) {
 				handleNotificationNavigation(remoteMessage);
@@ -81,7 +81,7 @@ function App() {
 		};
 	}, []);
 
-	const handleNotificationNavigation = (remoteMessage?: FirebaseMessagingTypes.RemoteMessage) => {
+	const handleNotificationNavigation = (remoteMessage?: RemoteMessage) => {
 		if (!navigationRef.current) return;
 		if (!remoteMessage) return;
 		if (toastRef.current) {
