@@ -9,7 +9,7 @@ import TrackPlayer, {
 	State,
 	Track as TPTrack,
 } from 'react-native-track-player';
-import {Platform} from "react-native";
+import {Platform, AppState} from "react-native";
 
 // Audio source types
 export enum AudioType {
@@ -83,6 +83,12 @@ class HPMAudioService {
 		if (this.isInitialized) {
 			//console.log('HPM Audio Service already initialized');
 			return true;
+		}
+
+		// On Android, the app must be in the foreground to setup the player
+		if (Platform.OS === 'android' && AppState.currentState !== 'active') {
+			console.log('HPM Audio Service: Skipping initialization on Android because app is in background');
+			return false;
 		}
 
 		console.log('HPM Audio Service: Starting initialization...');
@@ -326,7 +332,9 @@ class HPMAudioService {
 	 */
 	async play(track: AudioTrack): Promise<void> {
 		try {
-			await this.initialize();
+			const success = await this.initialize();
+			if (!success) return;
+
 			if (track.isLiveStream) {
 				await TrackPlayer.updateOptions({
 					capabilities: [
@@ -432,7 +440,8 @@ class HPMAudioService {
 	 */
 	async togglePlayPause(track: AudioTrack): Promise<void> {
 		try {
-			await this.initialize();
+			const success = await this.initialize();
+			if (!success) return;
 
 			const currentTrack = this.state.currentTrack;
 

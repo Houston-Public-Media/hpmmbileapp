@@ -1,6 +1,7 @@
 // src/contexts/HPMAudioContext.tsx
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { AppState } from 'react-native';
 import {
 	hpmAudioService,
 	AudioTrack,
@@ -73,40 +74,61 @@ export const HPMAudioProvider: React.FC<HPMAudioProviderProps> = ({ children }) 
 
 	// Initialize the audio service
 	useEffect(() => {
+		let isMounted = true;
+
 		const initializeService = async () => {
+			// On Android, the app must be in the foreground to setup the player
+			if (AppState.currentState !== 'active') {
+				console.log('HPMAudioContext: App is not active, waiting for foreground to initialize...');
+				return;
+			}
+
 			try {
 				console.log('HPMAudioContext: Initializing service...');
 				const success = await hpmAudioService.initialize();
-				if (success) {
+				if (success && isMounted) {
 					setIsInitialized(true);
 					setIsLoading(true);
 					console.log('HPMAudioContext: HPM Audio Service initialized successfully');
-				} else {
+				} else if (!success && isMounted) {
 					const errorMsg = 'Failed to initialize audio service';
 					console.error('HPMAudioContext:', errorMsg);
 					setError(errorMsg);
 				}
 			} catch (err) {
 				console.error('HPMAudioContext: Error initializing audio service:', err);
-				if (err instanceof Error) {
+				if (err instanceof Error && isMounted) {
 					console.error('HPMAudioContext: Error details:', err.message);
 				}
-				setError('Failed to initialize audio service');
+				if (isMounted) {
+					setError('Failed to initialize audio service');
+				}
 			}
 		};
 
 		initializeService();
 
+		// Listen for app state changes to initialize when returning to foreground
+		const appStateListener = AppState.addEventListener('change', (nextAppState) => {
+			if (nextAppState === 'active') {
+				initializeService();
+			}
+		});
+
 		// Subscribe to state changes
 		const unsubscribe = hpmAudioService.addStateChangeListener(() => {
-			setAudioState(hpmAudioService.getCurrentState());
+			if (isMounted) {
+				setAudioState(hpmAudioService.getCurrentState());
+			}
 		});
 
 		const fetchData = async () => {
 			const data = await hpmAudioService.updateLiveStreamTracks();
-			setTracks(data);
-			setIsPlayerReady(true);
-			setIsLoading(false);
+			if (isMounted) {
+				setTracks(data);
+				setIsPlayerReady(true);
+				setIsLoading(false);
+			}
 		}
 
 		fetchData();
@@ -116,7 +138,9 @@ export const HPMAudioProvider: React.FC<HPMAudioProviderProps> = ({ children }) 
 
 		// Cleanup on dismount
 		return () => {
+			isMounted = false;
 			unsubscribe();
+			appStateListener.remove();
 			clearInterval(interval);
 		};
 	}, []);
