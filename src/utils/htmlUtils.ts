@@ -22,7 +22,8 @@ export const decodeHtmlEntities = (str: string): string => {
 		'&#x27;': "'",
 		'&#x2F;': '/',
 		'&#x60;': '`',
-		'&#x3D;': '='
+		'&#x3D;': '=',
+		'&#038;': '&',
 	};
 
 	// Replace numeric entities first
