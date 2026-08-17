@@ -89,11 +89,23 @@ function App() {
 		}
 		//console.log('Notification Navigation:', remoteMessage);
 		if (remoteMessage.data?.screen === 'NewsDetail') {
-			navigationRef.current.navigate('NewsDetail', {
-				postId: Number(remoteMessage.data.postId),
-				title: remoteMessage.data.title,
+			navigationRef.current.navigate('Main', {
+				screen: 'Today',
+				params: {
+					screen: 'NewsDetail',
+					params: {
+						postId: Number(remoteMessage.data.postId),
+						title: remoteMessage.data.title,
+					},
+				},
 			});
 		}
+		// if (remoteMessage.data?.screen === 'NewsDetail') {
+		// 	navigationRef.current.navigate('NewsDetail', {
+		// 		postId: Number(remoteMessage.data.postId),
+		// 		title: remoteMessage.data.title,
+		// 	});
+		// }
 	};
 
 	return (

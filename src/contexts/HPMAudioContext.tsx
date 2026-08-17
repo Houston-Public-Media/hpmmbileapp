@@ -1,11 +1,11 @@
 // src/contexts/HPMAudioContext.tsx
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AppState } from 'react-native';
+import {AppState, Platform} from 'react-native';
 import {
 	hpmAudioService,
 	AudioTrack,
-	HPMAudioState,
+	HPMAudioState, AudioType,
 } from '../services/HPMAudioService';
 import {Progress} from "react-native-track-player";
 
@@ -70,7 +70,39 @@ export const HPMAudioProvider: React.FC<HPMAudioProviderProps> = ({ children }) 
 	const [audioState, setAudioState] = useState<HPMAudioState>(
 		hpmAudioService.getCurrentState()
 	);
-	const [tracks, setTracks] = useState<AudioTrack[]>([]);
+	const [tracks, setTracks] = useState<AudioTrack[]>([
+		{
+			id: "live_0",
+			type: AudioType.LIVE_STREAM,
+			title: "News 88.7",
+			artist: 'Houston Public Media',
+			album: '',
+			artwork: 'https://cdn.houstonpublicmedia.org/assets/images/ListenLive_News.png.webp',
+			url: Platform.OS === 'ios' ? 'https://hls.houstonpublicmedia.org/hpmnews/playlist.m3u8' : 'https://stream.houstonpublicmedia.org/news-aac',
+			isLiveStream: true
+		},
+		{
+			id: "live_1",
+			type: AudioType.LIVE_STREAM,
+			title: "HPM Classical",
+			artist: 'Houston Public Media',
+			album: '',
+			artwork: 'https://cdn.houstonpublicmedia.org/assets/images/ListenLive_Classical.png.webp',
+			url: Platform.OS === 'ios' ? 'https://hls.houstonpublicmedia.org/classical/playlist.m3u8' : 'https://stream.houstonpublicmedia.org/classical-aac',
+			isLiveStream: true
+		},
+		{
+			id: "live_2",
+			type: AudioType.LIVE_STREAM,
+			title: "The Vibe",
+			artist: 'Houston Public Media',
+			album: '',
+			artwork: 'https://cdn.houstonpublicmedia.org/assets/images/ListenLive_TheVibe.png.webp',
+			url: Platform.OS === 'ios' ? 'https://hls.houstonpublicmedia.org/thevibe/playlist.m3u8' : 'https://stream.houstonpublicmedia.org/thevibe-aac',
+			isLiveStream: true
+		}
+	]);
+
 
 	// Initialize the audio service
 	useEffect(() => {
