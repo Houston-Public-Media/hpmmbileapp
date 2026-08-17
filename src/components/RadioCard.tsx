@@ -85,9 +85,9 @@ const styles = StyleSheet.create({
 		paddingBottom: 10,
 	},
 	radioTitle: {
-		fontSize: 15,
+		fontSize: 16,
 		fontWeight: 'bold',
-		color: '#333',
+		color: '#000',
 		marginBottom: 5,
 	},
 	row: {
