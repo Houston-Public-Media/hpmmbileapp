@@ -102,6 +102,7 @@ export class PushNotificationService {
 			console.error('Error getting push token:', error);
 			return null;
 		}
+		//console.log('Push Token:', token);
 		return token;
 	}
 

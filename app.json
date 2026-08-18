@@ -32,7 +32,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.jacobsmedia.KUHFV3",
-      "versionCode": 18,
+      "versionCode": 19,
       
       "googleServicesFile": "./google-services.json",
       "permissions": [
