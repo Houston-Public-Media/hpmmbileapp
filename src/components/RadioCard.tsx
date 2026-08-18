@@ -63,11 +63,11 @@ const RadioCard = (
 						<Image source={{ uri: image }} style={styles.radioImage} resizeMode="cover" />
 					</TouchableOpacity>
 					<View style={styles.textContainer}>
-						<Text onPress={() => navigation.navigate('NewsDetail', { postId: post?.pId1 || 0, title: post?.description1 })}>
+						<Text style={styles.textContainer} onPress={() => navigation.navigate('NewsDetail', { postId: post?.pId1 || 0, title: post?.description1 })}>
 							{decodeHtmlEntities(post?.description1 || '')}
 						</Text>
 						<View style={{ height: 1, backgroundColor: '#ccc', marginVertical: 5 }} />
-						<Text onPress={() => navigation.navigate('NewsDetail', { postId: post?.pId2 || 0, title: post?.description2 })}>
+						<Text style={styles.textContainer} onPress={() => navigation.navigate('NewsDetail', { postId: post?.pId2 || 0, title: post?.description2 })}>
 							{decodeHtmlEntities(post?.description2 || '')}
 						</Text>
 					</View>
@@ -102,6 +102,8 @@ const styles = StyleSheet.create({
 	textContainer: {
 		flex: 1,
 		marginBottom: "auto",
+		color: '#000',
+		fontSize: 14,
 	},
 });
 
