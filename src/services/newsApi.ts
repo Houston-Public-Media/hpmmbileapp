@@ -45,11 +45,21 @@ export async function fetchBrightcoveVideos({playlist = false, limit, offset = 0
 }
 
 export async function fetchNewsArticleById(id: number): Promise<NewsDetail | null> {
+	if (!Number.isInteger(id) || id <= 0) {
+		return null;
+	}
+
 	try {
 		const response = await fetch(`https://www.houstonpublicmedia.org/wp-json/wp/v2/posts/${id}`); //${id}524447
+		if (!response.ok) {
+			return null;
+		}
 		const json = await response.json();
+		if (!json?.id || !json?.title?.rendered || !json?.content?.rendered) {
+			return null;
+		}
 		return json || null;
-	} catch (error) {
+	} catch {
 		return null;
 	}
 }

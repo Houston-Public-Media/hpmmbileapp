@@ -3,9 +3,14 @@ import {PermissionsAndroid, Platform} from 'react-native';
 import {
 	AuthorizationStatus,
 	deleteToken,
+	getAPNSToken,
 	getMessaging,
-	getToken, hasPermission,
+	getToken,
+	hasPermission,
+	isDeviceRegisteredForRemoteMessages,
 	Messaging,
+	onTokenRefresh,
+	registerDeviceForRemoteMessages,
 	requestPermission,
 	unregisterDeviceForRemoteMessages
 } from '@react-native-firebase/messaging';
@@ -16,6 +21,15 @@ export class PushNotificationService {
 	private messaging: Messaging = getMessaging();
 
 	private constructor() {}
+
+	private async ensureRemoteMessageRegistration(): Promise<void> {
+		if (
+			Platform.OS === 'ios' &&
+			!isDeviceRegisteredForRemoteMessages(this.messaging)
+		) {
+			await registerDeviceForRemoteMessages(this.messaging);
+		}
+	}
 
 	public static getInstance(): PushNotificationService {
 		if (!PushNotificationService.instance) {
@@ -77,33 +91,60 @@ export class PushNotificationService {
 	 * Works for both Android and iOS
 	 */
 	async registerForPushNotifications(): Promise<string | null> {
-		let token: string | null = null;
+		if (!Device.isDevice) {
+			console.log('Push notifications require a physical device');
+			return null;
+		}
+
 		const permission = await this.checkPermission();
-		if (Device.isDevice) {
-			if (!permission) {
-				const authStatus = await this.requestUserPermission();
-				if (!authStatus) {
-					console.log('Push permission not granted');
-					return null;
-				}
+		if (!permission) {
+			const authStatus = await this.requestUserPermission();
+			if (!authStatus) {
+				console.log('Push permission not granted');
+				return null;
 			}
 		}
 
 		try {
-			// Get the token that uniquely identifies this device
-			// This works for both Android and iOS
-			token = await getToken(this.messaging);
+			await this.ensureRemoteMessageRegistration();
+
+			if (Platform.OS === 'ios') {
+				const apnsToken = await getAPNSToken(this.messaging);
+				if (!apnsToken) {
+					console.error(
+						'APNs registration did not return a token. Check iOS signing, Push Notifications capability, and the provisioning profile.'
+					);
+					return null;
+				}
+			}
+
+			const token = await getToken(this.messaging);
 			this.fcmPushToken = token;
 
 			if (!token) {
 				console.error('Failed to generate push token');
+				return null;
 			}
+
+			if (__DEV__) {
+				console.log('FCM push token:', token);
+			}
+
+			return token;
 		} catch (error) {
 			console.error('Error getting push token:', error);
 			return null;
 		}
-		//console.log('Push Token:', token);
-		return token;
+	}
+
+	listenForTokenRefresh(): () => void {
+		return onTokenRefresh(this.messaging, token => {
+			this.fcmPushToken = token;
+
+			if (__DEV__) {
+				console.log('FCM push token refreshed:', token);
+			}
+		});
 	}
 
 	/**

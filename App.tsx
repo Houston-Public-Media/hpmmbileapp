@@ -1,15 +1,14 @@
-/* eslint-disable import/no-named-as-default */
-import React, {useEffect, useRef, useState} from 'react';
-import {AppState, LogBox, StatusBar, StyleSheet} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {AppState, Linking, LogBox, StatusBar, StyleSheet} from 'react-native';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
-import {NavigationContainer} from '@react-navigation/native';
+import {LinkingOptions, NavigationContainer} from '@react-navigation/native';
 import {color} from './src/utils/colorUtils';
 import DrawerNavigator from './src/navigation/DrawerNavigator';
 import AdManager from './src/components/AdManager';
 import {HPMAudioProvider} from './src/contexts/HPMAudioContext';
 import {analyticsService} from './src/services/AnalyticsService';
 import PushNotificationService from './src/services/PushNotificationService';
-import {onNotificationOpenedApp, onMessage, RemoteMessage} from "@react-native-firebase/messaging";
+import {getInitialNotification, onNotificationOpenedApp, onMessage, RemoteMessage} from "@react-native-firebase/messaging";
 import ToastMessage, {ToastMessageRef} from "./src/components/ToastMessage";
 
 // Ignore specific warnings
@@ -18,6 +17,119 @@ LogBox.ignoreLogs([
 	'AsyncStorage has been extracted',
 	'[expo-av]: Expo AV has been deprecated and will be removed in SDK 54. Use the `expo-audio` and `expo-video` packages to replace the required functionality.',
 ]);
+
+type NewsDetailNotificationParams = {
+	postId: number;
+	title?: string;
+};
+
+type RootNavigationParamList = {
+	Main: undefined;
+	Settings: undefined;
+};
+
+const NOTIFICATION_LINK_PREFIX = 'exp+hpm://';
+
+const getNewsDetailNotificationParams = (
+	remoteMessage?: RemoteMessage
+): NewsDetailNotificationParams | null => {
+	const data = remoteMessage?.data;
+
+	if (data?.screen !== 'NewsDetail') {
+		return null;
+	}
+
+	const postId = Number(data.postId);
+
+	if (!Number.isInteger(postId) || postId <= 0) {
+		console.warn('Notification missing a valid NewsDetail postId:', data);
+		return null;
+	}
+
+	const title = typeof data.title === 'string' ? data.title.trim() : undefined;
+
+	return {
+		postId,
+		title,
+	};
+};
+
+const getNotificationUrl = (remoteMessage?: RemoteMessage): string | undefined => {
+	const params = getNewsDetailNotificationParams(remoteMessage);
+
+	if (!params) return undefined;
+
+	const title = params.title
+		? `?title=${encodeURIComponent(params.title)}`
+		: '';
+
+	return `${NOTIFICATION_LINK_PREFIX}news/${params.postId}${title}`;
+};
+
+const readInitialNotification = async (): Promise<RemoteMessage | null> => {
+	try {
+		return await getInitialNotification(
+			PushNotificationService.getMessaging()
+		);
+	} catch (error) {
+		console.log('getInitialNotification failed:', error);
+		return null;
+	}
+};
+
+const notificationLinking: LinkingOptions<RootNavigationParamList> = {
+	prefixes: [NOTIFICATION_LINK_PREFIX],
+	config: {
+		screens: {
+			Main: {
+				path: '',
+				screens: {
+					Today: {
+						path: '',
+						initialRouteName: 'Home',
+						screens: {
+							Home: '',
+							NewsDetail: {
+								path: 'news/:postId',
+								parse: {
+									postId: Number,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+	async getInitialURL() {
+		const remoteMessage = await readInitialNotification();
+		const notificationUrl = getNotificationUrl(remoteMessage ?? undefined);
+
+		if (notificationUrl) return notificationUrl;
+
+		return Linking.getInitialURL();
+	},
+	subscribe(listener) {
+		const linkingSubscription = Linking.addEventListener('url', ({url}) => {
+			listener(url);
+		});
+		const unsubscribeNotificationOpened = onNotificationOpenedApp(
+			PushNotificationService.getMessaging(),
+			remoteMessage => {
+				const notificationUrl = getNotificationUrl(remoteMessage);
+
+				if (notificationUrl) {
+					listener(notificationUrl);
+				}
+			}
+		);
+
+		return () => {
+			linkingSubscription.remove();
+			unsubscribeNotificationOpened();
+		};
+	},
+};
 
 function App() {
 	const routeNameRef = useRef<string | undefined>(undefined);
@@ -28,29 +140,54 @@ function App() {
 
 	const toastRef = useRef<ToastMessageRef>(null);
 
+	const handleNotificationNavigation = useCallback((remoteMessage?: RemoteMessage) => {
+		const params = getNewsDetailNotificationParams(remoteMessage);
+
+		if (!params) return;
+		if (!navigationRef.current) return;
+
+		if (toastRef.current) {
+			toastRef.current.hide();
+		}
+
+		navigationRef.current.navigate('Main', {
+			screen: 'Today',
+			params: {
+				screen: 'NewsDetail',
+				params,
+			},
+		});
+	}, []);
+
+	const handleInitialNotificationAfterReady = useCallback(async () => {
+		const remoteMessage = await readInitialNotification();
+
+		if (remoteMessage) {
+			handleNotificationNavigation(remoteMessage);
+		}
+	}, [handleNotificationNavigation]);
+
 	useEffect(() => {
 		const initPushNotifications = async () => {
 			const hasPermission = await PushNotificationService.requestUserPermission();
 			if (hasPermission) {
 				//console.log('Notification permission granted');
-				const token = await PushNotificationService.registerForPushNotifications();
-				//console.log('Push notification token:', token);
+				await PushNotificationService.registerForPushNotifications();
 			} else {
 				console.log('Notification permission denied');
 			}
 		};
 
-		initPushNotifications();
-		onNotificationOpenedApp(PushNotificationService.getMessaging(), remoteMessage => {
-			//console.log('onNotificationOpenedApp:', remoteMessage);
-			if (remoteMessage.data) {
-				handleNotificationNavigation(remoteMessage);
-			}
-		});
+		const unsubscribeTokenRefresh =
+			PushNotificationService.listenForTokenRefresh();
+
+		void initPushNotifications();
+
+		return unsubscribeTokenRefresh;
 	}, []);
 
 	useEffect(() => {
-		return PushNotificationService.getMessaging().onMessage(remoteMessage => {
+		return onMessage(PushNotificationService.getMessaging(), remoteMessage => {
 			setToastType(remoteMessage);
 			if (toastRef.current) {
 				toastRef.current.show();
@@ -81,33 +218,6 @@ function App() {
 		};
 	}, []);
 
-	const handleNotificationNavigation = (remoteMessage?: RemoteMessage) => {
-		if (!navigationRef.current) return;
-		if (!remoteMessage) return;
-		if (toastRef.current) {
-			toastRef.current.hide();
-		}
-		//console.log('Notification Navigation:', remoteMessage);
-		if (remoteMessage.data?.screen === 'NewsDetail') {
-			navigationRef.current.navigate('Main', {
-				screen: 'Today',
-				params: {
-					screen: 'NewsDetail',
-					params: {
-						postId: Number(remoteMessage.data.postId),
-						title: remoteMessage.data.title,
-					},
-				},
-			});
-		}
-		// if (remoteMessage.data?.screen === 'NewsDetail') {
-		// 	navigationRef.current.navigate('NewsDetail', {
-		// 		postId: Number(remoteMessage.data.postId),
-		// 		title: remoteMessage.data.title,
-		// 	});
-		// }
-	};
-
 	return (
 		<SafeAreaProvider>
 			<HPMAudioProvider>
@@ -119,10 +229,12 @@ function App() {
 						<StatusBar barStyle={'light-content'} />
 						<NavigationContainer
 							ref={navigationRef}
+							linking={notificationLinking}
 							onReady={() => {
 								routeNameRef.current =
 									navigationRef.current?.getCurrentRoute()
 										?.name;
+								void handleInitialNotificationAfterReady();
 							}}
 							onStateChange={async () => {
 								const previousRouteName = routeNameRef.current;

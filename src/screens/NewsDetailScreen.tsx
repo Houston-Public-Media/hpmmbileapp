@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet, useWindowDimensions, RefreshControl } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, RefreshControl } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { fetchNewsArticleById, fetchPriorityData } from '../services/newsApi';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -14,15 +14,17 @@ import AudioFooter from "../components/AudioFooter";
 
 // Define the params expected for this screen
 type NewsDetailParams = {
-	NewsDetail: { postId: number; title?: string };
+	NewsDetail: { postId?: number | string; title?: string };
 };
 
 const NewsDetailScreen = () => {
-	const { width } = useWindowDimensions();
 	const route = useRoute<RouteProp<NewsDetailParams, 'NewsDetail'>>();
 	const navigation =
 		useNavigation<StackNavigationProp<RootStackParamList, 'NewsDetail'>>();
-	const { postId, title } = route.params;
+	const params = route.params ?? {};
+	const postId = Number(params.postId);
+	const title = params.title;
+	const hasValidPostId = Number.isInteger(postId) && postId > 0;
 	const [post, setPost] = useState<NewsDetail | null>(null);
 	const [coauthors, setCoauthors] = useState<Coauthor[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -30,10 +32,18 @@ const NewsDetailScreen = () => {
 	const [breakingData, setBreakingData] = useState<any>(null);
 	const [refreshing, setRefreshing] = useState(false);
 
-	const loadPost = async () => {
+	const loadPost = useCallback(async () => {
 		try {
-			const data = await fetchNewsArticleById(postId);
-			const bannerData = await fetchPriorityData();
+			if (!hasValidPostId) {
+				setPost(null);
+				setCoauthors([]);
+				return;
+			}
+
+			const [data, bannerData] = await Promise.all([
+				fetchNewsArticleById(postId),
+				fetchPriorityData().catch(() => null),
+			]);
 			setPost(data);
 			if (data?.coauthors && Array.isArray(data.coauthors)) {
 				setCoauthors(data.coauthors);
@@ -42,11 +52,13 @@ const NewsDetailScreen = () => {
 			}
 			setTalkshowData(Array.isArray(bannerData?.talkshow) ? bannerData.talkshow : []);
 			setBreakingData(bannerData?.breaking || null);
-		} catch (error) {
+		} catch {
+			setPost(null);
+			setCoauthors([]);
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [hasValidPostId, postId]);
 
 	useEffect(() => {
 		navigation.setOptions({
@@ -58,7 +70,7 @@ const NewsDetailScreen = () => {
 			setLoading(false);
 		};
 		init();
-	}, [postId, title, navigation]);
+	}, [title, navigation, loadPost]);
 
 	const onRefresh = async () => {
 		setRefreshing(true);
@@ -70,6 +82,14 @@ const NewsDetailScreen = () => {
 		return (
 			<View style={styles.loadingContainer}>
 				<ActivityIndicator size="large" color="#0000ff" />
+			</View>
+		);
+	}
+
+	if (!hasValidPostId) {
+		return (
+			<View style={styles.errorContainer}>
+				<Text>Invalid news article. Please try again later.</Text>
 			</View>
 		);
 	}
