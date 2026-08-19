@@ -11,6 +11,7 @@ import { useHPMAudio } from "../contexts/HPMAudioContext";
 
 const NUM_COLUMNS = 2;
 const ITEM_MARGIN = 8; // spacing between cards
+const VIDEO_LIMIT = 40;
 
 const VerticalVideosScreen = () => {
 	const [videos, setVideos] = useState<BrightcoveVideo[]>([]);
@@ -21,7 +22,7 @@ const VerticalVideosScreen = () => {
 	const [refreshing, setRefreshing] = useState(false);
 	const { pause } = useHPMAudio();
 	const loadVideos = async () => {
-		if (loading) return;
+		if (loading || videos.length >= VIDEO_LIMIT) return;
 		setLoading(true);
 		const data = await fetchPriorityData();
 		setTalkshowData(Array.isArray(data?.talkshow) ? data.talkshow : []);
