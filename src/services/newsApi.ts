@@ -26,7 +26,7 @@ export async function fetchBrightCoveEmbedURL() {
   return json?.data?.homepage_video_url || {};
 }
 
-export async function fetchBrightcoveVideos({playlist = false, limit, offset = 0, screen = false }: {playlist?: boolean; limit?: number; offset?: number; screen?: boolean;}): Promise<BrightcoveVideo[]> {
+export async function fetchBrightcoveVideos({playlist = false, limit, offset = 0, screen = false, throwOnError = false }: {playlist?: boolean; limit?: number; offset?: number; screen?: boolean; throwOnError?: boolean;}): Promise<BrightcoveVideo[]> {
 	try {
 		const params = new URLSearchParams();
 		params.append('playlist', String(playlist));
@@ -40,6 +40,9 @@ export async function fetchBrightcoveVideos({playlist = false, limit, offset = 0
 		return json?.data?.videos ?? [];
 	} catch (error) {
 		console.log("Error fetching videos:", error);
+		if (throwOnError) {
+			throw error;
+		}
 		return [];
 	}
 }
