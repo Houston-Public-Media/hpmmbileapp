@@ -91,6 +91,7 @@ export const HPMAudioProvider: React.FC<HPMAudioProviderProps> = ({ children }) 
 					setIsInitialized(true);
 					setIsLoading(true);
 					console.log('HPMAudioContext: HPM Audio Service initialized successfully');
+					await fetchData();
 				} else if (!success && isMounted) {
 					const errorMsg = 'Failed to initialize audio service';
 					console.error('HPMAudioContext:', errorMsg);
@@ -129,45 +130,9 @@ export const HPMAudioProvider: React.FC<HPMAudioProviderProps> = ({ children }) 
 				setTracks(data);
 				setIsPlayerReady(true);
 				setIsLoading(false);
-			} else {
-				setTracks([
-					{
-						id: "live_0",
-						type: AudioType.LIVE_STREAM,
-						title: "News 88.7",
-						artist: 'Houston Public Media',
-						album: '',
-						artwork: 'https://cdn.houstonpublicmedia.org/assets/images/ListenLive_News.png.webp',
-						url: Platform.OS === 'ios' ? 'https://hls.houstonpublicmedia.org/hpmnews/playlist.m3u8' : 'https://stream.houstonpublicmedia.org/news-aac',
-						isLiveStream: true
-					},
-					{
-						id: "live_1",
-						type: AudioType.LIVE_STREAM,
-						title: "HPM Classical",
-						artist: 'Houston Public Media',
-						album: '',
-						artwork: 'https://cdn.houstonpublicmedia.org/assets/images/ListenLive_Classical.png.webp',
-						url: Platform.OS === 'ios' ? 'https://hls.houstonpublicmedia.org/classical/playlist.m3u8' : 'https://stream.houstonpublicmedia.org/classical-aac',
-						isLiveStream: true
-					},
-					{
-						id: "live_2",
-						type: AudioType.LIVE_STREAM,
-						title: "The Vibe",
-						artist: 'Houston Public Media',
-						album: '',
-						artwork: 'https://cdn.houstonpublicmedia.org/assets/images/ListenLive_TheVibe.png.webp',
-						url: Platform.OS === 'ios' ? 'https://hls.houstonpublicmedia.org/thevibe/playlist.m3u8' : 'https://stream.houstonpublicmedia.org/thevibe-aac',
-						isLiveStream: true
-					}
-				]);
-				setIsPlayerReady(true);
-				setIsLoading(false);
 			}
 		}
 
-		fetchData();
 		const interval = setInterval(() => {
 			fetchData();
 		}, 30000);
