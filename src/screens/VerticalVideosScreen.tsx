@@ -5,6 +5,7 @@ import {
 	Image,
 	ListRenderItemInfo,
 	Modal,
+	PanResponder,
 	Platform,
 	Pressable,
 	StatusBar,
@@ -14,7 +15,6 @@ import {
 	View,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import Slider from "@react-native-community/slider";
 import { useFocusEffect } from "@react-navigation/native";
 import Video, {
 	ResizeMode,
@@ -68,7 +68,7 @@ const ShortsVideoCard = memo(({ item, onPress }: ShortsVideoCardProps) => {
 				<Image
 					source={{ uri: imageUrl }}
 					style={styles.thumbnail}
-					resizeMode="cover"
+					resizeMode="contain"
 				/>
 			) : (
 				<View style={styles.thumbnailFallback}>
@@ -105,9 +105,17 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 	const [duration, setDuration] = useState(0);
 	const [muted, setMuted] = useState(false);
 	const [paused, setPaused] = useState(false);
+	const [ended, setEnded] = useState(false);
 	const [slidingValue, setSlidingValue] = useState(0);
 	const [seeking, setSeeking] = useState(false);
-	const [ended, setEnded] = useState(false);
+	const [sliderWidth, setSliderWidth] = useState(0);
+
+	const loadedRef = useRef(false);
+	const seekingRef = useRef(false);
+	const slidingValueRef = useRef(0);
+	const sliderXRef = useRef(0);
+	const sliderWidthRef = useRef(0);
+	const sliderRef = useRef<View>(null);
 
 	const source = useMemo(() => ({
 		uri: video.source,
@@ -116,7 +124,7 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 
 	const poster = useMemo(() => (
 		video.poster
-			? { source: { uri: video.poster }, resizeMode: ResizeMode.COVER }
+			? { source: { uri: video.poster }, resizeMode: ResizeMode.CONTAIN }
 			: undefined
 	), [video.poster]);
 
@@ -153,7 +161,13 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 	}, []);
 
 	const seekBy = useCallback((seconds: number) => {
-		const nextTime = Math.max(0, Math.min(duration, currentTime + seconds));
+		if (!Number.isFinite(duration) || duration <= 0) return;
+
+		const nextTime = Math.min(
+			Math.max(0, currentTime + seconds),
+			duration
+		);
+
 		videoRef.current?.seek(nextTime);
 		setCurrentTime(nextTime);
 		setSlidingValue(nextTime);
@@ -161,19 +175,122 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 		setControlsVisible(true);
 	}, [currentTime, duration]);
 
-	const onSlidingStart = useCallback(() => {
-		setSeeking(true);
-		setControlsVisible(true);
+	const seekFromPosition = useCallback(
+		(pageX: number) => {
+			if (!loadedRef.current || duration <= 0) {
+				return;
+			}
+
+			const width = sliderWidthRef.current;
+
+			if (width <= 0) {
+				return;
+			}
+
+			const x = pageX - sliderXRef.current;
+			const clampedX = Math.max(0, Math.min(x, width));
+
+			const nextTime = (clampedX / width) * duration;
+
+			// IMPORTANT:
+			// Keep the value in a ref so onProgress cannot overwrite
+			// the value while the user is dragging.
+			slidingValueRef.current = nextTime;
+
+			setSlidingValue(nextTime);
+		},
+		[duration]
+	);
+
+	const measureSlider = useCallback(() => {
+		sliderRef.current?.measureInWindow((x, _y, width) => {
+			sliderXRef.current = x;
+			sliderWidthRef.current = width;
+			setSliderWidth(width);
+		});
 	}, []);
 
-	const onSlidingComplete = useCallback((value: number) => {
-		videoRef.current?.seek(value);
-		setCurrentTime(value);
-		setSlidingValue(value);
-		setSeeking(false);
+	const finishSeek = useCallback(() => {
+		if (!loadedRef.current || duration <= 0) {
+			seekingRef.current = false;
+			setSeeking(false);
+			return;
+		}
+
+		const nextTime = Math.max(
+			0,
+			Math.min(slidingValueRef.current, duration)
+		);
+
+		seekingRef.current = false;
+
+		videoRef.current?.seek(nextTime);
+
+		setCurrentTime(nextTime);
+		setSlidingValue(nextTime);
 		setEnded(false);
+		setSeeking(false);
 		setControlsVisible(true);
-	}, []);
+	}, [duration]);
+
+	const sliderPanResponder = useMemo(
+		() =>
+			PanResponder.create({
+				onStartShouldSetPanResponder: () => true,
+				onMoveShouldSetPanResponder: () => true,
+
+				onPanResponderGrant: event => {
+					const nativeEvent = event.nativeEvent;
+					if (!nativeEvent || !loadedRef.current || duration <= 0) {
+						return;
+					}
+
+					// Capture pageX immediately because event pooling might nullify nativeEvent
+					// by the time measureInWindow callback runs.
+					const initialPageX = nativeEvent.pageX;
+
+					seekingRef.current = true;
+					setSeeking(true);
+					setControlsVisible(true);
+
+					// Measure immediately in case orientation/layout changed.
+					sliderRef.current?.measureInWindow((x, _y, width) => {
+						sliderXRef.current = x;
+						sliderWidthRef.current = width;
+						setSliderWidth(width);
+
+						const relativeX = initialPageX - x;
+						const clampedX = Math.max(
+							0,
+							Math.min(relativeX, width)
+						);
+
+						const nextTime = (clampedX / width) * duration;
+
+						slidingValueRef.current = nextTime;
+						setSlidingValue(nextTime);
+					});
+				},
+
+				onPanResponderMove: event => {
+					const nativeEvent = event.nativeEvent;
+					if (!nativeEvent || !seekingRef.current || !loadedRef.current || duration <= 0) {
+						return;
+					}
+
+					seekFromPosition(nativeEvent.pageX);
+				},
+
+				onPanResponderRelease: () => {
+					finishSeek();
+				},
+
+				onPanResponderTerminate: () => {
+					finishSeek();
+				},
+			}),
+		[duration, seekFromPosition, finishSeek]
+	);
 
 	const formatTime = useCallback((seconds: number) => {
 		if (!Number.isFinite(seconds)) return '0:00';
@@ -190,14 +307,14 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 	}, [onPlaybackStart]);
 
 	useEffect(() => {
-		if (!controlsVisible || paused || buffering || failed) return;
+		if (!controlsVisible || paused || buffering || failed || seeking) return;
 
 		const timer = setTimeout(() => {
 			setControlsVisible(false);
 		}, 3000);
 
 		return () => clearTimeout(timer);
-	}, [buffering, controlsVisible, failed, paused]);
+	}, [buffering, controlsVisible, failed, paused, seeking]);
 
 	return (
 		<Modal
@@ -223,7 +340,7 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 					playWhenInactive={false}
 					poster={poster}
 					preventsDisplaySleepDuringVideoPlayback
-					resizeMode={ResizeMode.COVER}
+					resizeMode={ResizeMode.CONTAIN}
 					bufferConfig={{
 						minBufferMs: 3000,
 						maxBufferMs: 12000,
@@ -242,7 +359,18 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 						setControlsVisible(true);
 					}}
 					onLoad={({ duration: videoDuration }) => {
-						setDuration(videoDuration || 0);
+						const nextDuration = Number(videoDuration);
+
+						if (!Number.isFinite(nextDuration) || nextDuration <= 0) {
+							loadedRef.current = false;
+							setDuration(0);
+							return;
+						}
+
+						loadedRef.current = true;
+
+						setDuration(nextDuration);
+						setCurrentTime(0);
 						setSlidingValue(0);
 						setEnded(false);
 					}}
@@ -251,9 +379,25 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 						setControlsVisible(true);
 					}}
 					onProgress={({ currentTime: nextTime }) => {
-						if (seeking) return;
-						setCurrentTime(nextTime);
-						setSlidingValue(nextTime);
+						// Do NOT allow the video playback position to overwrite
+						// the position the user is currently dragging to.
+						if (seekingRef.current) {
+							return;
+						}
+
+						if (!Number.isFinite(nextTime) || nextTime < 0) {
+							return;
+						}
+
+						const safeTime =
+							duration > 0
+								? Math.min(nextTime, duration)
+								: nextTime;
+
+						slidingValueRef.current = safeTime;
+
+						setCurrentTime(safeTime);
+						setSlidingValue(safeTime);
 						setEnded(false);
 					}}
 					onReadyForDisplay={() => setBuffering(false)}
@@ -319,19 +463,34 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 								<Text style={styles.timeText}>{formatTime(slidingValue)}</Text>
 
 								<View style={styles.sliderWrapper}>
-									<Slider
-										minimumValue={0}
-										maximumValue={duration || 0}
-										value={slidingValue}
-										minimumTrackTintColor="#fff"
-										maximumTrackTintColor="rgba(255,255,255,0.35)"
-										thumbTintColor="#fff"
-										onSlidingStart={onSlidingStart}
-										onSlidingComplete={onSlidingComplete}
-										onValueChange={setSlidingValue}
-									/>
+								{duration > 0 ? (
+									<View
+										ref={sliderRef}
+										style={styles.sliderWrapper}
+										onLayout={measureSlider}
+										{...sliderPanResponder.panHandlers}
+									>
+										<View style={styles.scrubberTrack}>
+											<View style={[
+												styles.scrubberProgress,
+												{
+													width: duration > 0 ?
+														`${Math.min(100, Math.max(0, (slidingValue / duration) * 100))}%`
+														: "0%",
+												},
+											]} />
+											<View style={[
+												styles.scrubberThumb,
+												{
+													left: duration > 0 && sliderWidth > 0 ?
+														Math.min(sliderWidth - 12, Math.max(0, (slidingValue / duration) * sliderWidth - 6))
+														: 0,
+												}
+											]} />
+										</View>
+									</View>
+								) : null}
 								</View>
-
 								<Text style={styles.timeText}>{formatTime(duration)}</Text>
 							</View>
 						</View>
@@ -791,11 +950,7 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		width: 44,
 	},
-	sliderWrapper: {
-		flex: 1,
-		justifyContent: "center",
-		marginHorizontal: 8,
-	},
+	
 	playerStateOverlay: {
 		...StyleSheet.absoluteFillObject,
 		alignItems: "center",
@@ -817,5 +972,37 @@ const styles = StyleSheet.create({
 		opacity: 0.82,
 		textAlign: "center",
 	},
+	sliderWrapper: {
+	flex: 1,
+	height: 40,
+	justifyContent: "center",
+	marginHorizontal: 8,
+},
+
+scrubberTrack: {
+	height: 4,
+	width: "100%",
+	backgroundColor: "rgba(255,255,255,0.35)",
+	borderRadius: 2,
+	position: "relative",
+},
+
+scrubberProgress: {
+	position: "absolute",
+	left: 0,
+	top: 0,
+	bottom: 0,
+	backgroundColor: "#fff",
+	borderRadius: 2,
+},
+
+scrubberThumb: {
+	position: "absolute",
+	top: -4,
+	width: 12,
+	height: 12,
+	borderRadius: 6,
+	backgroundColor: "#fff",
+},
 });
 export default VerticalVideosScreen;

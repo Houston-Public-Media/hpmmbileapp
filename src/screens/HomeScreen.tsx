@@ -262,7 +262,15 @@ useFocusEffect(
         return (
       <View style={[styles.section, styles.webViewContainer]}>
         <SectionTitle title="HPM" subtitle="Shorts" line={true} containerStyle={{ marginBottom: 16, paddingLeft:-16 }} titleStyle={{ color: 'black' }} subtitleStyle={{ color: '#c8102e' }} />
-        <WebView style={styles.webView} source={{ uri: brightcoveUrl }} />
+        <WebView
+          style={styles.webView}
+          source={{ uri: brightcoveUrl }}
+          allowsFullscreenVideo={true}
+          allowsInlineMediaPlayback={false}
+          bounces={false}
+          nestedScrollEnabled={false}
+          scrollEnabled={false}
+        />
         <TouchableOpacity  onPress={() => navigation.getParent()?.navigate('Shorts')}  style={styles.seeAllButton}>
           <Text style={styles.seeAll}>View all</Text>
         </TouchableOpacity>
