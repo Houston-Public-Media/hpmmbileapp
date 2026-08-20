@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // eslint-disable-next-line import/no-named-as-default
 import PushNotificationService from '../services/PushNotificationService';
 import AudioFooter from "../components/AudioFooter";
-
+import Constants from 'expo-constants';
 // Simple debug helper
 const dlog = (...args: any[]) => console.log('[ProfileScreen]', ...args);
 
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 16,
 	},
 	menuItem: {
-		paddingVertical: 15,
+		paddingVertical: 14,
 		borderBottomWidth: 1,
 		borderBottomColor: '#fff',
 	},
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
 		paddingLeft: 20,
 	},
 	subMenuItem: {
-		paddingVertical: 10,
+		paddingVertical: 8,
 		flexDirection: 'row',
 		alignItems: 'center',
 	},
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 8,
 	},
 	subMenuText: {
-		fontSize: 16,
+		fontSize: 14,
 		color: '#fff',
 	},
 	settingsRow: {
@@ -445,7 +445,7 @@ const ProfileScreen = () => {
 				</View>
 
 				<TouchableOpacity style={styles.menuItem}>
-					<Text style={styles.menuText}>App Settings</Text>
+					<Text style={styles.menuText}>App Preferences</Text>
 				</TouchableOpacity>
 				<View style={styles.subMenu}>
 					<TouchableOpacity
@@ -498,6 +498,21 @@ const ProfileScreen = () => {
 						))}
 					</View>
 				</View>
+				<Text style={styles.menuText}>App Version</Text>
+					<View style={styles.subMenu}>
+						<Text style={styles.subMenuText}>
+							{Constants.expoConfig?.version ?? 'Unknown'}
+							{' '}
+						(
+							{Platform.OS === 'ios'
+								? Constants.expoConfig?.ios?.buildNumber ?? 'Unknown'
+								: Constants.expoConfig?.android?.versionCode ?? 'Unknown'}
+						)
+						</Text>
+						<TouchableOpacity style={styles.subMenuItem}>
+						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`mailto:webmaster@houstonpublicmedia.org?subject=HPM%20App%20Feedback`)}>having a problem or Feature Suggestion? Contact the developer</Text></TouchableOpacity>
+					</View>
+
 			</ScrollView>
 			<AudioFooter />
 		</View>
