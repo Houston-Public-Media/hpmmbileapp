@@ -510,7 +510,7 @@ const ProfileScreen = () => {
 						)
 						</Text>
 						<TouchableOpacity style={styles.subMenuItem}>
-						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`mailto:webmaster@houstonpublicmedia.org?subject=HPM%20App%20Feedback`)}>having a problem or Feature Suggestion? Contact the developer</Text></TouchableOpacity>
+						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`mailto:webmaster@houstonpublicmedia.org?subject=HPM%20App%20Feedback`)}>having a problem or feature suggestion? Contact the developer</Text></TouchableOpacity>
 					</View>
 
 			</ScrollView>
