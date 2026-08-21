@@ -131,7 +131,7 @@ android {
         applicationId 'com.jacobsmedia.KUHFV3'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 21
+        versionCode 23
         versionName "10.0.0"
     }
     sourceSets {

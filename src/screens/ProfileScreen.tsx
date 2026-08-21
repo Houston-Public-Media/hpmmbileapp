@@ -56,6 +56,11 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 	},
+	subMenuItemLarger: {
+		paddingVertical: 16,
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
 	selectedCategory: {
 		backgroundColor: 'rgba(255, 255, 255, 0.1)',
 		borderRadius: 4,
@@ -63,6 +68,10 @@ const styles = StyleSheet.create({
 	},
 	subMenuText: {
 		fontSize: 14,
+		color: '#fff',
+	},
+	subMenuTextLarger: {
+		fontSize: 16,
 		color: '#fff',
 	},
 	settingsRow: {
@@ -396,7 +405,13 @@ const ProfileScreen = () => {
 			setPushLoading(false);
 		}
 	};
-
+	let formattedBody = "\n\n\nDiagnostic Information\n - App Version: " +
+		( Constants.expoConfig?.version ?? 'Unknown' ) + " (" + ( Platform.OS === 'ios' ? Constants.expoConfig?.ios?.buildNumber ?? 'Unknown' : Constants.expoConfig?.android?.versionCode ?? 'Unknown' ) + ")" +
+		"\n - OS: " + Device.osName + " " + Device.osVersion +
+		"\n - Brand: " + Device.brand +
+		"\n - Model Name: " + Device.modelName +
+		"\n - Model ID: " + Device.modelId +
+		"\n - Platform API Level (Android only): " + ( Device.platformApiLevel ? Device.platformApiLevel : "" );
 	return (
 		<View style={styles.container}>
 			<ScrollView style={styles.scrollView}>
@@ -509,8 +524,8 @@ const ProfileScreen = () => {
 								: Constants.expoConfig?.android?.versionCode ?? 'Unknown'}
 						)
 						</Text>
-						<TouchableOpacity style={styles.subMenuItem}>
-						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`mailto:webmaster@houstonpublicmedia.org?subject=HPM%20App%20Feedback`)}>having a problem or feature suggestion? Contact the developer</Text></TouchableOpacity>
+						<TouchableOpacity style={styles.subMenuItemLarger}>
+						<Text style={styles.subMenuTextLarger} onPress={() => Linking.openURL("mailto:webmaster@houstonpublicmedia.org?subject=HPM%20App%20Feedback&body=" + encodeURIComponent(formattedBody) )}>Have a problem? Feature suggestion? Contact the developers!</Text></TouchableOpacity>
 					</View>
 
 			</ScrollView>
