@@ -27,6 +27,7 @@ import { fetchBrightcoveVideos, fetchPriorityData } from '../services/newsApi';
 import { TalkshowEntry, BrightcoveVideo } from '../type';
 import AudioFooter from "../components/AudioFooter";
 import { useHPMAudio } from "../contexts/HPMAudioContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const NUM_COLUMNS = 2;
 const ITEM_MARGIN = 8;
@@ -43,6 +44,7 @@ type ShortsVideoCardProps = {
 };
 
 type ShortsPlayerProps = {
+
 	onClose: () => void;
 	onPlaybackStart: () => void;
 	video: BrightcoveVideo;
@@ -116,6 +118,7 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 	const sliderXRef = useRef(0);
 	const sliderWidthRef = useRef(0);
 	const sliderRef = useRef<View>(null);
+	const insets = useSafeAreaInsets();
 
 	const source = useMemo(() => ({
 		uri: video.source,
@@ -449,7 +452,12 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 							</TouchableOpacity>
 						</View>
 
-						<View style={styles.bottomControls}>
+						<View style={[
+        styles.bottomControls,
+        {
+            bottom: Math.max(insets.bottom, 36),
+        },
+    ]}>
 							<View style={styles.bottomControlRow}>
 								<TouchableOpacity
 									accessibilityLabel={muted ? "Unmute video" : "Mute video"}
@@ -923,12 +931,17 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		width: 72,
 	},
-	bottomControls: {
+	/*bottomControls: {
 		bottom: Platform.OS === 'ios' ? 36 : 24,
 		left: 16,
 		position: "absolute",
 		right: 16,
-	},
+	},*/
+	bottomControls: {
+    left: 16,
+    position: "absolute",
+    right: 16,
+},
 	bottomControlRow: {
 		alignItems: "center",
 		flexDirection: "row",
