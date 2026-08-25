@@ -413,124 +413,260 @@ const ProfileScreen = () => {
 		"\n - Model ID: " + Device.modelId +
 		"\n - Platform API Level (Android only): " + ( Device.platformApiLevel ? Device.platformApiLevel : "" );
 	return (
-		<View style={styles.container}>
-			<ScrollView style={styles.scrollView}>
-				<TouchableOpacity style={styles.menuItem}>
-					<Text style={styles.menuText} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/`)}>Home</Text>
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/about/`)}>
-					<Text style={styles.menuText}>About Us</Text>
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/contact-us/`)}>
-					<Text style={styles.menuText}>Contact Us</Text>
-				</TouchableOpacity>
-				<View style={styles.subMenu}>
-					<TouchableOpacity style={styles.subMenuItem}>
-						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`tel://1-713-748-8888`)}>Call Houston Public Media</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.subMenuItem}>
-						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`tel://1-713-743-8483`)}>Call Membership Services</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.subMenuItem}>
-						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`mailto:membership@houstonpublicmedia.org?subject=HPM%20Member%20Services%20Query`)}>Email Membership Services</Text>
-					</TouchableOpacity>
+	<View style={styles.container}>
+		<ScrollView style={styles.scrollView}>
 
+			<TouchableOpacity style={styles.menuItem}>
+				<Text style={styles.menuText}>About Houston Public Media</Text>
+			</TouchableOpacity>
 
-				</View>
-				<TouchableOpacity style={styles.menuItem}>
-					<Text style={styles.menuText} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/hellohouston/`)}>Hello Houston Newsletter</Text>
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.menuItem}>
-					<Text style={styles.menuText} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/donate`)}>Donate Now</Text>
+			<View style={styles.subMenu}>
+				<TouchableOpacity
+					style={styles.subMenuItem}
+					onPress={() =>
+						Linking.openURL(
+							'https://www.houstonpublicmedia.org/about/'
+						)
+					}
+				>
+					<Text style={styles.subMenuText}>About Us</Text>
 				</TouchableOpacity>
 
-				<TouchableOpacity style={styles.menuItem}>
-					<Text style={styles.menuText}>Houston Public Media Interactives</Text>
-				</TouchableOpacity>
-				<View style={styles.subMenu}>
-					<TouchableOpacity style={styles.subMenuItem}>
-						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/hurricane-tropical-storm-tracker-texas-houston/`)}>Hurricane and Tropical Storm Tracker</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.subMenuItem}>
-						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/texas-houston-power-outage-tracker-map/`)}>Texas Power Outage Tracker Map</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.subMenuItem}>
-						<Text style={styles.subMenuText} onPress={() => Linking.openURL(`https://www.houstonpublicmedia.org/houston-weather-temperatures-heat-map/`)}>Temperature Map Tracker – Houston, Texas, United States</Text>
-					</TouchableOpacity>
-				</View>
-
-				<TouchableOpacity style={styles.menuItem}>
-					<Text style={styles.menuText}>App Preferences</Text>
-				</TouchableOpacity>
-				<View style={styles.subMenu}>
-					<TouchableOpacity
-						style={[styles.settingsRow, pushLoading && { opacity: 0.6 }]}
-						activeOpacity={0.7}
-						onPress={() => {
-							dlog('UI: row pressed', { pushLoading, pushEnabled, notificationStatus });
-							if (pushLoading) return;
-							handlePushToggle(!pushEnabled);
-						}}
+				<TouchableOpacity style={styles.subMenuItem}>
+					<Text
+						style={styles.subMenuText}
+						onPress={() =>
+							Linking.openURL(
+								'https://www.houstonpublicmedia.org/hellohouston/'
+							)
+						}
 					>
-						<View style={styles.settingsLeft}>
-							<Text style={styles.settingsTitle}>Push Notifications</Text>
-							<Text style={[
+						Hello Houston Newsletter
+					</Text>
+				</TouchableOpacity>
+
+				<TouchableOpacity style={styles.subMenuItem}>
+					<Text
+						style={styles.subMenuText}
+						onPress={() =>
+							Linking.openURL(
+								'https://www.houstonpublicmedia.org/donate'
+							)
+						}
+					>
+						Donate Now
+					</Text>
+				</TouchableOpacity>
+
+				<TouchableOpacity style={styles.subMenuItem}>
+					<Text style={styles.subMenuText}>
+						Houston Public Media Interactives
+					</Text>
+				</TouchableOpacity>
+
+				<View style={styles.subMenu}>
+					<TouchableOpacity style={styles.subMenuItem}>
+						<Text
+							style={styles.subMenuText}
+							onPress={() =>
+								Linking.openURL(
+									'https://www.houstonpublicmedia.org/hurricane-tropical-storm-tracker-texas-houston/'
+								)
+							}
+						>
+							Hurricane and Tropical Storm Tracker
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity style={styles.subMenuItem}>
+						<Text
+							style={styles.subMenuText}
+							onPress={() =>
+								Linking.openURL(
+									'https://www.houstonpublicmedia.org/texas-houston-power-outage-tracker-map/'
+								)
+							}
+						>
+							Texas Power Outage Tracker Map
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity style={styles.subMenuItem}>
+						<Text
+							style={styles.subMenuText}
+							onPress={() =>
+								Linking.openURL(
+									'https://www.houstonpublicmedia.org/houston-weather-temperatures-heat-map/'
+								)
+							}
+						>
+							Temperature Map Tracker – Houston, Texas, United States
+						</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+
+			<TouchableOpacity style={styles.menuItem}>
+				<Text style={styles.menuText}>Notifications</Text>
+			</TouchableOpacity>
+
+			<View style={styles.subMenu}>
+				<TouchableOpacity
+					style={[
+						styles.settingsRow,
+						pushLoading && { opacity: 0.6 }
+					]}
+					activeOpacity={0.7}
+					onPress={() => {
+						dlog('UI: row pressed', {
+							pushLoading,
+							pushEnabled,
+							notificationStatus
+						});
+
+						if (pushLoading) return;
+
+						handlePushToggle(!pushEnabled);
+					}}
+				>
+					<View style={styles.settingsLeft}>
+						<Text style={styles.settingsTitle}>
+							Push Notifications
+						</Text>
+
+						<Text
+							style={[
 								styles.settingsSubtitle,
 								{ color: getNotificationStatusColor() }
-							]}>
-								{getNotificationStatusMessage()}
-							</Text>
-						</View>
-						<Switch
-							value={pushEnabled}
-							onValueChange={(v) => {
-								dlog('UI: switch toggled', { value: v, pushLoading, pushEnabled, notificationStatus });
-								handlePushToggle(v);
-							}}
-							disabled={pushLoading}
-							thumbColor={pushEnabled ? '#ffffff' : '#f4f3f4'}
-							trackColor={{ false: 'rgba(255,255,255,0.3)', true: '#0E4C8A' }}
-							ios_backgroundColor="rgba(255,255,255,0.3)"
-						/>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.subMenuItem}>
-						<Text style={styles.subMenuText}>Personalize Stories</Text>
-					</TouchableOpacity>
-					<View style={styles.subMenu}>
-						{categories.map((category) => (
-							<TouchableOpacity
-								key={category.id}
-								style={[
-									styles.subMenuItem,
-									category.selected && styles.selectedCategory
-								]}
-								onPress={() => handleCategoryToggle(category.id)}
-							>
-								<Text style={styles.subMenuText}>
-									{category.name} {category.selected ? '✓' : ''}
-								</Text>
-							</TouchableOpacity>
-						))}
-					</View>
-				</View>
-				<Text style={styles.menuText}>App Version</Text>
-					<View style={styles.subMenu}>
-						<Text style={styles.subMenuText}>
-							{Constants.expoConfig?.version ?? 'Unknown'}
-							{' '}
-						(
-							{Platform.OS === 'ios'
-								? Constants.expoConfig?.ios?.buildNumber ?? 'Unknown'
-								: Constants.expoConfig?.android?.versionCode ?? 'Unknown'}
-						)
+							]}
+						>
+							{getNotificationStatusMessage()}
 						</Text>
-						<TouchableOpacity style={styles.subMenuItemLarger}>
-						<Text style={styles.subMenuTextLarger} onPress={() => Linking.openURL("mailto:webmaster@houstonpublicmedia.org?subject=HPM%20App%20Feedback&body=" + encodeURIComponent(formattedBody) )}>Have a problem? Feature suggestion? Contact the developers!</Text></TouchableOpacity>
 					</View>
 
-			</ScrollView>
-			<AudioFooter />
-		</View>
-	);
+					<Switch
+						value={pushEnabled}
+						onValueChange={(v) => {
+							dlog('UI: switch toggled', {
+								value: v,
+								pushLoading,
+								pushEnabled,
+								notificationStatus
+							});
+
+							handlePushToggle(v);
+						}}
+						disabled={pushLoading}
+						thumbColor={
+							pushEnabled ? '#ffffff' : '#f4f3f4'
+						}
+						trackColor={{
+							false: 'rgba(255,255,255,0.3)',
+							true: '#0E4C8A'
+						}}
+						ios_backgroundColor="rgba(255,255,255,0.3)"
+					/>
+				</TouchableOpacity>
+			</View>
+
+			<TouchableOpacity style={styles.menuItem}>
+				<Text style={styles.menuText}>Personalize Stories</Text>
+			</TouchableOpacity>
+
+			<View style={styles.subMenu}>
+				{categories.map((category) => (
+					<TouchableOpacity
+						key={category.id}
+						style={[
+							styles.subMenuItem,
+							category.selected && styles.selectedCategory
+						]}
+						onPress={() =>
+							handleCategoryToggle(category.id)
+						}
+					>
+						<Text style={styles.subMenuText}>
+							{category.name}{' '}
+							{category.selected ? '✓' : ''}
+						</Text>
+					</TouchableOpacity>
+				))}
+			</View>
+
+			<TouchableOpacity style={styles.menuItem}>
+				<Text style={styles.menuText}>Contact Us</Text>
+			</TouchableOpacity>
+
+			<View style={styles.subMenu}>
+				<TouchableOpacity style={styles.subMenuItem}>
+					<Text
+						style={styles.subMenuText}
+						onPress={() =>
+							Linking.openURL('tel://1-713-748-8888')
+						}
+					>
+						Call Houston Public Media
+					</Text>
+				</TouchableOpacity>
+
+				<TouchableOpacity style={styles.subMenuItem}>
+					<Text
+						style={styles.subMenuText}
+						onPress={() =>
+							Linking.openURL('tel://1-713-743-8483')
+						}
+					>
+						Call Membership Services
+					</Text>
+				</TouchableOpacity>
+
+				<TouchableOpacity style={styles.subMenuItem}>
+					<Text
+						style={styles.subMenuText}
+						onPress={() =>
+							Linking.openURL(
+								'mailto:membership@houstonpublicmedia.org?subject=HPM%20Member%20Services%20Query'
+							)
+						}
+					>
+						Email Membership Services
+					</Text>
+				</TouchableOpacity>
+			</View>
+
+			<TouchableOpacity style={styles.menuItem}>
+				<Text style={styles.menuText}>About the App</Text>
+			</TouchableOpacity>
+
+			<View style={styles.subMenu}>
+				<Text style={styles.subMenuText}>
+					{Constants.expoConfig?.version ?? 'Unknown'} (
+					{Platform.OS === 'ios'
+						? Constants.expoConfig?.ios?.buildNumber ?? 'Unknown'
+						: Constants.expoConfig?.android?.versionCode ?? 'Unknown'}
+					)
+				</Text>
+
+				<TouchableOpacity style={styles.subMenuItemLarger}>
+					<Text
+						style={styles.subMenuTextLarger}
+						onPress={() =>
+							Linking.openURL(
+								'mailto:webmaster@houstonpublicmedia.org?subject=HPM%20App%20Feedback&body=' +
+								encodeURIComponent(formattedBody)
+							)
+						}
+					>
+						Have a problem? Feature suggestion? Contact the developers!
+					</Text>
+				</TouchableOpacity>
+			</View>
+
+		</ScrollView>
+
+		<AudioFooter />
+	</View>
+);
+
 };
 export default ProfileScreen;
