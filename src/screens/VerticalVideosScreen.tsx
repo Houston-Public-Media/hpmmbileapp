@@ -44,7 +44,6 @@ type ShortsVideoCardProps = {
 };
 
 type ShortsPlayerProps = {
-
 	onClose: () => void;
 	onPlaybackStart: () => void;
 	video: BrightcoveVideo;
@@ -132,12 +131,10 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 	), [video.poster]);
 
 	const closePlayer = useCallback(() => {
-		if (closeHandledRef.current) return;
+	videoRef.current?.pause?.();
+	onClose();
+}, [onClose]);
 
-		closeHandledRef.current = true;
-		videoRef.current?.pause?.();
-		onClose();
-	}, [onClose]);
 
 	const toggleControls = useCallback(() => {
 		setControlsVisible(current => {
@@ -330,198 +327,129 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 		>
 			<StatusBar hidden />
 			<View style={styles.playerContainer}>
-				<Video
-					ref={videoRef}
-					source={source}
-					style={styles.fullscreenVideo}
-					controls={false}
-					ignoreSilentSwitch="ignore"
-					mixWithOthers="duck"
-					muted={muted}
-					paused={paused}
-					playInBackground={false}
-					playWhenInactive={false}
-					poster={poster}
-					preventsDisplaySleepDuringVideoPlayback
-					resizeMode={ResizeMode.CONTAIN}
-					bufferConfig={{
-						minBufferMs: 3000,
-						maxBufferMs: 12000,
-						bufferForPlaybackMs: 750,
-						bufferForPlaybackAfterRebufferMs: 1500,
-					}}
-					onBuffer={({ isBuffering }) => setBuffering(isBuffering)}
-					onEnd={() => {
-						setPaused(true);
-						setEnded(true);
-						setControlsVisible(true);
-					}}
-					onError={() => {
-						setFailed(true);
-						setBuffering(false);
-						setControlsVisible(true);
-					}}
-					onLoad={({ duration: videoDuration }) => {
-						const nextDuration = Number(videoDuration);
+	<Video
+		ref={videoRef}
+		source={source}
+		style={styles.fullscreenVideo}
+		controls={false}
+		ignoreSilentSwitch="ignore"
+		mixWithOthers="duck"
+		muted={muted}
+		paused={paused}
+		playInBackground={false}
+		playWhenInactive={false}
+		poster={poster}
+		preventsDisplaySleepDuringVideoPlayback
+		resizeMode={ResizeMode.CONTAIN}
+		bufferConfig={{
+			minBufferMs: 3000,
+			maxBufferMs: 12000,
+			bufferForPlaybackMs: 750,
+			bufferForPlaybackAfterRebufferMs: 1500,
+		}}
+		onBuffer={({ isBuffering }) => setBuffering(isBuffering)}
+		onEnd={() => {
+			setPaused(true);
+			setEnded(true);
+			setControlsVisible(true);
+		}}
+		onError={() => {
+			setFailed(true);
+			setBuffering(false);
+			setControlsVisible(true);
+		}}
+		onLoad={({ duration: videoDuration }) => {
+			const nextDuration = Number(videoDuration);
 
-						if (!Number.isFinite(nextDuration) || nextDuration <= 0) {
-							loadedRef.current = false;
-							setDuration(0);
-							return;
-						}
+			if (!Number.isFinite(nextDuration) || nextDuration <= 0) {
+				loadedRef.current = false;
+				setDuration(0);
+				return;
+			}
 
-						loadedRef.current = true;
+			loadedRef.current = true;
+			setDuration(nextDuration);
+			setCurrentTime(0);
+			setSlidingValue(0);
+			setEnded(false);
+		}}
+		onLoadStart={() => {
+	loadedRef.current = false;
+	seekingRef.current = false;
+	slidingValueRef.current = 0;
 
-						setDuration(nextDuration);
-						setCurrentTime(0);
-						setSlidingValue(0);
-						setEnded(false);
-					}}
-					onLoadStart={() => {
-						setBuffering(true);
-						setControlsVisible(true);
-					}}
-					onProgress={({ currentTime: nextTime }) => {
-						// Do NOT allow the video playback position to overwrite
-						// the position the user is currently dragging to.
-						if (seekingRef.current) {
-							return;
-						}
+	setBuffering(true);
+	setControlsVisible(true);
+	setFailed(false);
+	setPaused(false);
+	setEnded(false);
+	setCurrentTime(0);
+	setSlidingValue(0);
+	setDuration(0);
+	setSeeking(false);
+}}
 
-						if (!Number.isFinite(nextTime) || nextTime < 0) {
-							return;
-						}
+		onProgress={({ currentTime: nextTime }) => {
+			if (seekingRef.current) {
+				return;
+			}
 
-						const safeTime =
-							duration > 0
-								? Math.min(nextTime, duration)
-								: nextTime;
+			if (!Number.isFinite(nextTime) || nextTime < 0) {
+				return;
+			}
 
-						slidingValueRef.current = safeTime;
+			const safeTime =
+				duration > 0
+					? Math.min(nextTime, duration)
+					: nextTime;
 
-						setCurrentTime(safeTime);
-						setSlidingValue(safeTime);
-						setEnded(false);
-					}}
-					onReadyForDisplay={() => setBuffering(false)}
+			slidingValueRef.current = safeTime;
+
+			setCurrentTime(safeTime);
+			setSlidingValue(safeTime);
+			setEnded(false);
+		}}
+		onReadyForDisplay={() => setBuffering(false)}
+	/>
+
+	{/* Video tap area - BELOW controls */}
+	<Pressable
+		accessibilityLabel="Toggle video controls"
+		onPress={toggleControls}
+		style={styles.videoTouchLayer}
+	/>
+
+	{controlsVisible ? (
+		<View
+			pointerEvents="box-none"
+			style={styles.controlsLayer}
+		>
+			<TouchableOpacity
+				accessibilityLabel="Close video"
+				hitSlop={{
+					top: 16,
+					right: 16,
+					bottom: 16,
+					left: 16,
+				}}
+				onPress={closePlayer}
+				activeOpacity={0.7}
+				style={styles.closeButton}
+			>
+				<MaterialIcons
+					name="close"
+					size={28}
+					color="#fff"
 				/>
+			</TouchableOpacity>
 
-				<Pressable
-					accessibilityLabel="Toggle video controls"
-					onPress={toggleControls}
-					style={styles.playerTapLayer}
-				/>
+			{/* rest of your controls */}
+		</View>
+	) : null}
 
-				{controlsVisible ? (
-					<View pointerEvents="box-none" style={styles.controlsLayer}>
-						<TouchableOpacity
-							accessibilityLabel="Close video"
-							hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-							onPress={closePlayer}
-							style={styles.closeButton}
-						>
-							<MaterialIcons name="close" size={28} color="#fff" />
-						</TouchableOpacity>
+	{/* buffering/error overlays */}
+</View>
 
-						<View style={styles.centerControls}>
-							<TouchableOpacity
-								accessibilityLabel="Seek backward 10 seconds"
-								hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-								onPress={() => seekBy(-10)}
-								style={styles.roundControl}
-							>
-								<MaterialIcons name="replay-10" size={34} color="#fff" />
-							</TouchableOpacity>
-
-							<TouchableOpacity
-								accessibilityLabel={paused ? "Play video" : "Pause video"}
-								hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-								onPress={togglePlayback}
-								style={styles.primaryControl}
-							>
-								<MaterialIcons name={paused ? "play-arrow" : "pause"} size={44} color="#fff" />
-							</TouchableOpacity>
-
-							<TouchableOpacity
-								accessibilityLabel="Seek forward 10 seconds"
-								hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-								onPress={() => seekBy(10)}
-								style={styles.roundControl}
-							>
-								<MaterialIcons name="forward-10" size={34} color="#fff" />
-							</TouchableOpacity>
-						</View>
-
-						<View style={[
-        styles.bottomControls,
-        {
-            bottom: Math.max(insets.bottom, 36),
-        },
-    ]}>
-							<View style={styles.bottomControlRow}>
-								<TouchableOpacity
-									accessibilityLabel={muted ? "Unmute video" : "Mute video"}
-									hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-									onPress={toggleMute}
-									style={styles.iconButton}
-								>
-									<MaterialIcons name={muted ? "volume-off" : "volume-up"} size={26} color="#fff" />
-								</TouchableOpacity>
-
-								<Text style={styles.timeText}>{formatTime(slidingValue)}</Text>
-
-								<View style={styles.sliderWrapper}>
-								{duration > 0 ? (
-									<View
-										ref={sliderRef}
-										style={styles.sliderWrapper}
-										onLayout={measureSlider}
-										{...sliderPanResponder.panHandlers}
-									>
-										<View style={styles.scrubberTrack}>
-											<View style={[
-												styles.scrubberProgress,
-												{
-													width: duration > 0 ?
-														`${Math.min(100, Math.max(0, (slidingValue / duration) * 100))}%`
-														: "0%",
-												},
-											]} />
-											<View style={[
-												styles.scrubberThumb,
-												{
-													left: duration > 0 && sliderWidth > 0 ?
-														Math.min(sliderWidth - 12, Math.max(0, (slidingValue / duration) * sliderWidth - 6))
-														: 0,
-												}
-											]} />
-										</View>
-									</View>
-								) : null}
-								</View>
-								<Text style={styles.timeText}>{formatTime(duration)}</Text>
-							</View>
-						</View>
-					</View>
-				) : null}
-
-				{buffering && !failed ? (
-					<View pointerEvents="none" style={styles.playerStateOverlay}>
-						<ActivityIndicator color="#fff" />
-					</View>
-				) : null}
-
-				{failed ? (
-					<TouchableOpacity
-						activeOpacity={0.9}
-						onPress={closePlayer}
-						style={styles.playerStateOverlay}
-					>
-						<Text style={styles.playerErrorText}>Unable to play this video.</Text>
-						<Text style={styles.playerErrorSubtext}>Tap to close</Text>
-					</TouchableOpacity>
-				) : null}
-			</View>
 		</Modal>
 	);
 };
@@ -764,12 +692,14 @@ const VerticalVideosScreen = () => {
 			</View>
 
 			{selectedVideo ? (
-				<ShortsPlayer
-					video={selectedVideo}
-					onClose={onCloseVideo}
-					onPlaybackStart={onPlaybackStart}
-				/>
-			) : null}
+	<ShortsPlayer
+		key={selectedVideo.id}
+		video={selectedVideo}
+		onClose={onCloseVideo}
+		onPlaybackStart={onPlaybackStart}
+	/>
+) : null}
+
 
 			<AudioFooter />
 		</>
@@ -890,22 +820,26 @@ const styles = StyleSheet.create({
 		zIndex: 1,
 	},
 	controlsLayer: {
-		...StyleSheet.absoluteFillObject,
-		backgroundColor: "rgba(0,0,0,0.14)",
-		zIndex: 2,
-	},
+	...StyleSheet.absoluteFillObject,
+	backgroundColor: "rgba(0,0,0,0.14)",
+	zIndex: 10,
+	elevation: 10,
+},
 	closeButton: {
-		alignItems: "center",
-		backgroundColor: "rgba(0,0,0,0.48)",
-		borderRadius: 20,
-		height: 40,
-		justifyContent: "center",
-		left: 16,
-		position: "absolute",
-		top: Platform.OS === 'ios' ? 54 : 24,
-		width: 40,
-		zIndex: 2,
-	},
+	alignItems: "center",
+	backgroundColor: "rgba(0,0,0,0.65)",
+	borderRadius: 24,
+	height: 48,
+	justifyContent: "center",
+	left: 16,
+	position: "absolute",
+	top: Platform.OS === "ios" ? 54 : 32,
+	width: 48,
+
+	zIndex: 20,
+	elevation: 20,
+},
+
 	centerControls: {
 		alignItems: "center",
 		flexDirection: "row",
@@ -1017,5 +951,11 @@ scrubberThumb: {
 	borderRadius: 6,
 	backgroundColor: "#fff",
 },
+videoTouchLayer: {
+	...StyleSheet.absoluteFillObject,
+	zIndex: 1,
+	elevation: 1,
+},
+
 });
 export default VerticalVideosScreen;
