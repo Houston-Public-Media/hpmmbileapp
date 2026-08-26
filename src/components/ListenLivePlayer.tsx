@@ -148,7 +148,7 @@ const ListenLivePlayer: React.FC<ListenLivePlayerProps> = ( { track } ) => {
 							<Text style={[
 								styles.artist,
 								isCurrent && styles.currentTrackArtist
-							]} numberOfLines={2}>
+							]} numberOfLines={4}>
 								{item.artist} - {item.title}
 							</Text>
 

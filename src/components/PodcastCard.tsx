@@ -23,7 +23,7 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, onPress }) => {
 			/>
 
 			<View style={styles.content}>
-				<Text style={styles.title} numberOfLines={2}>
+				<Text style={styles.title} numberOfLines={4}>
 					{cleanText(podcast.name)}
 				</Text>
 			</View>

@@ -43,7 +43,9 @@ const BottomTabNavigator = () => (
                 }
             },
             tabBarLabel: ({ focused, color }) => {
-                return <Text style={{ color, fontSize: 13 }}>{route.name}</Text>;
+                return <Text style={{ color, fontSize: 12, textAlign: 'center', }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} >
+			        {route.name}
+		        </Text>;
             },
         })}
         screenListeners={{

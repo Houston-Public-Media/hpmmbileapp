@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Linking, StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
+import { Linking, StyleSheet, Text, View, TouchableOpacity, Image, Dimensions } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { DrawerNavigationProp } from '@react-navigation/drawer'
 import { fetchWeather } from '../services/newsApi';
@@ -7,6 +7,10 @@ import { Weather } from '../type';
 
 // Function to decode HTML entities
 import { cleanText } from '../utils/htmlUtils';
+
+const { width: screenWidth } = Dimensions.get('window');
+
+const logoWidth = Math.min(220, screenWidth - 145);
 
 export const Header: React.FC = () => {
 	const navigation = useNavigation<DrawerNavigationProp<any>>();
@@ -76,10 +80,12 @@ const styles = StyleSheet.create({
 		flexWrap: 'wrap'
 	},
 	logo: {
-		width: 270,
-		height: 42,
-		marginRight: 10,
-	},
+	width: logoWidth,
+	height: 32,
+	marginRight: 8,
+	resizeMode: 'contain',
+},
+
 	textContainer: {
 		justifyContent: 'space-between',
 		flexDirection: 'row',
@@ -108,13 +114,15 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 	},
 	donateButton: {
-		padding: 10,
-		borderRadius: 14,
-		backgroundColor: '#C8102E'
-	},
+	paddingHorizontal: 8,
+	paddingVertical: 7,
+	borderRadius: 14,
+	backgroundColor: '#C8102E',
+},
+
 	donateButtonText: {
 		color: '#fff',
-		fontSize: 16,
+		fontSize: 14,
 		fontWeight: 'bold',
 	}
 })
