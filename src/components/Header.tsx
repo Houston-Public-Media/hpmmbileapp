@@ -10,7 +10,8 @@ import { cleanText } from '../utils/htmlUtils';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-const logoWidth = Math.min(220, screenWidth - 145);
+const logoWidth = Math.min(270, screenWidth * 0.65);
+const logoHeight = Math.min(43, logoWidth / 6.3965517241);
 
 export const Header: React.FC = () => {
 	const navigation = useNavigation<DrawerNavigationProp<any>>();
@@ -47,9 +48,7 @@ export const Header: React.FC = () => {
 			<TouchableOpacity onPress={handleLogoPress}>
 				<Image source={{uri: `https://cdn.houstonpublicmedia.org/assets/images/houston-public-media-logo.png`}} style={styles.logo} />
 			</TouchableOpacity>
-			<TouchableOpacity style={styles.donateButton}
-			                  onPress={() => Linking.openURL('https://www.houstonpublicmedia.org/donate')}
-			>
+			<TouchableOpacity style={styles.donateButton} onPress={() => Linking.openURL('https://www.houstonpublicmedia.org/donate')} >
 				<Text style={styles.donateButtonText}>Donate</Text>
 			</TouchableOpacity>
 			<View style={styles.textContainer}>
@@ -80,11 +79,12 @@ const styles = StyleSheet.create({
 		flexWrap: 'wrap'
 	},
 	logo: {
-	width: logoWidth,
-	height: 32,
-	marginRight: 8,
-	resizeMode: 'contain',
-},
+		width: logoWidth,
+		height: logoHeight,
+		marginRight: 10,
+		resizeMode: 'contain',
+		marginTop: 2
+	},
 
 	textContainer: {
 		justifyContent: 'space-between',
@@ -114,15 +114,15 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 	},
 	donateButton: {
-	paddingHorizontal: 8,
-	paddingVertical: 7,
-	borderRadius: 14,
-	backgroundColor: '#C8102E',
-},
+		paddingHorizontal: 8,
+		paddingVertical: 7,
+		borderRadius: 14,
+		backgroundColor: '#C8102E',
+	},
 
 	donateButtonText: {
 		color: '#fff',
-		fontSize: 14,
+		fontSize: 16,
 		fontWeight: 'bold',
 	}
 })

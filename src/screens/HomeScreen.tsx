@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Text } from 'react-native';
+import { View, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity, Text, Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchPriorityData, fetchBrightCoveEmbedURL } from '../services/newsApi';
 import NewsCard from '../components/NewsCard';
@@ -37,6 +37,7 @@ type SectionItem =
   | { type: 'brightcove' }
   | { type: 'selected_category'; data:{id:string, name:string};}
 
+const { width: screenWidth } = Dimensions.get('window');
 export default function HomeScreen({ navigation }: Props) {
   // Track screen view
   useScreenTracking('Home');
@@ -131,7 +132,7 @@ useFocusEffect(
   const handleRefresh = () => {
     loadData();
   };
-
+  const mainFont = (screenWidth > 500 ? 18 : 14);
   const renderSection = ({ item }: { item: SectionItem }) => {
     switch (item.type) {
       case 'adBanner':
@@ -212,16 +213,17 @@ useFocusEffect(
                 image={article.picture}
                 imageContainerStyle={{
                   width: "50%",
-                  minHeight: 120,
+                  height: Math.min(200, (screenWidth * .5) / 1.666667),
                   marginRight: 10
                 }}
                 titleLines={10}
                 titleStyle={{
                   fontWeight: 'bold',
-                  fontSize: 14,
+                  fontSize: mainFont,
                   marginBottom: 4,
                   color: color.secondary,
-                  textTransform: 'none'
+                  textTransform: 'none',
+                  justifyContent: "center"
                 }}
                 cardStyle={{
                   borderColor: '#bdb9b9',
@@ -311,11 +313,12 @@ useFocusEffect(
   );
 }
 
+const featuredHeight = Math.min(400, screenWidth / 1.666667);
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   mainContent: { paddingHorizontal: 16 },
   featured: { paddingVertical: 16, flexDirection: 'column', borderBottomWidth: 0 },
-  featuredImage: { width: '100%', height: 180, marginBottom: 16 },
+  featuredImage: { width: "100%", height: featuredHeight, marginBottom: 16, resizeMode: "cover" },
   featuredSummary: { fontWeight: 'bold', fontSize: 18, marginTop: 4 },
   section: { paddingVertical: 8 },
   seeAllButton: {

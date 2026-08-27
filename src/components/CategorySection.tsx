@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { fetchNewsByCategoryId } from '../services/newsApi';
@@ -11,6 +11,7 @@ type RootStackParamList = {
 	NewsDetail: { postId: number; title?: string };
 };
 
+const { width: screenWidth } = Dimensions.get('window');
 
 const stripHtml = (html: string) =>
 	decodeHtmlEntities(html.replace(/<[^>]*>?/gm, ''));
@@ -67,7 +68,7 @@ const CategorySection = ({ categoryId, categoryName }: CategorySectionProps) => 
 		</View>
 	)
 };
-
+const mainFont = (screenWidth > 500 ? 18 : 14);
 const styles = StyleSheet.create({
 	newsContainer: {
 		backgroundColor: '#fff',
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
 		marginTop: 8
 	},
 	newsItem: {
-		fontSize: 15,
+		fontSize: mainFont + 1,
 		marginVertical: 6,
 		color: '#222',
 	},
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 		color: '#1976d2', // blue
 		textTransform: 'uppercase',
-		fontSize: 14,
+		fontSize: mainFont,
 	},
 	divider: {
 		borderBottomWidth: 1,
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
 	seeAll: {
 		color: '#1976d2',
 		fontWeight: '500',
-		fontSize: 13,
+		fontSize: mainFont - 2,
 	},
 });
 

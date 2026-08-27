@@ -21,14 +21,15 @@ const TalkshowCard: React.FC<TalkshowCardProps> = ({ talkshow, showSlug, onPress
 		backgroundImage,
 	} = talkshow;
 
-	const playerHeight = 200;
 	const liveBadgeText = 'LIVE';
 	const watchLiveLabel = 'WATCH LIVE';
 
 	const screenWidth = Dimensions.get('window').width;
+
 	const cardPadding = 24;
 	const containerMargin = 32;
 	const videoWidth = screenWidth - cardPadding - containerMargin;
+	const playerHeight = videoWidth / 1.66667;
 
 	const HeaderContent = () => (
 		<View style={styles.header}>

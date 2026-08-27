@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { fetchNewsByCategoryId } from '../services/newsApi';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
@@ -13,7 +13,7 @@ interface RadioPost {
 	pId1: number;
 	pId2: number;
 }
-
+const { width: screenWidth } = Dimensions.get('window');
 const RadioCard = (
 	{ id, title, json_feed, image, podcast, onPress }: {
 		id: number;
@@ -76,7 +76,7 @@ const RadioCard = (
 		</TouchableOpacity>
 	);
 };
-
+const mainFont = (screenWidth > 500 ? 18 : 14);
 const styles = StyleSheet.create({
 	radioItem: {
 		marginBottom: 20,
@@ -85,14 +85,14 @@ const styles = StyleSheet.create({
 		paddingBottom: 10,
 	},
 	radioTitle: {
-		fontSize: 16,
+		fontSize: mainFont + 2,
 		fontWeight: 'bold',
 		color: '#000',
 		marginBottom: 5,
 	},
 	row: {
 		flexDirection: 'row',
-		alignItems: 'flex-start',
+		justifyContent: 'center',
 	},
 	radioImage: {
 		width: 140,
@@ -103,7 +103,8 @@ const styles = StyleSheet.create({
 		flex: 1,
 		marginBottom: "auto",
 		color: '#000',
-		fontSize: 14,
+		fontSize: mainFont,
+		justifyContent: "center"
 	},
 });
 

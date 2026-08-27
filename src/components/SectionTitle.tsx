@@ -1,4 +1,4 @@
-import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native'
+import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle, Dimensions } from 'react-native'
 import React from 'react'
 import { color } from '../utils/colorUtils'
 
@@ -11,7 +11,7 @@ interface SectionTitleProps {
 	lineStyle?: StyleProp<ViewStyle>
 	containerStyle?: StyleProp<ViewStyle>
 }
-
+const { width: screenWidth } = Dimensions.get('window');
 const SectionTitle: React.FC<SectionTitleProps> = ({ title, subtitle, line, titleStyle, subtitleStyle, lineStyle, containerStyle }) => {
 	return (
 		<View style={[styles.container, containerStyle]}>
@@ -23,10 +23,10 @@ const SectionTitle: React.FC<SectionTitleProps> = ({ title, subtitle, line, titl
 }
 
 export default SectionTitle
-
+const mainFont = (screenWidth > 500 ? 20 : 16);
 const styles = StyleSheet.create({
 	container: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-	title: { fontWeight: 'bold', fontSize: 16, color: color.primary, textTransform: 'uppercase' },
-	subtitle: { fontWeight: 'bold', fontSize: 16, color: color.secondary, textTransform: 'uppercase' },
+	title: { fontWeight: 'bold', fontSize: mainFont, color: color.primary, textTransform: 'uppercase' },
+	subtitle: { fontWeight: 'bold', fontSize: mainFont, color: color.secondary, textTransform: 'uppercase' },
 	line: { marginTop: "auto", marginBottom: 4, height: 2, backgroundColor: color.primary, flex: 1 },
 })

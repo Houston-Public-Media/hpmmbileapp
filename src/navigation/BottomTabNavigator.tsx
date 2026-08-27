@@ -18,7 +18,7 @@ const BottomTabNavigator = () => (
 		screenOptions={({ route }) => ({
 			headerShown: false,
 			tabBarActiveTintColor: '#C8102E',
-			tabBarInactiveTintColor: '#888',
+			tabBarInactiveTintColor: '#535353',
 			tabBarStyle: {
 				backgroundColor: '#fff',
 				borderTopWidth: 0.5,

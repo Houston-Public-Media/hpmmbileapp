@@ -286,7 +286,7 @@ class HPMAudioService {
 					artist: audioData.radio?.[index]?.artist || 'Houston Public Media',
 					album: track.name || audioData.radio?.[index]?.album || '',
 					artwork: track.artwork,
-					url: Platform.OS === 'ios' ? track.hlsSource : track.aacSource,
+					url: track.aacSource,
 					isLiveStream: true
 				};
 			})

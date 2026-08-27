@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, StyleProp, ViewStyle, TextStyle, ImageStyle } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, StyleProp, ViewStyle, TextStyle, ImageStyle, Dimensions } from 'react-native';
 import { color } from '../utils/colorUtils';
 import { decodeHtmlEntities } from '../utils/htmlUtils';
 
@@ -20,6 +20,7 @@ interface NewsCardProps {
 	titleLines?: number;
 	summaryLines?: number;
 }
+const { width: screenWidth } = Dimensions.get('window');
 
 const NewsCard: React.FC<NewsCardProps> = ({ image, title, summary, time, onTitlePress, onPress, cardStyle, imageContainerStyle, imageStyle, titleStyle, summaryStyle, timeStyle, textContainerStyle, titleLines, summaryLines }) => (
 	<TouchableOpacity style={[styles.card, cardStyle]} onPress={onPress}>
@@ -39,19 +40,19 @@ const NewsCard: React.FC<NewsCardProps> = ({ image, title, summary, time, onTitl
 		</View>
 	</TouchableOpacity>
 );
-
+const mainFont = ( screenWidth > 500 ? 18 : 14 );
 const styles = StyleSheet.create({
 	card: {
 		flexDirection: 'row',
 		paddingVertical: 16,
 		backgroundColor: '#fff',
 		marginBottom: 2,
-		borderBottomWidth:1,
+		borderBottomWidth: 1,
 		borderColor:'#ececec'
 	},
-	imageContainer:{
-		width: 100,
-		height: 80,
+	imageContainer: {
+		width: "25%",
+		height: (screenWidth * 0.25) / 1.5,
 		marginRight: 10,
 	},
 	image: {
@@ -60,11 +61,11 @@ const styles = StyleSheet.create({
 	},
 	textContainer: {
 		flex: 1,
-		justifyContent: 'flex-start',
+		justifyContent: 'center'
 	},
 	title: {
 		fontWeight: 'bold',
-		fontSize: 14,
+		fontSize: mainFont,
 		marginBottom: 4,
 		color: color.primary,
 		textTransform:'uppercase'
@@ -72,12 +73,12 @@ const styles = StyleSheet.create({
 	summary: {
 		color: color.secondary,
 		fontWeight: 'bold',
-		fontSize: 14,
+		fontSize: mainFont,
 		marginBottom: 2,
 	},
 	time: {
 		color: color.secondary,
-		fontSize: 12,
+		fontSize: mainFont - 2,
 		marginTop: 2,
 	},
 });
