@@ -215,13 +215,69 @@ const isYouTubeUrl = (url: string) => {
 		}
 	}, [containerWidth]);
 
+const flourishRenderer: CustomBlockRenderer = useCallback(
+	({ tnode }: CustomRendererProps<TBlock>) => {
+		const dataSrc = tnode.attributes['data-src'];
+
+		if (!dataSrc) {
+			return <TNodeChildrenRenderer tnode={tnode} />;
+		}
+
+		const width = Math.max(containerWidth - 30, 0);
+		const height = width * (9 / 16);
+
+		const url = dataSrc.startsWith('http')
+			? dataSrc
+			: `https://flo.uri.sh/${dataSrc}/embed`;
+
+		return (
+			<View
+				style={{
+					width,
+					height,
+					marginVertical: 10,
+					overflow: 'hidden',
+				}}
+			>
+				<WebView
+					source={{ uri: url }}
+					style={{ flex: 1 }}
+					javaScriptEnabled
+					domStorageEnabled
+					originWhitelist={['*']}
+					scrollEnabled={false}
+				/>
+			</View>
+		);
+	},
+	[containerWidth]
+);
+
+
+
 	// Memoized renderers object with stable references
 	const renderers = useMemo(() => ({
-		audio: audioRenderer,
-		div: splideRenderer,
-		iframe: iframeRenderer,
-		video: videoRenderer,
-	}), [audioRenderer, splideRenderer, iframeRenderer, videoRenderer]);
+	audio: audioRenderer,
+
+	div: (props: CustomRendererProps<TBlock>) => {
+		const className = props.tnode.attributes.class || '';
+
+		if (className.includes('flourish-embed')) {
+			return flourishRenderer(props);
+		}
+
+		return splideRenderer(props);
+	},
+
+	iframe: iframeRenderer,
+	video: videoRenderer,
+}), [
+	audioRenderer,
+	splideRenderer,
+	iframeRenderer,
+	videoRenderer,
+	flourishRenderer,
+]);
 
 	// Memoized custom HTML element models with stable references
 	const customHTMLElementModels = useMemo(() => ({
