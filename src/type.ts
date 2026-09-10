@@ -44,6 +44,7 @@ export interface NewsDetail {
   title: { rendered: string };
   content: { rendered: string };
   excerpt: { rendered: string };
+  link: string;
   date: string;
   featured_media?: number;
   _embedded?: Embedded;

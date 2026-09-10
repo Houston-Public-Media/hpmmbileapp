@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, RefreshControl, Share, Pressable } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { fetchNewsArticleById, fetchPriorityData } from '../services/newsApi';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -11,6 +11,7 @@ import TalkshowBanner from '../components/TalkshowBanner';
 import BreakingBanner from '../components/BreakingBanner';
 import { decodeHtmlEntities } from '../utils/htmlUtils';
 import AudioFooter from "../components/AudioFooter";
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 
 // Define the params expected for this screen
 type NewsDetailParams = {
@@ -77,6 +78,22 @@ const NewsDetailScreen = () => {
 		await loadPost();
 		setRefreshing(false);
 	};
+	const handleShare = async () => {
+	if (!post) return;
+
+	const articleUrl = decodeHtmlEntities(post.link);
+
+	try {
+		await Share.share({
+			title: decodeHtmlEntities(post.title.rendered),
+			message: `${decodeHtmlEntities(post.title.rendered)}\n\n${articleUrl}`,
+			url: articleUrl,
+		});
+	} catch (error) {
+		console.error('Error sharing article:', error);
+	}
+};
+
 
 	if (loading) {
 		return (
@@ -124,19 +141,22 @@ const NewsDetailScreen = () => {
 								numberOfLines={4}
 								baseStyle={styles.title}
 							/>
-							<Text style={styles.date}>
-
-								{authorName
-									? authorName
-									: ''} | {new Date(post.date).toLocaleDateString('en-US', {
-								month: 'long',
-								day: 'numeric',
-								year: 'numeric',
-								hour: 'numeric',
-								minute: '2-digit',
-								hour12: true
-							})}
-							</Text>
+							<View style={styles.dateRow}>
+								<Text style={styles.date}>
+									{authorName ? authorName : ''} |{' '}
+									{new Date(post.date).toLocaleDateString('en-US', {
+										month: 'long',
+										day: 'numeric',
+										year: 'numeric',
+										hour: 'numeric',
+										minute: '2-digit',
+										hour12: true,
+									})}
+								</Text>
+								<Pressable onPress={handleShare} style={styles.shareButton} hitSlop={10} accessibilityRole="button" accessibilityLabel="Share story" >
+									<FontAwesome name="share-alt" size={19} color="#000" />
+								</Pressable>
+							</View>
 						</View>
 						<HtmlRenderer
 							htmlContent={post.content.rendered}
@@ -187,12 +207,12 @@ const styles = StyleSheet.create({
 		color: '#333',
 		marginHorizontal: 15,
 	},
-	date: {
+	/*date: {
 		color: '#666',
 		fontSize: 14,
 		marginBottom: 15,
 		marginHorizontal: 15,
-	},
+	},*/
 	content: {
 		padding: 15,
 		paddingTop: 5,
@@ -232,6 +252,23 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		padding: 20,
 	},
+	dateRow: {
+	flexDirection: 'row',
+	alignItems: 'center',
+	marginHorizontal: 15,
+	marginBottom: 15,
+},
+
+date: {
+	flex: 1,
+	color: '#666',
+	fontSize: 14,
+},
+
+shareButton: {
+	marginLeft: 10,
+	padding: 3,
+},
 });
 
 export default NewsDetailScreen;
