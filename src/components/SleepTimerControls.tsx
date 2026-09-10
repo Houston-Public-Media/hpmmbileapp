@@ -58,24 +58,13 @@ const SleepTimerControls = () => {
 		await setSleep(ahead);
 	}
 	const cancelSleepTimer = async () => {
-		setSelectedTimer('Not Set');
 		await cancelSleep();
+		setSelectedTimer('Not Set');
+		setSelectedHour(0);
+		setSelectedMinute(0);
 	}
 	sleepTimer();
 	useEffect(() => {
-		// sleepTimer();
-
-		// Animated.timing(opacityAnimation, {
-		// 	toValue: 0.25,
-		// 	duration: 1500,
-		// 	useNativeDriver: true
-		// }).start(() => {
-		// 	Animated.timing(opacityAnimation, {
-		// 		toValue: 1,
-		// 		duration: 1500,
-		// 		useNativeDriver: true
-		// 	}).start();
-		// });
 		Animated.loop(
 			Animated.sequence([
 				Animated.timing(opacityAnimation, {
