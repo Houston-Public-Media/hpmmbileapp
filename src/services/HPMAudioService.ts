@@ -4,7 +4,7 @@ import TrackPlayer, {
 	AppKilledPlaybackBehavior,
 	Capability,
 	Event,
-	IOSCategoryOptions, Progress,
+	IOSCategoryOptions,
 	RepeatMode,
 	State,
 	Track as TPTrack,
@@ -15,6 +15,17 @@ import {Platform, AppState} from "react-native";
 export enum AudioType {
 	LIVE_STREAM = 'hls',
 	PODCAST = 'default'
+}
+
+export enum SleepState {
+	None = 'none',
+	Set = 'set',
+	Canceled = 'canceled'
+}
+
+export interface SleepTimerState {
+	timer: number;
+	state: SleepState;
 }
 
 // Track interface with extended metadata
@@ -41,6 +52,8 @@ export interface HPMAudioState {
 	duration: number;
 	canSeek: boolean;
 	repeatMode: RepeatMode;
+	sleep: number;
+	sleepState: SleepState;
 }
 
 // Event callbacks interface
@@ -67,7 +80,9 @@ class HPMAudioService {
 		position: 0,
 		duration: 0,
 		canSeek: false,
-		repeatMode: RepeatMode.Off
+		repeatMode: RepeatMode.Off,
+		sleep: 0,
+		sleepState: SleepState.None
 	};
 
 	private isInitialized = false;
@@ -124,9 +139,9 @@ class HPMAudioService {
 			//console.log('HPM Audio Service: Options configured');
 
 			// Set up event listeners
-			//console.log('HPM Audio Service: Setting up event listeners...');
+			console.log('HPM Audio Service: Setting up event listeners...');
 			this.setupEventListeners();
-			//console.log('HPM Audio Service: Event listeners setup complete');
+			console.log('HPM Audio Service: Event listeners setup complete');
 
 			this.isInitialized = true;
 			//console.log('HPM Audio Service initialized successfully');
@@ -173,10 +188,30 @@ class HPMAudioService {
 		TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, async (event) => {
 			this.state.position = event.position;
 			this.state.duration = event.duration || 0;
-			
+
 			// Update canSeek based on duration
 			this.state.canSeek = event.duration > 0;
-			
+
+			const currentDate = new Date();
+			const now = currentDate.getTime();
+			if (this.state.sleepState === SleepState.Set) {
+				if (this.state.sleep > 0 && this.state.sleep <= now) {
+					console.log("Stopping Audio Playback: ", currentDate.toLocaleDateString('en-US', {
+						month: 'long',
+						day: 'numeric',
+						year: 'numeric',
+						hour: 'numeric',
+						minute: '2-digit',
+						hour12: true
+					}));
+					await this.stop();
+					this.state.sleep = 0;
+				}
+			} else if (this.state.sleepState === SleepState.Canceled) {
+				this.state.sleep = 0;
+				this.state.sleepState = SleepState.None;
+			}
+			//this.notifyStateChange();
 			// Don't notify on every progress update to avoid excessive re-renders
 			// Components can subscribe to progress updates separately if needed
 		});
@@ -341,7 +376,8 @@ class HPMAudioService {
 						Capability.Play,
 						Capability.Pause,
 						Capability.Stop
-					]
+					],
+					progressUpdateEventInterval: 1
 				});
 			} else {
 				await TrackPlayer.updateOptions({
@@ -352,7 +388,8 @@ class HPMAudioService {
 						Capability.SeekTo,
 						Capability.JumpForward,
 						Capability.JumpBackward
-					]
+					],
+					progressUpdateEventInterval: 1
 				});
 			}
 			// Set loading state
@@ -495,11 +532,9 @@ class HPMAudioService {
 	 */
 	async stop(): Promise<void> {
 		try {
-			if (this.state.state === State.Playing) {
-				await TrackPlayer.stop();
-				this.state.currentTrack = null;
-				this.notifyStateChange();
-			}
+			await TrackPlayer.stop();
+			this.state.currentTrack = null;
+			this.notifyStateChange();
 		} catch (error) {
 			console.error('Error stopping track:', error);
 			this.notifyStateChange();
@@ -595,25 +630,40 @@ class HPMAudioService {
 			return 0;
 		}
 	}
-	async getProgress(): Promise<Progress> {
+
+	async setSleepTimer(time: number): Promise<boolean> {
 		try {
-			return await TrackPlayer.getProgress();
+			this.state.sleep = time;
+			this.state.sleepState = SleepState.Set;
+			console.log("Setting Sleep Timer: ", new Date(time).toLocaleDateString('en-US', {
+				month: 'long',
+				day: 'numeric',
+				year: 'numeric',
+				hour: 'numeric',
+				minute: '2-digit',
+				hour12: true
+			}));
+			return true;
 		} catch (error) {
-			console.error('Error getting duration:', error);
-			return {buffered: 0, position: 0, duration: 0 };
+			console.error('Error setting sleep timer:', error);
+			return false;
 		}
 	}
 
-	/**
-	 * Check if can seek
-	 */
-	async canSeek(): Promise<boolean> {
+	async getSleepTimer(): Promise<SleepTimerState> {
 		try {
-			const duration = await TrackPlayer.getProgress();
-			return duration.duration > 0 && !this.state.currentTrack?.isLiveStream;
+			return { timer: this.state.sleep, state: this.state.sleepState };
 		} catch (error) {
-			console.error('Error checking seekability:', error);
-			return false;
+			console.error('Error setting sleep timer:', error);
+			return { timer: 0, state: SleepState.None };
+		}
+	}
+
+	async cancelSleepTimer(): Promise<void> {
+		try {
+			this.state.sleepState = SleepState.Canceled;
+		} catch (error) {
+			console.error('Error canceling sleep timer:', error);
 		}
 	}
 
@@ -622,13 +672,6 @@ class HPMAudioService {
 	 */
 	getCurrentState(): HPMAudioState {
 		return { ...this.state };
-	}
-
-	/**
-	 * Get the current track
-	 */
-	getCurrentTrack(): AudioTrack | null {
-		return this.state.currentTrack;
 	}
 
 	/**
@@ -683,7 +726,9 @@ class HPMAudioService {
 				position: 0,
 				duration: 0,
 				canSeek: false,
-				repeatMode: RepeatMode.Off
+				repeatMode: RepeatMode.Off,
+				sleep: 0,
+				sleepState: SleepState.None
 			};
 
 			this.stateChangeListeners.clear();
@@ -708,7 +753,7 @@ export async function PlaybackService() {
 	});
 
 	TrackPlayer.addEventListener(Event.RemoteStop, () => {
-		TrackPlayer.pause();
+		TrackPlayer.stop();
 	});
 
 	TrackPlayer.addEventListener(Event.RemoteNext, async () => {

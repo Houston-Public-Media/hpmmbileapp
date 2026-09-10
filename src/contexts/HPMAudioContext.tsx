@@ -5,7 +5,7 @@ import {AppState, Platform} from 'react-native';
 import {
 	hpmAudioService,
 	AudioTrack,
-	HPMAudioState, AudioType,
+	HPMAudioState, AudioType, SleepState, SleepTimerState,
 } from '../services/HPMAudioService';
 import {Progress} from "react-native-track-player";
 
@@ -47,6 +47,9 @@ interface HPMAudioContextType extends HPMAudioState {
 	isCurrentTrack: (trackId: string) => boolean;
 	getPosition: () => Promise<number>;
 	getDuration: () => Promise<number>;
+	setSleep: (ahead: number) => Promise<void>;
+	getSleep: () => Promise<SleepTimerState>;
+	cancelSleep: () => Promise<void>;
 
 	// State
 	isInitialized: boolean;
@@ -149,6 +152,9 @@ export const HPMAudioProvider: React.FC<HPMAudioProviderProps> = ({ children }) 
 	// Load live streams
 	const loadLiveStreams = async (): Promise<AudioTrack[]> => {
 		try {
+			if (error !== null) {
+				setError(null);
+			}
 			return await hpmAudioService.loadLiveStreams();
 		} catch (err) {
 			console.error('Error loading live streams:', err);
@@ -321,12 +327,30 @@ export const HPMAudioProvider: React.FC<HPMAudioProviderProps> = ({ children }) 
 			return 0;
 		}
 	};
-	const getProgress = async (): Promise<Progress> => {
+
+	const setSleep = async (ahead: number): Promise<void> => {
 		try {
-			return await hpmAudioService.getProgress();
+			const now = new Date();
+			await hpmAudioService.setSleepTimer(now.getTime() + ahead);
 		} catch (err) {
-			console.error('Error getting duration:', err);
-			return {buffered: 0, position: 0, duration: 0 };
+			console.error('Error setting sleep timer:', err);
+		}
+	};
+
+	const getSleep = async (): Promise<SleepTimerState> => {
+		try {
+			return hpmAudioService.getSleepTimer();
+		} catch (err) {
+			console.error('Error setting sleep timer:', err);
+			return {timer: 0, state: SleepState.None};
+		}
+	};
+
+	const cancelSleep = async (): Promise<void> => {
+		try {
+			await hpmAudioService.cancelSleepTimer();
+		} catch (err) {
+			console.error('Error canceling sleep timer:', err);
 		}
 	};
 
@@ -368,6 +392,9 @@ export const HPMAudioProvider: React.FC<HPMAudioProviderProps> = ({ children }) 
 		isCurrentTrack,
 		getPosition,
 		getDuration,
+		setSleep,
+		getSleep,
+		cancelSleep
 	};
 
 	return (

@@ -1,10 +1,11 @@
 import React, {useRef} from 'react';
-import {Alert, Animated, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, Animated, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useHPMAudio} from '../contexts/HPMAudioContext';
 import {FontAwesome6, MaterialIcons} from '@expo/vector-icons';
 import {color} from '../utils/colorUtils';
 import {State} from 'react-native-track-player';
 import { AudioType, AudioTrack } from "../services/HPMAudioService";
+import AudioModalControls from "./AudioModalControls";
 
 const AudioFooter = () => {
 	// Use universal audio context
@@ -14,7 +15,7 @@ const AudioFooter = () => {
 		canSeek: audioCanSeek,
 		togglePlayPause,
 		seekForward,
-		seekBackward
+		seekBackward,
 	} = useHPMAudio();
 	const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -58,51 +59,22 @@ const AudioFooter = () => {
 	return (
 		<View style={styles.trackItem}>
 			<View style={styles.cardLayout}>
-				{/* Left section: Artwork */}
-				<View style={styles.artworkContainer}>
-					{currentTrack?.artwork ? (
-						<Image source={{uri: currentTrack?.artwork}} style={styles.artwork} />
-					) : (
-						<View style={styles.placeholderArtwork}>
-							<MaterialIcons name="music-note" size={32} color="#666" />
-						</View>
-					)}
-				</View>
-				
-				{/* Right section: Content area */}
-				<View style={styles.rightSection}>
-					{/* Top of right: Track Info */}
-					<View style={styles.trackInfo}>
-						<Text style={[
-							styles.title, styles.currentTrackTitle
-						]} numberOfLines={1}>
-							{currentTrack?.album}
-						</Text>
-						<Text style={[
-							styles.artist, styles.currentTrackArtist
-						]} numberOfLines={2}>
-							{nowPlay}
-						</Text>
-
-					</View>
-				</View>	
-					{/* Bottom of right: Controls */}
 				<View style={styles.controlsSection}>
 					{!currentTrack.isLiveStream ? (
-					<TouchableOpacity
-						style={[
-							styles.seekButton,
-							(state === State.Loading || state === State.Buffering) && styles.disabledButton
-						]}
-						onPress={() => seekBackward(10)}
-						disabled={state === State.Loading || state === State.Buffering}
-					>
-						<MaterialIcons
-							name="replay-10"
-							size={18}
-							color={state !== State.Loading && state !== State.Buffering ? color.primary : '#888'}
-						/>
-					</TouchableOpacity>
+						<TouchableOpacity
+							style={[
+								styles.seekButton,
+								(state === State.Loading || state === State.Buffering) && styles.disabledButton
+							]}
+							onPress={() => seekBackward(10)}
+							disabled={state === State.Loading || state === State.Buffering}
+						>
+							<MaterialIcons
+								name="replay-10"
+								size={24}
+								color={state !== State.Loading && state !== State.Buffering ? color.primary : '#888'}
+							/>
+						</TouchableOpacity>
 					): ''}
 					<TouchableOpacity
 						style={[
@@ -151,66 +123,75 @@ const AudioFooter = () => {
 						>
 							<MaterialIcons
 								name="forward-10"
-								size={18}
+								size={24}
 								color={state !== State.Loading && state !== State.Buffering ? color.primary : '#888'}
 							/>
 						</TouchableOpacity>
 					): ''}
 				</View>
+				{/* Right section: Content area */}
+				<View style={styles.rightSection}>
+					{/* Top of right: Track Info */}
+					<View style={styles.trackInfo}>
+						<Text style={[
+							styles.title, styles.currentTrackTitle
+						]} numberOfLines={1}>
+							{currentTrack?.album}
+						</Text>
+						<Text style={[
+							styles.artist, styles.currentTrackArtist
+						]} numberOfLines={2}>
+							{nowPlay}
+						</Text>
+
+					</View>
+				</View>
+				<AudioModalControls />
 			</View>
 		</View>
 	);
 };
 const styles = StyleSheet.create({
-	footerContainer: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		paddingVertical: 5,
-		paddingHorizontal: 25,
-		backgroundColor: '#f9f6f6',
-		borderWidth: 1,
-		borderColor: '#e7e7e7',
-	},
 	trackItem: {
-		// margin: 8,
 		backgroundColor: '#fff',
 		paddingHorizontal: 12,
-		paddingVertical: 10,
+		paddingVertical: 8,
 		borderWidth: 1,
 		borderLeftWidth: 0,
 		borderRightWidth: 0,
 		borderColor: '#808080',
-		elevation: 4
+		elevation: 4,
+		height: 'auto'
 	},
-
 	cardLayout: {
 		flexDirection: 'row',
 		alignItems: 'stretch',
-		flexWrap: 'nowrap'
+		flexWrap: 'nowrap',
+		gap: 8
 	},
-	artworkContainer: {
+	modalButtonContainer: {
 		position: 'relative',
-		width: 50,
-		height: 50,
+		width: 32,
+		height: 32,
 		borderRadius: 14,
 		overflow: 'hidden',
-		marginRight: 12,
+		marginLeft: 12,
 		backgroundColor: '#f5f7fa',
-		alignItems: 'center'
-	},
-	artwork: {
-		width: '100%',
-		height: '100%',
-		resizeMode: 'cover',
-		borderRadius: 14,
-	},
-	placeholderArtwork: {
-		flex: 1,
-		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: '#f5f7fa',
-		borderRadius: 14,
+		shadowColor: '#000',
+		shadowOffset: {
+			width: 0,
+			height: 1,
+		},
+		shadowOpacity: 0.08,
+		shadowRadius: 2,
+		elevation: 2,
+	},
+	modalButton: {
+		width: 32,
+		height: 32,
+		alignItems: 'center',
+		justifyContent: 'center'
 	},
 	playingIndicator: {
 		position: 'absolute',
@@ -228,26 +209,11 @@ const styles = StyleSheet.create({
 		shadowRadius: 4,
 		elevation: 4,
 	},
-	loadingIndicator: {
-		position: 'absolute',
-		bottom: 8,
-		right: 8,
-		backgroundColor: '#6c757d',
-		borderRadius: 12,
-		padding: 6,
-		shadowColor: '#6c757d',
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
-		shadowOpacity: 0.4,
-		shadowRadius: 4,
-		elevation: 4,
-	},
 	rightSection: {
-		flex: 1,
+		flex: 3,
 		justifyContent: 'space-between',
 		paddingVertical: 4,
+		paddingHorizontal: 8
 	},
 	trackInfo: {
 		flex: 2,
@@ -256,14 +222,14 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		color: '#1a1a1a',
-		fontSize: 16,
+		fontSize: 14,
 		fontWeight: '700',
 		marginBottom: 2,
 		lineHeight: 20,
 	},
 	artist: {
 		color: '#666666',
-		fontSize: 13,
+		fontSize: 12,
 		fontWeight: '500',
 		lineHeight: 16,
 	},
