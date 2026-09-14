@@ -1,14 +1,5 @@
 import React, {JSX, useCallback, useEffect, useState} from 'react';
-import {
-	ActivityIndicator,
-	StyleSheet,
-	View,
-	Text,
-	TouchableOpacity,
-	RefreshControl,
-	FlatList,
-	Linking
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity, RefreshControl, Linking, ScrollView } from 'react-native';
 import MaterialIcons from "@react-native-vector-icons/material-icons";
 import ListenLivePlayer from '../components/ListenLivePlayer';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
@@ -133,79 +124,70 @@ function ListenLiveScreen(): JSX.Element {
 	}
 	return (
 		<View style={styles.container}>
-			<FlatList
-				data={[]}
-				keyExtractor={(_, i) => i.toString()}
-				renderItem={null}
+			<ScrollView
 				refreshControl={
 					<RefreshControl
-					  refreshing={refreshing}
-					  onRefresh={onRefresh}
+						refreshing={refreshing}
+						onRefresh={onRefresh}
 					/>
 				}
-				ListHeaderComponent={
-					<View>
-						<BreakingBanner data={breakingData} />
-						<TalkshowBanner data={talkshowData} />
-						<ScreenHeader title="Listen Live" description="Stream Houston Public Media's live radio channels including News 88.7, Classical, and more" />
-						<View style={styles.liveStreamContainer}>
-							<Text style={styles.header}>Live Streams</Text>
-							{tracks.map((track, index) => (
-								<ListenLivePlayer key={track.id ?? index} track={track} onPlay={() => { setActiveTab(index);  }}  />
-							))}
-						</View>
-						<View style={styles.webViewSection}>
-							<View style={styles.tabContainer}>
-							{RadioScheduleTabs.map((tab, index) => (
-								<TouchableOpacity
-									key={tab.title}
-									activeOpacity={0.8}
+			>
+				<BreakingBanner data={breakingData} />
+				<TalkshowBanner data={talkshowData} />
+				<ScreenHeader title="Listen Live" description="Stream Houston Public Media's live radio channels including News 88.7, Classical, and more" />
+				<View style={styles.liveStreamContainer}>
+					<Text style={styles.header}>Live Streams</Text>
+					{tracks.map((track, index) => (
+						<ListenLivePlayer
+							key={track.id ?? index}
+							track={track}
+							onPlay={() => {
+								setActiveTab(index);
+							}}
+						/>
+					))}
+				</View>
+
+				<View style={styles.webViewSection}>
+					<View style={styles.tabContainer}>
+						{RadioScheduleTabs.map((tab, index) => (
+							<TouchableOpacity
+								key={tab.title}
+								activeOpacity={0.8}
+								style={[
+									styles.tabButton,
+									activeTab === index && styles.activeTabButton,
+								]}
+								onPress={() => setActiveTab(index)}
+							>
+								<Text
 									style={[
-										styles.tabButton,
-										activeTab === index && styles.activeTabButton,
+										styles.tabText,
+										activeTab === index && styles.activeTabText,
 									]}
-									onPress={() => setActiveTab(index)}
 								>
-									<Text
-										style={[
-											styles.tabText,
-											activeTab === index && styles.activeTabText,
-										]}
-									>
-										{tab.title}
-									</Text>
-								</TouchableOpacity>
-							))}
-							</View>
-							<View style={styles.webViewContainer}>
-								<WebView
-									source={{
-										uri: RadioScheduleTabs[activeTab].url,
-									}}
-									onShouldStartLoadWithRequest={handleWebViewNavigation}
-									style={styles.webView}
-									javaScriptEnabled={true}
-									originWhitelist={['*']}
-									startInLoadingState={true}
-									setSupportMultipleWindows={false}
-									onLoadStart={() => {
-										//console.log('WebView loading:', RadioScheduleTabs[activeTab].url);
-									}}
-									onLoadEnd={() => {
-										//console.log('WebView loaded');
-									}}
-									onError={(event) => {
-										//console.log('WebView error:', event.nativeEvent);
-									}}
-									onHttpError={(event) => {
-										//console.log('WebView HTTP error:', event.nativeEvent);
-									}}
-								/>
-							</View>
-						</View>
+									{tab.title}
+								</Text>
+							</TouchableOpacity>
+						))}
 					</View>
-				}
-			/>
+					<View style={styles.webViewContainer}>
+						<WebView
+							source={{
+								uri: RadioScheduleTabs[activeTab].url,
+							}}
+							style={styles.webView}
+							scrollEnabled={true}
+							nestedScrollEnabled={true}
+							javaScriptEnabled={true}
+							originWhitelist={['*']}
+							startInLoadingState={true}
+							setSupportMultipleWindows={false}
+							onShouldStartLoadWithRequest={handleWebViewNavigation}
+						/>
+					</View>
+				</View>
+			</ScrollView>
 			<AudioFooter />
   		</View>
 	);
