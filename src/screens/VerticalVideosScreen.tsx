@@ -1,19 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-	ActivityIndicator,
-	FlatList,
-	Image,
-	ListRenderItemInfo,
-	Modal,
-	PanResponder,
-	Platform,
-	Pressable,
-	StatusBar,
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Image, ListRenderItemInfo, Modal, PanResponder, Platform, Pressable, StatusBar, StyleSheet, Text, TouchableOpacity, View, } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import Video, {
@@ -60,17 +46,9 @@ const ShortsVideoCard = memo(({ item, onPress }: ShortsVideoCardProps) => {
 	const imageUrl = item.poster || item.thumbnail;
 
 	return (
-		<TouchableOpacity
-			activeOpacity={0.85}
-			onPress={() => onPress(item)}
-			style={styles.card}
-		>
+		<TouchableOpacity activeOpacity={0.85} onPress={() => onPress(item)} style={styles.card} >
 			{imageUrl ? (
-				<Image
-					source={{ uri: imageUrl }}
-					style={styles.thumbnail}
-					resizeMode="contain"
-				/>
+				<Image source={{ uri: imageUrl }} style={styles.thumbnail} resizeMode="contain" />
 			) : (
 				<View style={styles.thumbnailFallback}>
 					<MaterialIcons name="play-circle-outline" size={44} color="#fff" />
@@ -98,7 +76,6 @@ ShortsVideoCard.displayName = 'ShortsVideoCard';
 
 const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) => {
 	const videoRef = useRef<VideoRef>(null);
-	const closeHandledRef = useRef(false);
 	const [buffering, setBuffering] = useState(false);
 	const [failed, setFailed] = useState(false);
 	const [controlsVisible, setControlsVisible] = useState(true);
@@ -117,7 +94,6 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 	const sliderXRef = useRef(0);
 	const sliderWidthRef = useRef(0);
 	const sliderRef = useRef<View>(null);
-	const insets = useSafeAreaInsets();
 
 	const source = useMemo(() => ({
 		uri: video.source,
@@ -126,15 +102,18 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 
 	const poster = useMemo(() => (
 		video.poster
-			? { source: { uri: video.poster }, resizeMode: ResizeMode.CONTAIN }
+			? {
+				source: { uri: video.poster },
+				resizeMode: ResizeMode.CONTAIN,
+			}
 			: undefined
 	), [video.poster]);
 
 	const closePlayer = useCallback(() => {
-	videoRef.current?.pause?.();
-	onClose();
-}, [onClose]);
-
+		setPaused(true);
+		videoRef.current?.pause?.();
+		onClose();
+	}, [onClose]);
 
 	const toggleControls = useCallback(() => {
 		setControlsVisible(current => {
@@ -148,6 +127,7 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 			videoRef.current?.seek(0);
 			setCurrentTime(0);
 			setSlidingValue(0);
+			slidingValueRef.current = 0;
 			setEnded(false);
 		}
 
@@ -169,8 +149,10 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 		);
 
 		videoRef.current?.seek(nextTime);
+
 		setCurrentTime(nextTime);
 		setSlidingValue(nextTime);
+		slidingValueRef.current = nextTime;
 		setEnded(false);
 		setControlsVisible(true);
 	}, [currentTime, duration]);
@@ -189,14 +171,9 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 
 			const x = pageX - sliderXRef.current;
 			const clampedX = Math.max(0, Math.min(x, width));
-
 			const nextTime = (clampedX / width) * duration;
 
-			// IMPORTANT:
-			// Keep the value in a ref so onProgress cannot overwrite
-			// the value while the user is dragging.
 			slidingValueRef.current = nextTime;
-
 			setSlidingValue(nextTime);
 		},
 		[duration]
@@ -241,31 +218,35 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 
 				onPanResponderGrant: event => {
 					const nativeEvent = event.nativeEvent;
-					if (!nativeEvent || !loadedRef.current || duration <= 0) {
+
+					if (
+						!nativeEvent ||
+						!loadedRef.current ||
+						duration <= 0
+					) {
 						return;
 					}
 
-					// Capture pageX immediately because event pooling might nullify nativeEvent
-					// by the time measureInWindow callback runs.
 					const initialPageX = nativeEvent.pageX;
 
 					seekingRef.current = true;
 					setSeeking(true);
 					setControlsVisible(true);
 
-					// Measure immediately in case orientation/layout changed.
 					sliderRef.current?.measureInWindow((x, _y, width) => {
 						sliderXRef.current = x;
 						sliderWidthRef.current = width;
 						setSliderWidth(width);
 
 						const relativeX = initialPageX - x;
+
 						const clampedX = Math.max(
 							0,
 							Math.min(relativeX, width)
 						);
 
-						const nextTime = (clampedX / width) * duration;
+						const nextTime =
+							(clampedX / width) * duration;
 
 						slidingValueRef.current = nextTime;
 						setSlidingValue(nextTime);
@@ -274,7 +255,13 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 
 				onPanResponderMove: event => {
 					const nativeEvent = event.nativeEvent;
-					if (!nativeEvent || !seekingRef.current || !loadedRef.current || duration <= 0) {
+
+					if (
+						!nativeEvent ||
+						!seekingRef.current ||
+						!loadedRef.current ||
+						duration <= 0
+					) {
 						return;
 					}
 
@@ -295,11 +282,18 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 	const formatTime = useCallback((seconds: number) => {
 		if (!Number.isFinite(seconds)) return '0:00';
 
-		const roundedSeconds = Math.max(0, Math.floor(seconds));
+		const roundedSeconds = Math.max(
+			0,
+			Math.floor(seconds)
+		);
+
 		const minutes = Math.floor(roundedSeconds / 60);
+
 		const remainingSeconds = roundedSeconds % 60;
 
-		return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+		return `${minutes}:${remainingSeconds
+			.toString()
+			.padStart(2, '0')}`;
 	}, []);
 
 	useEffect(() => {
@@ -307,14 +301,28 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 	}, [onPlaybackStart]);
 
 	useEffect(() => {
-		if (!controlsVisible || paused || buffering || failed || seeking) return;
+		if (
+			!controlsVisible ||
+			paused ||
+			buffering ||
+			failed ||
+			seeking
+		) {
+			return;
+		}
 
 		const timer = setTimeout(() => {
 			setControlsVisible(false);
 		}, 3000);
 
 		return () => clearTimeout(timer);
-	}, [buffering, controlsVisible, failed, paused, seeking]);
+	}, [
+		buffering,
+		controlsVisible,
+		failed,
+		paused,
+		seeking,
+	]);
 
 	return (
 		<Modal
@@ -326,133 +334,308 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 			visible
 		>
 			<StatusBar hidden />
+
 			<View style={styles.playerContainer}>
-	<Video
-		ref={videoRef}
-		source={source}
-		style={styles.fullscreenVideo}
-		controls={false}
-		ignoreSilentSwitch="ignore"
-		mixWithOthers="duck"
-		muted={muted}
-		paused={paused}
-		playInBackground={false}
-		playWhenInactive={false}
-		poster={poster}
-		preventsDisplaySleepDuringVideoPlayback
-		resizeMode={ResizeMode.CONTAIN}
-		bufferConfig={{
-			minBufferMs: 3000,
-			maxBufferMs: 12000,
-			bufferForPlaybackMs: 750,
-			bufferForPlaybackAfterRebufferMs: 1500,
-		}}
-		onBuffer={({ isBuffering }) => setBuffering(isBuffering)}
-		onEnd={() => {
-			setPaused(true);
-			setEnded(true);
-			setControlsVisible(true);
-		}}
-		onError={() => {
-			setFailed(true);
-			setBuffering(false);
-			setControlsVisible(true);
-		}}
-		onLoad={({ duration: videoDuration }) => {
-			const nextDuration = Number(videoDuration);
 
-			if (!Number.isFinite(nextDuration) || nextDuration <= 0) {
-				loadedRef.current = false;
-				setDuration(0);
-				return;
-			}
+				{/* VIDEO */}
+				<Video
+					ref={videoRef}
+					source={source}
+					style={styles.fullscreenVideo}
+					controls={false}
+					ignoreSilentSwitch="ignore"
+					mixWithOthers="duck"
+					muted={muted}
+					paused={paused}
+					playInBackground={false}
+					playWhenInactive={false}
+					poster={poster}
+					preventsDisplaySleepDuringVideoPlayback
+					resizeMode={ResizeMode.CONTAIN}
+					bufferConfig={{
+						minBufferMs: 3000,
+						maxBufferMs: 12000,
+						bufferForPlaybackMs: 750,
+						bufferForPlaybackAfterRebufferMs: 1500,
+					}}
+					onBuffer={({ isBuffering }) => {
+						setBuffering(isBuffering);
+					}}
+					onEnd={() => {
+						setPaused(true);
+						setEnded(true);
+						setControlsVisible(true);
+					}}
+					onError={() => {
+						setFailed(true);
+						setBuffering(false);
+						setControlsVisible(true);
+					}}
+					onLoad={({ duration: videoDuration }) => {
+						const nextDuration = Number(videoDuration);
 
-			loadedRef.current = true;
-			setDuration(nextDuration);
-			setCurrentTime(0);
-			setSlidingValue(0);
-			setEnded(false);
-		}}
-		onLoadStart={() => {
-	loadedRef.current = false;
-	seekingRef.current = false;
-	slidingValueRef.current = 0;
+						if (
+							!Number.isFinite(nextDuration) ||
+							nextDuration <= 0
+						) {
+							loadedRef.current = false;
+							setDuration(0);
+							return;
+						}
 
-	setBuffering(true);
-	setControlsVisible(true);
-	setFailed(false);
-	setPaused(false);
-	setEnded(false);
-	setCurrentTime(0);
-	setSlidingValue(0);
-	setDuration(0);
-	setSeeking(false);
-}}
+						loadedRef.current = true;
+						setDuration(nextDuration);
+						setCurrentTime(0);
+						setSlidingValue(0);
+						slidingValueRef.current = 0;
+						setEnded(false);
+					}}
+					onLoadStart={() => {
+						loadedRef.current = false;
+						seekingRef.current = false;
+						slidingValueRef.current = 0;
 
-		onProgress={({ currentTime: nextTime }) => {
-			if (seekingRef.current) {
-				return;
-			}
+						setBuffering(true);
+						setControlsVisible(true);
+						setFailed(false);
+						setPaused(false);
+						setEnded(false);
+						setCurrentTime(0);
+						setSlidingValue(0);
+						setDuration(0);
+						setSeeking(false);
+					}}
+					onProgress={({ currentTime: nextTime }) => {
+						if (seekingRef.current) {
+							return;
+						}
 
-			if (!Number.isFinite(nextTime) || nextTime < 0) {
-				return;
-			}
+						if (
+							!Number.isFinite(nextTime) ||
+							nextTime < 0
+						) {
+							return;
+						}
 
-			const safeTime =
-				duration > 0
-					? Math.min(nextTime, duration)
-					: nextTime;
+						const safeTime =
+							duration > 0
+								? Math.min(nextTime, duration)
+								: nextTime;
 
-			slidingValueRef.current = safeTime;
+						slidingValueRef.current = safeTime;
 
-			setCurrentTime(safeTime);
-			setSlidingValue(safeTime);
-			setEnded(false);
-		}}
-		onReadyForDisplay={() => setBuffering(false)}
-	/>
-
-	{/* Video tap area - BELOW controls */}
-	<Pressable
-		accessibilityLabel="Toggle video controls"
-		onPress={toggleControls}
-		style={styles.videoTouchLayer}
-	/>
-
-	{controlsVisible ? (
-		<View
-			pointerEvents="box-none"
-			style={styles.controlsLayer}
-		>
-			<TouchableOpacity
-				accessibilityLabel="Close video"
-				hitSlop={{
-					top: 16,
-					right: 16,
-					bottom: 16,
-					left: 16,
-				}}
-				onPress={closePlayer}
-				activeOpacity={0.7}
-				style={styles.closeButton}
-			>
-				<MaterialIcons
-					name="close"
-					size={28}
-					color="#fff"
+						setCurrentTime(safeTime);
+						setSlidingValue(safeTime);
+						setEnded(false);
+					}}
+					onReadyForDisplay={() => {
+						setBuffering(false);
+					}}
 				/>
-			</TouchableOpacity>
 
-			{/* rest of your controls */}
-		</View>
-	) : null}
+				{/* TAP VIDEO TO SHOW / HIDE CONTROLS */}
+				<Pressable
+					accessibilityLabel="Toggle video controls"
+					onPress={toggleControls}
+					style={styles.videoTouchLayer}
+				/>
 
-	{/* buffering/error overlays */}
-</View>
+				{/* CONTROLS */}
+				{controlsVisible ? (
+					<View
+						pointerEvents="box-none"
+						style={styles.controlsLayer}
+					>
 
+						{/* CLOSE */}
+						<TouchableOpacity
+							accessibilityLabel="Close video"
+							hitSlop={{
+								top: 16,
+								right: 16,
+								bottom: 16,
+								left: 16,
+							}}
+							onPress={closePlayer}
+							activeOpacity={0.7}
+							style={styles.closeButton}
+						>
+							<MaterialIcons
+								name="close"
+								size={28}
+								color="#fff"
+							/>
+						</TouchableOpacity>
+
+						{/* CENTER CONTROLS */}
+						<View style={styles.centerControls}>
+
+							{/* REWIND */}
+							<TouchableOpacity
+								accessibilityLabel="Rewind 10 seconds"
+								onPress={() => seekBy(-10)}
+								activeOpacity={0.8}
+								style={styles.roundControl}
+							>
+								<MaterialIcons
+									name="replay-10"
+									size={30}
+									color="#fff"
+								/>
+							</TouchableOpacity>
+
+							{/* PLAY / PAUSE */}
+							<TouchableOpacity
+								accessibilityLabel={
+									paused
+										? "Play video"
+										: "Pause video"
+								}
+								onPress={togglePlayback}
+								activeOpacity={0.8}
+								style={styles.primaryControl}
+							>
+								<MaterialIcons
+									name={
+										paused || ended
+											? "play-arrow"
+											: "pause"
+									}
+									size={42}
+									color="#fff"
+								/>
+							</TouchableOpacity>
+
+							{/* FORWARD */}
+							<TouchableOpacity
+								accessibilityLabel="Forward 10 seconds"
+								onPress={() => seekBy(10)}
+								activeOpacity={0.8}
+								style={styles.roundControl}
+							>
+								<MaterialIcons
+									name="forward-10"
+									size={30}
+									color="#fff"
+								/>
+							</TouchableOpacity>
+
+						</View>
+
+						{/* BOTTOM CONTROLS */}
+						<View style={styles.bottomControls}>
+
+							<View style={styles.bottomControlRow}>
+
+								{/* CURRENT TIME */}
+								<Text style={styles.timeText}>
+									{formatTime(
+										seeking
+											? slidingValue
+											: currentTime
+									)}
+								</Text>
+
+								{/* SCRUBBER */}
+								<View
+									ref={sliderRef}
+									onLayout={measureSlider}
+									style={styles.sliderWrapper}
+									{...sliderPanResponder.panHandlers}
+								>
+									<View style={styles.scrubberTrack}>
+
+										<View
+											style={[
+												styles.scrubberProgress,
+												{
+													width:
+														duration > 0
+															? `${
+																	Math.min(
+																		100,
+																		(
+																			(seeking
+																				? slidingValue
+																				: currentTime) /
+																			duration
+																		) *
+																			100
+																	)
+																}%`
+															: "0%",
+												},
+											]}
+										/>
+
+										<View
+											style={[
+												styles.scrubberThumb,
+												{
+													left:
+														duration > 0 &&
+														sliderWidth > 0
+															? Math.max(
+																	0,
+																	Math.min(
+																		sliderWidth - 12,
+																		(
+																			(seeking
+																				? slidingValue
+																				: currentTime) /
+																			duration
+																		) *
+																			sliderWidth -
+																			6
+																	)
+																)
+															: 0,
+												},
+											]}
+										/>
+
+									</View>
+								</View>
+
+								{/* DURATION */}
+								<Text style={styles.timeText}>
+									{formatTime(duration)}
+								</Text>
+
+								{/* MUTE */}
+								<TouchableOpacity
+									accessibilityLabel={
+										muted
+											? "Unmute video"
+											: "Mute video"
+									}
+									onPress={toggleMute}
+									activeOpacity={0.8}
+									style={styles.iconButton}
+								>
+									<MaterialIcons
+										name={
+											muted
+												? "volume-off"
+												: "volume-up"
+										}
+										size={24}
+										color="#fff"
+									/>
+								</TouchableOpacity>
+
+							</View>
+
+						</View>
+
+					</View>
+				) : null}
+
+			</View>
 		</Modal>
 	);
 };
+
 
 const VerticalVideosScreen = () => {
 	const [videos, setVideos] = useState<BrightcoveVideo[]>([]);
@@ -511,7 +694,6 @@ const VerticalVideosScreen = () => {
 		} else if (!reset) {
 			setLoadingMore(true);
 		}
-
 		try {
 			const limit = Math.min(PAGE_SIZE, remaining);
 			const newVideos = await fetchBrightcoveVideos({
@@ -521,33 +703,26 @@ const VerticalVideosScreen = () => {
 				screen: true,
 				throwOnError: true,
 			});
-
 			const nextSeenVideoIds = reset ? new Set<string>() : seenVideoIdsRef.current;
 			const uniqueVideos: BrightcoveVideo[] = [];
-
 			for (const video of newVideos) {
 				if (!video?.id || !video?.source) continue;
-
 				const id = toVideoId(video);
 				if (nextSeenVideoIds.has(id)) continue;
-
 				nextSeenVideoIds.add(id);
 				uniqueVideos.push(normalizeVideo(video));
 			}
-
 			offsetRef.current = fetchOffset + newVideos.length;
 			seenVideoIdsRef.current = nextSeenVideoIds;
 
 			if (reset) {
 				requestedOffsetsRef.current = new Set([0]);
 			}
-
 			const nextVideos = reset
 				? uniqueVideos
 				: [...videosRef.current, ...uniqueVideos];
 
 			setVideoList(nextVideos);
-
 			const reachedApiEnd = newVideos.length < limit || newVideos.length === 0;
 			hasMoreRef.current = !reachedMaxRef.current && !reachedApiEnd;
 		} catch {
@@ -618,7 +793,6 @@ const VerticalVideosScreen = () => {
 				</View>
 			);
 		}
-
 		if (error && videos.length > 0) {
 			return (
 				<TouchableOpacity onPress={onRetry} style={styles.footerState}>
@@ -627,7 +801,6 @@ const VerticalVideosScreen = () => {
 				</TouchableOpacity>
 			);
 		}
-
 		return null;
 	}, [error, loadingMore, onRetry, videos.length]);
 
@@ -639,7 +812,6 @@ const VerticalVideosScreen = () => {
 				</View>
 			);
 		}
-
 		if (error) {
 			return (
 				<View style={styles.centerState}>
@@ -650,20 +822,17 @@ const VerticalVideosScreen = () => {
 				</View>
 			);
 		}
-
 		return (
 			<View style={styles.centerState}>
 				<Text style={styles.emptyText}>No Shorts available right now.</Text>
 			</View>
 		);
 	}, [error, initialLoading, onRetry]);
-
 	return (
 		<>
 			<BreakingBanner data={breakingData} />
 			<TalkshowBanner data={talkshowData} />
 			<ScreenHeader title="HPM Shorts" description="" />
-
 			<View style={styles.container}>
 				<FlatList
 					data={videos}
@@ -821,9 +990,9 @@ const styles = StyleSheet.create({
 	},
 	controlsLayer: {
 	...StyleSheet.absoluteFillObject,
-	backgroundColor: "rgba(0,0,0,0.14)",
-	zIndex: 10,
-	elevation: 10,
+    backgroundColor: "rgba(0,0,0,0.14)",
+    zIndex: 10,
+    elevation: 10,
 },
 	closeButton: {
 	alignItems: "center",
@@ -842,12 +1011,12 @@ const styles = StyleSheet.create({
 
 	centerControls: {
 		alignItems: "center",
-		flexDirection: "row",
-		justifyContent: "space-between",
-		left: 56,
-		position: "absolute",
-		right: 56,
-		top: "45%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    left: 56,
+    position: "absolute",
+    right: 56,
+    top: "45%",
 	},
 	roundControl: {
 		alignItems: "center",
@@ -865,17 +1034,17 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		width: 72,
 	},
-	/*bottomControls: {
+	bottomControls: {
 		bottom: Platform.OS === 'ios' ? 36 : 24,
 		left: 16,
 		position: "absolute",
 		right: 16,
-	},*/
-	bottomControls: {
+	},
+	/*bottomControls: {
     left: 16,
     position: "absolute",
     right: 16,
-},
+},*/
 	bottomControlRow: {
 		alignItems: "center",
 		flexDirection: "row",
@@ -954,7 +1123,7 @@ scrubberThumb: {
 videoTouchLayer: {
 	...StyleSheet.absoluteFillObject,
 	zIndex: 1,
-	elevation: 1,
+	
 },
 
 });

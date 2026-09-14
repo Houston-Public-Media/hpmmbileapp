@@ -502,16 +502,23 @@ class HPMAudioService {
 	 * Pause the current track
 	 */
 	async pause(): Promise<void> {
-		try {
-			if (this.state.state === State.Playing) {
-				await TrackPlayer.pause();
-				this.notifyStateChange();
-			}
-		} catch (error) {
-			console.error('Error pausing track:', error);
-			this.notifyStateChange();
+	try {
+		const playbackState = await TrackPlayer.getPlaybackState();
+
+		if (
+			playbackState.state === State.Playing ||
+			playbackState.state === State.Buffering
+		) {
+			await TrackPlayer.pause();
 		}
+
+		this.state.state = State.Paused;
+		this.notifyStateChange();
+	} catch (error) {
+		console.error('Error pausing track:', error);
 	}
+}
+
 
 	/**
 	 * Resume the current track
