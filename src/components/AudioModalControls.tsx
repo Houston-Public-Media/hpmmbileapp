@@ -1,7 +1,8 @@
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {Alert, Animated, Dimensions, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useHPMAudio} from '../contexts/HPMAudioContext';
-import {FontAwesome6, MaterialIcons} from '@expo/vector-icons';
+import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import {color} from '../utils/colorUtils';
 import {State, useProgress} from 'react-native-track-player';
 import {AudioType, AudioTrack} from "../services/HPMAudioService";
@@ -369,7 +370,7 @@ const AudioModalControls = () => {
 											}
 										]}
 									>
-										<FontAwesome6 name="rotate" size={64} color="#fff" />
+										<FontAwesome6 name="rotate" size={64} color="#fff" iconStyle={"solid"} />
 									</Animated.View>
 								) : (
 									<View style={styles.iconWrapper}>

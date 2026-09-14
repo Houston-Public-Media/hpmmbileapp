@@ -55,7 +55,10 @@
         }
       ],
       "@react-native-firebase/app",
-      "@react-native-firebase/messaging"
+      "@react-native-firebase/messaging",
+      "@react-native-vector-icons/fontawesome6",
+      "@react-native-vector-icons/material-icons",
+      "@react-native-vector-icons/ionicons"
     ],
     "notification": {
       "icon": "./assets/notification-icon.png",

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, Linking, Alert, Animated } from 'react-native';
-import {FontAwesome6, MaterialIcons} from '@expo/vector-icons';
+import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { color } from '../utils/colorUtils';
 import { Podcast, PodcastEpisode } from '../services/podcastApi';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
@@ -158,7 +159,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 							}],
 						}}
 					>
-						<FontAwesome6 name="rotate" size={18} color="#fff" />
+						<FontAwesome6 name="rotate" size={18} color="#fff" iconStyle={"solid"} />
 					</Animated.View>
 				) : (
 					<MaterialIcons

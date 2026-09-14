@@ -11,7 +11,7 @@ import TalkshowBanner from '../components/TalkshowBanner';
 import BreakingBanner from '../components/BreakingBanner';
 import { decodeHtmlEntities } from '../utils/htmlUtils';
 import AudioFooter from "../components/AudioFooter";
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
 
 // Define the params expected for this screen
 type NewsDetailParams = {
@@ -154,7 +154,7 @@ const NewsDetailScreen = () => {
 									})}
 								</Text>
 								<Pressable onPress={handleShare} style={styles.shareButton} hitSlop={10} accessibilityRole="button" accessibilityLabel="Share story" >
-									<FontAwesome name="share-alt" size={19} color="#000" />
+									<FontAwesome6 name="share-nodes" size={19} color="#000" iconStyle={"solid"} />
 								</Pressable>
 							</View>
 						</View>

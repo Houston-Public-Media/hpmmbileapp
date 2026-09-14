@@ -1,7 +1,7 @@
 import React, {useState, forwardRef, useImperativeHandle} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import Animated, {FadeInUp, FadeOutUp} from 'react-native-reanimated';
-import {FontAwesome5} from '@expo/vector-icons';
+import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
 import {RemoteMessage} from "@react-native-firebase/messaging";
 
 export type ToastMessageRef = {
@@ -44,7 +44,7 @@ const ToastMessage = forwardRef<ToastMessageRef, ToastMessageProps>(({message, o
 						exiting={FadeOutUp}
 					>
 						<TouchableOpacity onPress={onPress} style={styles.tapZone}>
-							<FontAwesome5 name={'info-circle'} size={40} color="#2ecc71" />
+							<FontAwesome6 name={'circle-info'} size={40} color="#2ecc71" iconStyle={"solid"} />
 							<View style={{marginLeft: 12}}>
 								<Text style={{fontSize: 16, fontWeight: '600', color: '#000'}}>{message?.notification?.title}</Text>
 								<Text style={{fontSize: 14, fontWeight: '400', color: '#000'}}>{message?.notification?.body}</Text>

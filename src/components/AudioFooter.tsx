@@ -1,7 +1,8 @@
 import React, {useRef} from 'react';
 import {Alert, Animated, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useHPMAudio} from '../contexts/HPMAudioContext';
-import {FontAwesome6, MaterialIcons} from '@expo/vector-icons';
+import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import {color} from '../utils/colorUtils';
 import {State} from 'react-native-track-player';
 import { AudioType, AudioTrack } from "../services/HPMAudioService";
@@ -99,7 +100,7 @@ const AudioFooter = () => {
 										}
 									]}
 								>
-									<FontAwesome6 name="rotate" size={20} color="#fff" />
+									<FontAwesome6 name="rotate" size={20} color="#fff" iconStyle={"solid"} />
 								</Animated.View>
 							) : (
 								<View style={styles.iconWrapper}>

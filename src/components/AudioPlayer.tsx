@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import {View, TouchableOpacity, StyleSheet, Animated} from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import {View, TouchableOpacity, StyleSheet} from 'react-native';
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import Slider from '@react-native-community/slider';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
 import { State } from 'react-native-track-player';

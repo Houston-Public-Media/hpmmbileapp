@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Animated, Dimensions, Easing, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useHPMAudio} from '../contexts/HPMAudioContext';
-import {MaterialIcons} from '@expo/vector-icons';
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import {color} from '../utils/colorUtils';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import {Picker} from '@react-native-picker/picker';

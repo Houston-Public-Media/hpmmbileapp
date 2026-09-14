@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Image, ListRenderItemInfo, Modal, PanResponder, Platform, Pressable, StatusBar, StyleSheet, Text, TouchableOpacity, View, } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import Video, {
 	ResizeMode,
@@ -13,7 +13,6 @@ import { fetchBrightcoveVideos, fetchPriorityData } from '../services/newsApi';
 import { TalkshowEntry, BrightcoveVideo } from '../type';
 import AudioFooter from "../components/AudioFooter";
 import { useHPMAudio } from "../contexts/HPMAudioContext";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const NUM_COLUMNS = 2;
 const ITEM_MARGIN = 8;
@@ -989,34 +988,33 @@ const styles = StyleSheet.create({
 		zIndex: 1,
 	},
 	controlsLayer: {
-	...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.14)",
-    zIndex: 10,
-    elevation: 10,
-},
+		...StyleSheet.absoluteFillObject,
+		backgroundColor: "rgba(0,0,0,0.14)",
+		zIndex: 10,
+		elevation: 10,
+	},
 	closeButton: {
-	alignItems: "center",
-	backgroundColor: "rgba(0,0,0,0.65)",
-	borderRadius: 24,
-	height: 48,
-	justifyContent: "center",
-	left: 16,
-	position: "absolute",
-	top: Platform.OS === "ios" ? 54 : 32,
-	width: 48,
+		alignItems: "center",
+		backgroundColor: "rgba(0,0,0,0.65)",
+		borderRadius: 24,
+		height: 48,
+		justifyContent: "center",
+		left: 16,
+		position: "absolute",
+		top: Platform.OS === "ios" ? 54 : 32,
+		width: 48,
 
-	zIndex: 20,
-	elevation: 20,
-},
-
+		zIndex: 20,
+		elevation: 20,
+	},
 	centerControls: {
 		alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    left: 56,
-    position: "absolute",
-    right: 56,
-    top: "45%",
+		flexDirection: "row",
+		justifyContent: "space-between",
+		left: 56,
+		position: "absolute",
+		right: 56,
+		top: "45%",
 	},
 	roundControl: {
 		alignItems: "center",
@@ -1040,11 +1038,6 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		right: 16,
 	},
-	/*bottomControls: {
-    left: 16,
-    position: "absolute",
-    right: 16,
-},*/
 	bottomControlRow: {
 		alignItems: "center",
 		flexDirection: "row",
@@ -1066,7 +1059,6 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		width: 44,
 	},
-	
 	playerStateOverlay: {
 		...StyleSheet.absoluteFillObject,
 		alignItems: "center",
@@ -1089,42 +1081,38 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 	},
 	sliderWrapper: {
-	flex: 1,
-	height: 40,
-	justifyContent: "center",
-	marginHorizontal: 8,
-},
+		flex: 1,
+		height: 40,
+		justifyContent: "center",
+		marginHorizontal: 8,
+	},
+	scrubberTrack: {
+		height: 4,
+		width: "100%",
+		backgroundColor: "rgba(255,255,255,0.35)",
+		borderRadius: 2,
+		position: "relative",
+	},
+	scrubberProgress: {
+		position: "absolute",
+		left: 0,
+		top: 0,
+		bottom: 0,
+		backgroundColor: "#fff",
+		borderRadius: 2,
+	},
+	scrubberThumb: {
+		position: "absolute",
+		top: -4,
+		width: 12,
+		height: 12,
+		borderRadius: 6,
+		backgroundColor: "#fff",
+	},
+	videoTouchLayer: {
+		...StyleSheet.absoluteFillObject,
+		zIndex: 1,
 
-scrubberTrack: {
-	height: 4,
-	width: "100%",
-	backgroundColor: "rgba(255,255,255,0.35)",
-	borderRadius: 2,
-	position: "relative",
-},
-
-scrubberProgress: {
-	position: "absolute",
-	left: 0,
-	top: 0,
-	bottom: 0,
-	backgroundColor: "#fff",
-	borderRadius: 2,
-},
-
-scrubberThumb: {
-	position: "absolute",
-	top: -4,
-	width: 12,
-	height: 12,
-	borderRadius: 6,
-	backgroundColor: "#fff",
-},
-videoTouchLayer: {
-	...StyleSheet.absoluteFillObject,
-	zIndex: 1,
-	
-},
-
+	}
 });
 export default VerticalVideosScreen;

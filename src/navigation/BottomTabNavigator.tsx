@@ -1,7 +1,8 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import Ionicons from "@react-native-vector-icons/ionicons";
+import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
 import { analyticsService } from '../services/AnalyticsService';
 
 import ProfileScreen from '../screens/ProfileScreen';
@@ -35,7 +36,7 @@ const BottomTabNavigator = () => (
                     case 'Watch':
                         return <Ionicons name='videocam-outline' size={size} color={iconColor} />;
                     case 'Podcast':
-                        return <FontAwesome name="podcast" size={size} color={iconColor} />;
+                        return <FontAwesome6 name="podcast" size={size} color={iconColor} iconStyle={"solid"} />;
                     case 'Shorts':
                         return <Ionicons name='play-circle-outline' size={size} color={iconColor} />;
                     case 'Settings':

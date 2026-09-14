@@ -1,6 +1,15 @@
-import React, { JSX, useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity, ScrollView, RefreshControl, FlatList, Linking } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import React, {JSX, useCallback, useEffect, useState} from 'react';
+import {
+	ActivityIndicator,
+	StyleSheet,
+	View,
+	Text,
+	TouchableOpacity,
+	RefreshControl,
+	FlatList,
+	Linking
+} from 'react-native';
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 import ListenLivePlayer from '../components/ListenLivePlayer';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
 import { color } from '../utils/colorUtils';
@@ -13,11 +22,10 @@ import AudioFooter from '../components/AudioFooter';
 import WebView from 'react-native-webview';
 
 function ListenLiveScreen(): JSX.Element {
-	const { isPlayerReady, error, tracks, isLoading, loadLiveStreams, currentTrack } = useHPMAudio();
+	const { isPlayerReady, error, tracks, isLoading, loadLiveStreams } = useHPMAudio();
 	const [talkshowData, setTalkshowData] = useState<TalkshowEntry[]>([]);
 	const [breakingData, setBreakingData] = useState<any>(null);
 	const [refreshing, setRefreshing] = useState(false);
-	const webViewRef = useRef<WebView>(null);
 	const [activeTab, setActiveTab] = useState(0);
 
 	const handleWebViewNavigation = useCallback((request: any) => {
@@ -25,68 +33,42 @@ function ListenLiveScreen(): JSX.Element {
 		if ( url.startsWith('about:') ||  url.startsWith('javascript:') || url.startsWith('data:') ) {
 			return true;
 		}
+		if (request.navigationType !== 'click') {
+			return true;
+		}
 		try {
 			const parsedUrl = new URL(url);
-			const isHpmSchedule =  parsedUrl.hostname === 'www.houstonpublicmedia.org' &&  parsedUrl.pathname === '/embeds/mobile-radio-schedules/';
+			const isHpmSchedule =  parsedUrl.hostname === 'www.houstonpublicmedia.org' && parsedUrl.pathname === '/embeds/mobile-radio-schedules/';
 			if (isHpmSchedule) {
 				return true;
 			}
 			Linking.openURL(url).catch((err) => {
 				console.log('Failed to open external URL:', err);
 			});
-		return false;
-		} 
+			return false;
+		}
 		catch (error) {
 			console.log('Unable to parse URL:', url);
 			return true;
 		}
 	}, []);
 
-
-const injectedJavaScript = `
-(function() {
-  document.addEventListener('click', function(e) {
-    var link = e.target.closest('a');
-
-    if (link) {
-      var href = link.href;
-
-      if (href && href.indexOf('houstonpublicmedia.org') !== -1) {
-        e.preventDefault();
-        window.location.href = href;
-      }
-    }
-  }, true);
-
-  // Prevent window.open from opening an external browser/window
-  window.open = function(url) {
-    if (url) {
-      window.location.href = url;
-    }
-    return window;
-  };
-
-  true;
-})();
-`;
-	
-
 	const RadioScheduleTabs = [
-	{
-		title: 'News 88.7',
-		url: 'https://www.houstonpublicmedia.org/embeds/mobile-radio-schedules/?sched_station=news887',
-		id: "live_1",
-	},
-	{
-		title: 'Classical',
-		url: 'https://www.houstonpublicmedia.org/embeds/mobile-radio-schedules/?sched_station=classical',
-		id: "live_0",
-	},
-	{
-		title: 'The Vibe',
-		url: 'https://www.houstonpublicmedia.org/embeds/mobile-radio-schedules/?sched_station=thevibe',
-		id: "live_2",
-	},
+		{
+			title: 'News 88.7',
+			url: 'https://www.houstonpublicmedia.org/embeds/mobile-radio-schedules/?sched_station=news887',
+			id: "live_0",
+		},
+		{
+			title: 'Classical',
+			url: 'https://www.houstonpublicmedia.org/embeds/mobile-radio-schedules/?sched_station=classical',
+			id: "live_1",
+		},
+		{
+			title: 'The Vibe',
+			url: 'https://www.houstonpublicmedia.org/embeds/mobile-radio-schedules/?sched_station=thevibe',
+			id: "live_2",
+		}
 	];
 
 	const loadBannerData = async () => {
@@ -151,93 +133,81 @@ const injectedJavaScript = `
 	}
 	return (
 		<View style={styles.container}>
-    <FlatList
-      data={[]}
-      keyExtractor={(_, i) => i.toString()}
-      renderItem={null}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />
-      }
-      ListHeaderComponent={
-        <View>
-          <BreakingBanner data={breakingData} />
-          <TalkshowBanner data={talkshowData} />
-          <ScreenHeader  title="Listen Live" description="Stream Houston Public Media's live radio channels including News 88.7, Classical, and more" />
-          <View style={styles.liveStreamContainer}>
-            <Text style={styles.header}>Live Streams</Text>
-			
-            {tracks.map((track, index) => (
-				  <ListenLivePlayer key={track.id ?? index} track={track} onPlay={() => { setActiveTab(index);  }}  />
-				  
-			))}
-          </View>
-
-          <View style={styles.webViewSection}>
-            <View style={styles.tabContainer}>
-              {RadioScheduleTabs.map((tab, index) => (
-                <TouchableOpacity
-        key={tab.title}
-        activeOpacity={0.8}
-        style={[
-          styles.tabButton,
-          activeTab === index && styles.activeTabButton,
-        ]}
-        onPress={() => setActiveTab(index)}
-      >
-        <Text
-          style={[
-            styles.tabText,
-            activeTab === index && styles.activeTabText,
-          ]}
-        >
-          {tab.title}
-        </Text>
-      </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={styles.webViewContainer}>
-              <WebView
-    source={{
-      uri: RadioScheduleTabs[activeTab].url,
-    }}
-	onShouldStartLoadWithRequest={handleWebViewNavigation}
-    style={styles.webView}
-    javaScriptEnabled={true}
-    domStorageEnabled={true}
-    originWhitelist={['*']}
-    mixedContentMode="always"
-    allowsFullscreenVideo={true}
-    allowsInlineMediaPlayback={true}
-    startInLoadingState={true}
-    setSupportMultipleWindows={false}
-    sharedCookiesEnabled={true}
-    thirdPartyCookiesEnabled={true}
-	injectedJavaScript={injectedJavaScript}
-
-    onLoadStart={() => {
-      //console.log('WebView loading:', RadioScheduleTabs[activeTab].url);
-    }}
-    onLoadEnd={() => {
-      //console.log('WebView loaded');
-    }}
-    onError={(event) => {
-    //  console.log('WebView error:', event.nativeEvent);
-    }}
-    onHttpError={(event) => {
-     // console.log('WebView HTTP error:', event.nativeEvent);
-    }}
-  />
-            </View>
-          </View>
-        </View>
-      }
-    />
-    <AudioFooter />
-  </View>
+			<FlatList
+				data={[]}
+				keyExtractor={(_, i) => i.toString()}
+				renderItem={null}
+				refreshControl={
+					<RefreshControl
+					  refreshing={refreshing}
+					  onRefresh={onRefresh}
+					/>
+				}
+				ListHeaderComponent={
+					<View>
+						<BreakingBanner data={breakingData} />
+						<TalkshowBanner data={talkshowData} />
+						<ScreenHeader title="Listen Live" description="Stream Houston Public Media's live radio channels including News 88.7, Classical, and more" />
+						<View style={styles.liveStreamContainer}>
+							<Text style={styles.header}>Live Streams</Text>
+							{tracks.map((track, index) => (
+								<ListenLivePlayer key={track.id ?? index} track={track} onPlay={() => { setActiveTab(index);  }}  />
+							))}
+						</View>
+						<View style={styles.webViewSection}>
+							<View style={styles.tabContainer}>
+							{RadioScheduleTabs.map((tab, index) => (
+								<TouchableOpacity
+									key={tab.title}
+									activeOpacity={0.8}
+									style={[
+										styles.tabButton,
+										activeTab === index && styles.activeTabButton,
+									]}
+									onPress={() => setActiveTab(index)}
+								>
+									<Text
+										style={[
+											styles.tabText,
+											activeTab === index && styles.activeTabText,
+										]}
+									>
+										{tab.title}
+									</Text>
+								</TouchableOpacity>
+							))}
+							</View>
+							<View style={styles.webViewContainer}>
+								<WebView
+									source={{
+										uri: RadioScheduleTabs[activeTab].url,
+									}}
+									onShouldStartLoadWithRequest={handleWebViewNavigation}
+									style={styles.webView}
+									javaScriptEnabled={true}
+									originWhitelist={['*']}
+									startInLoadingState={true}
+									setSupportMultipleWindows={false}
+									onLoadStart={() => {
+										//console.log('WebView loading:', RadioScheduleTabs[activeTab].url);
+									}}
+									onLoadEnd={() => {
+										//console.log('WebView loaded');
+									}}
+									onError={(event) => {
+										//console.log('WebView error:', event.nativeEvent);
+									}}
+									onHttpError={(event) => {
+										//console.log('WebView HTTP error:', event.nativeEvent);
+									}}
+								/>
+							</View>
+						</View>
+					</View>
+				}
+			/>
+			<AudioFooter />
+  		</View>
 	);
 }
 
@@ -245,7 +215,7 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: '#fff',
-		padding: 10,
+		padding: 0,
 	},
 	listContainer: {
 		flex: 1,
@@ -296,66 +266,56 @@ const styles = StyleSheet.create({
 		fontSize: 16
 	},
 	liveStreamContainer: {
-  backgroundColor: '#fff',
-  padding: 10,
-},
-
-webViewSection: {
-  marginTop: 20,
-  backgroundColor: '#fff',
-},
-
-tabContainer: {
-  flexDirection: 'row',
-  borderBottomWidth: 1,
-  borderBottomColor: '#ddd',
-  marginHorizontal: 10,
-},
-
-tabButton: {
-  flex: 1,
-  paddingVertical: 12,
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderBottomWidth: 3,
-  borderBottomColor: 'transparent',
-},
-
-activeTabButton: {
-  borderBottomColor: '#C8102E',
-},
-
-tabText: {
-  fontSize: 15,
-  fontWeight: '600',
-  color: '#777',
-},
-
-activeTabText: {
-  color: '#C8102E',
-},
-
-webViewContainer: {
-  height: 500,
-  marginHorizontal: 10,
-  marginTop: 10,
-  overflow: 'hidden',
-  borderRadius: 8,
-  borderWidth: 1,
-  borderColor: '#e0e0e0',
-},
-
-webView: {
-  flex: 1,
-},
-
-webViewLoading: {
-  flex: 1,
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: '#fff',
-},
-
+		backgroundColor: '#fff',
+		padding: 10,
+	},
+	webViewSection: {
+		marginTop: 20,
+		backgroundColor: '#fff',
+	},
+	tabContainer: {
+		flexDirection: 'row',
+		borderBottomWidth: 1,
+		borderBottomColor: '#ddd',
+		marginHorizontal: 10,
+	},
+	tabButton: {
+		flex: 1,
+		paddingVertical: 12,
+		alignItems: 'center',
+		justifyContent: 'center',
+		borderBottomWidth: 3,
+		borderBottomColor: 'transparent',
+	},
+	activeTabButton: {
+		borderBottomColor: '#C8102E',
+	},
+	tabText: {
+		fontSize: 15,
+		fontWeight: '600',
+		color: '#777',
+	},
+	activeTabText: {
+		color: '#C8102E',
+	},
+	webViewContainer: {
+		height: 500,
+		marginHorizontal: 10,
+		marginTop: 10,
+		overflow: 'hidden',
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: '#e0e0e0',
+	},
+	webView: {
+		flex: 1,
+	},
+	webViewLoading: {
+		flex: 1,
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: '#fff',
+	}
 });
 
 export default ListenLiveScreen;

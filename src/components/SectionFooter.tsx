@@ -1,36 +1,36 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Linking } from 'react-native';
-import { FontAwesome6 } from '@expo/vector-icons';
+import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
 
 const SectionFooter = () => {
 	return (
 		<View style={styles.footerContainer}>
 			<TouchableOpacity onPress={() => Linking.openURL(`https://www.facebook.com/houstonpublicmedia`)}>
-				<FontAwesome6 name="square-facebook" size={30} color="#3b5998" style={styles.icon} />
+				<FontAwesome6 name="square-facebook" size={30} color="#3b5998" style={styles.icon} iconStyle={"brand"} />
 			</TouchableOpacity>
 
 			<TouchableOpacity onPress={() => Linking.openURL(`https://twitter.com/houstonpubmedia`)}>
-				<FontAwesome6 name="square-x-twitter" size={30} color="#000000" style={styles.icon} />
+				<FontAwesome6 name="square-x-twitter" size={30} color="#000000" style={styles.icon} iconStyle={"brand"} />
 			</TouchableOpacity>
 
 			<TouchableOpacity onPress={() => Linking.openURL(`https://instagram.com/houstonpubmedia`)}>
-				<FontAwesome6 name="instagram" size={30} color="#C13584" style={styles.icon} />
+				<FontAwesome6 name="instagram" size={30} color="#C13584" style={styles.icon} iconStyle={"brand"} />
 			</TouchableOpacity>
 
 			<TouchableOpacity onPress={() => Linking.openURL(`https://www.youtube.com/user/houstonpublicmedia`)}>
-				<FontAwesome6 name="square-youtube" size={30} color="#ea3223" style={styles.icon} />
+				<FontAwesome6 name="square-youtube" size={30} color="#ea3223" style={styles.icon} iconStyle={"brand"} />
 			</TouchableOpacity>
 
 			<TouchableOpacity onPress={() => Linking.openURL(`https://www.threads.net/@houstonpubmedia`)}>
-				<FontAwesome6 name="square-threads" size={30} color="#000000" style={styles.icon} />
+				<FontAwesome6 name="square-threads" size={30} color="#000000" style={styles.icon} iconStyle={"brand"} />
 			</TouchableOpacity>
 
 			<TouchableOpacity onPress={() => Linking.openURL(`https://linkedin.com/company/houstonpublicmedia`)}>
-				<FontAwesome6 name="linkedin" size={30} color="#0077B5" style={styles.icon} />
+				<FontAwesome6 name="linkedin" size={30} color="#0077B5" style={styles.icon} iconStyle={"brand"} />
 			</TouchableOpacity>
 
 			<TouchableOpacity onPress={() => Linking.openURL(`https://mastodon.social/@houstonpublicmedia`)}>
-				<FontAwesome6 name="mastodon" size={30} color="#6364FF" style={styles.icon} />
+				<FontAwesome6 name="mastodon" size={30} color="#6364FF" style={styles.icon} iconStyle={"brand"} />
 			</TouchableOpacity>
 		</View>
 	);

@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { Coauthor } from '../type';
-import { FontAwesome, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
+import MaterialIcons from "@react-native-vector-icons/material-icons";
 
 interface CoauthorCardProps {
 	author: Coauthor;
@@ -59,32 +60,32 @@ const CoauthorCard: React.FC<CoauthorCardProps> = ({ author }) => {
 					<View style={styles.socialIcons}>
 						{email && (
 							<TouchableOpacity onPress={() => Linking.openURL(`mailto:${email}`)} style={styles.iconButton}>
-								<Feather name="mail" size={20} color="#1877F2" />
+								<MaterialIcons name="mail-outline" size={20} color="#1877F2" />
 							</TouchableOpacity>
 						)}
 						{twitter && (
 							<TouchableOpacity onPress={() => Linking.openURL(twitter)} style={styles.iconButton}>
-								<FontAwesome name="twitter-square" size={20} color="#1877F2" />
+								<FontAwesome6 name="square-x-twitter" size={20} color="#000000" iconStyle={"brand"} />
 							</TouchableOpacity>
 						)}
 						{facebook && (
 							<TouchableOpacity onPress={() => Linking.openURL(facebook)} style={styles.iconButton}>
-								<FontAwesome name="facebook-square" size={20} color="#1877F2" />
+								<FontAwesome6 name="square-facebook" size={20} color="#3b5998" iconStyle={"brand"} />
 							</TouchableOpacity>
 						)}
 						{fediverse && (
 							<TouchableOpacity onPress={() => Linking.openURL(fediverse)} style={styles.iconButton}>
-								<MaterialCommunityIcons name="mastodon" size={20} color="#6364FF" />
+								<FontAwesome6 name="mastodon" size={20} color="#6364FF" iconStyle={"brand"} />
 							</TouchableOpacity>
 						)}
 						{bluesky && (
 							<TouchableOpacity onPress={() => Linking.openURL(bluesky)} style={styles.iconButton}>
-								<MaterialCommunityIcons name="cloud-outline" size={20} color="#4A90E2" />
+								<FontAwesome6 name="bluesky" size={20} color="#6364FF" iconStyle={"brand"} />
 							</TouchableOpacity>
 						)}
 						{phone && (
 							<TouchableOpacity onPress={() => Linking.openURL(`tel:${phone}`)} style={styles.iconButton}>
-								<Feather name="phone" size={16} color="#4CAF50" />
+								<FontAwesome6 name="phone" size={16} color="#4CAF50" iconStyle={"solid"} />
 							</TouchableOpacity>
 						)}
 					</View>
