@@ -1,5 +1,15 @@
 import React, {JSX, useCallback, useEffect, useState} from 'react';
-import { ActivityIndicator, StyleSheet, View, Text, TouchableOpacity, RefreshControl, Linking, ScrollView } from 'react-native';
+import {
+	ActivityIndicator,
+	StyleSheet,
+	View,
+	Text,
+	TouchableOpacity,
+	RefreshControl,
+	Linking,
+	ScrollView,
+	Dimensions
+} from 'react-native';
 import MaterialIcons from "@react-native-vector-icons/material-icons";
 import ListenLivePlayer from '../components/ListenLivePlayer';
 import { useHPMAudio } from '../contexts/HPMAudioContext';
@@ -11,6 +21,7 @@ import { fetchPriorityData } from '../services/newsApi';
 import { TalkshowEntry } from '../type';
 import AudioFooter from '../components/AudioFooter';
 import WebView from 'react-native-webview';
+const {height: SCREEN_HEIGHT} = Dimensions.get("window");
 
 function ListenLiveScreen(): JSX.Element {
 	const { isPlayerReady, error, tracks, isLoading, loadLiveStreams } = useHPMAudio();
@@ -281,7 +292,7 @@ const styles = StyleSheet.create({
 		color: '#C8102E',
 	},
 	webViewContainer: {
-		height: 500,
+		height: SCREEN_HEIGHT * 0.65,
 		marginHorizontal: 10,
 		marginTop: 10,
 		overflow: 'hidden',
