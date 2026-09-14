@@ -122,6 +122,12 @@ const SleepTimerControls = () => {
 					wrapper: {
 						backgroundColor: 'rgba(0,0,0,0.35)',
 					},
+					container: {
+						maxWidth: 600,
+						maxHeight: 450,
+						alignSelf: "center",
+						justifyContent: "flex-start"
+					},
 					draggableIcon: {
 						backgroundColor: '#000',
 					},

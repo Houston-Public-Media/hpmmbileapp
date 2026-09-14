@@ -92,7 +92,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 			activeOpacity={0.7}
 		>
 			<Image
-				source={{ uri: episode.thumbnail }}
+				source={{ uri: episode.thumbnail || podcast.image.thumbnail.url }}
 				style={styles.thumbnail}
 				resizeMode="cover"
 			/>

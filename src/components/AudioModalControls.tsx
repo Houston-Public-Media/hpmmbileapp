@@ -214,6 +214,12 @@ const AudioModalControls = () => {
 					wrapper: {
 						backgroundColor: 'rgba(0,0,0,0.35)',
 					},
+					container: {
+						maxWidth: 600,
+						maxHeight: 450,
+						alignSelf: "center",
+						justifyContent: "flex-start"
+					},
 					draggableIcon: {
 						backgroundColor: '#000',
 					},
@@ -428,10 +434,10 @@ const styles = StyleSheet.create({
 	},
 	trackItem: {
 		backgroundColor: '#fff',
-		paddingHorizontal: 12,
+		paddingHorizontal: 16,
 		paddingTop: 10,
 		elevation: 4,
-		paddingBottom: 100
+		paddingBottom: 50
 	},
 	topRow: {
 		flexDirection: 'row',
@@ -589,7 +595,7 @@ const styles = StyleSheet.create({
 		paddingVertical: 8,
 		gap: 24,
 		width: '100%',
-		height: 100
+		height: 80
 	},
 	seekButton: {
 		alignItems: 'center',
