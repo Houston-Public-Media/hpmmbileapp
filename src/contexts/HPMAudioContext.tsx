@@ -23,7 +23,7 @@ interface HPMAudioContextType extends HPMAudioState {
 	stop: () => Promise<void>;
 	togglePlayPause: (track: AudioTrack) => Promise<void>;
 
-		seekTo: (position: number) => Promise<void>;
+	seekTo: (position: number) => Promise<void>;
 	seekForward: (seconds?: number) => Promise<void>;
 	seekBackward: (seconds?: number) => Promise<void>;
 

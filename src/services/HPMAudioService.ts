@@ -565,9 +565,9 @@ class HPMAudioService {
 	 */
 	async seekForward(seconds: number = 10): Promise<void> {
 		try {
-			const progress = await TrackPlayer.getProgress();
-			const newPosition = Math.min(progress.position + seconds, progress.duration || progress.position + seconds);
-			await this.seekTo(newPosition);
+			await TrackPlayer.getProgress().then( async (e) => {
+				await this.seekTo( Math.min(e.position + seconds, e.duration || e.position + seconds) );
+			});
 		} catch (error) {
 			console.error('Error seeking forward:', error);
 			throw error;
@@ -579,9 +579,9 @@ class HPMAudioService {
 	 */
 	async seekBackward(seconds: number = 10): Promise<void> {
 		try {
-			const progress = await TrackPlayer.getProgress();
-			const newPosition = Math.max(progress.position - seconds, 0);
-			await this.seekTo(newPosition);
+			await TrackPlayer.getProgress().then( async (e) => {
+				await this.seekTo( Math.max(e.position - seconds, 0) );
+			});
 		} catch (error) {
 			console.error('Error seeking backward:', error);
 			throw error;

@@ -22,6 +22,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 		state,
 		playPodcast,
 		pause,
+		resume,
 		isCurrentTrack,
 	} = useHPMAudio();
 
@@ -91,11 +92,36 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 			onPress={onPress ? onPress : () => Linking.openURL(episode.permalink)}
 			activeOpacity={0.7}
 		>
-			<Image
-				source={{ uri: episode.thumbnail || podcast.image.thumbnail.url }}
-				style={styles.thumbnail}
-				resizeMode="cover"
-			/>
+			<View style={styles.artworkContainer}>
+				<Image
+					source={{ uri: episode.thumbnail || podcast.image.thumbnail.url }}
+					style={styles.thumbnail}
+					resizeMode="cover"
+				/>
+				{isPlayingNow && (
+					<View style={styles.playingIndicator}>
+						<MaterialIcons name="volume-up" size={12} color="#fff" />
+					</View>
+				)}
+				{isLoadingAudio && (
+					<View style={styles.loadingIndicator}>
+						<View style={styles.indicatorIconContainer}>
+							<Animated.View
+								style={{
+									transform: [{
+										rotate: rotateAnim.interpolate({
+											inputRange: [0, 1],
+											outputRange: ['0deg', '360deg'],
+										}),
+									}],
+								}}
+							>
+								<FontAwesome6 name="rotate" size={12} color="#fff" iconStyle={"solid"} />
+							</Animated.View>
+						</View>
+					</View>
+				)}
+			</View>
 
 			<View style={styles.content}>
 				<Text style={styles.title} numberOfLines={5}>
@@ -121,14 +147,19 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 
 					try {
 						if (episode.attachments?.url) {
-							if (isCurrentEpisode && state === State.Playing) {
-								// Pause if currently playing
-								await pause();
+							if (isCurrentEpisode) {
+								if (state === State.Playing) {
+									// Pause if currently playing
+									await pause();
+								} else {
+									await resume();
+								}
 							} else {
 								// Play the podcast episode
 								// Add podcast title as album to this function
+								console.log("Duration: ", episode.attachments?.duration_in_seconds ? parseInt(episode.attachments.duration_in_seconds) : '');
 								await playPodcast(
-									episode.id.toString(),
+									podcastId,
 									episode.attachments.url,
 									decodeHtmlEntities(episode.title),
 									podcast.name,
@@ -206,11 +237,21 @@ const styles = StyleSheet.create({
 		elevation: 3,
 		borderColor: color.primary
 	},
-	thumbnail: {
+	artworkContainer: {
+		position: 'relative',
 		width: 64,
 		height: 64,
-		borderRadius: 8,
+		borderRadius: 14,
+		overflow: 'hidden',
 		marginRight: 12,
+		backgroundColor: '#f5f7fa',
+		alignItems: 'center'
+	},
+	thumbnail: {
+		width: '100%',
+		height: '100%',
+		resizeMode: 'cover',
+		borderRadius: 14,
 		backgroundColor: '#f0f0f0',
 	},
 	content: {
@@ -244,7 +285,7 @@ const styles = StyleSheet.create({
 		width: 44,
 		height: 44,
 		borderRadius: 22,
-		backgroundColor: '#2196F3',
+		backgroundColor: color.primary,
 		justifyContent: 'center',
 		alignItems: 'center',
 		shadowColor: '#000',
@@ -257,7 +298,8 @@ const styles = StyleSheet.create({
 		elevation: 2,
 	},
 	playingButton: {
-		backgroundColor: color.primary,
+		backgroundColor: '#e74c3c',
+		shadowColor: '#e74c3c',
 		transform: [{ scale: 1.05 }],
 		shadowOpacity: 0.3,
 		shadowRadius: 3,
@@ -270,6 +312,44 @@ const styles = StyleSheet.create({
 		backgroundColor: '#1976D2',
 		shadowOpacity: 0.25,
 	},
+	playingIndicator: {
+		position: 'absolute',
+		bottom: 8,
+		right: 8,
+		backgroundColor: color.primary,
+		borderRadius: 12,
+		padding: 6,
+		shadowColor: color.primary,
+		shadowOffset: {
+			width: 0,
+			height: 2,
+		},
+		shadowOpacity: 0.4,
+		shadowRadius: 4,
+		elevation: 4,
+	},
+	loadingIndicator: {
+		position: 'absolute',
+		bottom: 8,
+		right: 8,
+		backgroundColor: '#6c757d',
+		borderRadius: 12,
+		padding: 6,
+		shadowColor: '#6c757d',
+		shadowOffset: {
+			width: 0,
+			height: 2,
+		},
+		shadowOpacity: 0.4,
+		shadowRadius: 4,
+		elevation: 4,
+	},
+	indicatorIconContainer: {
+		width: 12,
+		height: 12,
+		justifyContent: 'center',
+		alignItems: 'center',
+	}
 });
 
 export default PodcastEpisodeCard;

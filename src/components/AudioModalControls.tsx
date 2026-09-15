@@ -218,7 +218,9 @@ const AudioModalControls = () => {
 						maxWidth: 600,
 						maxHeight: 450,
 						alignSelf: "center",
-						justifyContent: "flex-start"
+						justifyContent: "flex-start",
+						borderTopStartRadius: 12,
+						borderTopEndRadius: 12
 					},
 					draggableIcon: {
 						backgroundColor: '#000',
@@ -238,15 +240,15 @@ const AudioModalControls = () => {
 			>
 				<View style={styles.trackItem}>
 					<View style={{
-							flexDirection: 'row',
-							alignItems: 'center',
-							justifyContent: 'flex-end',
-							paddingHorizontal: 8,
-							paddingVertical: 8,
-							gap: 24,
-							width: '100%',
-							position: 'relative'
-						}}>
+						flexDirection: 'row',
+						alignItems: 'center',
+						justifyContent: 'flex-end',
+						paddingHorizontal: 8,
+						paddingVertical: 8,
+						gap: 24,
+						width: '100%',
+						position: 'relative'
+					}}>
 						<TouchableOpacity
 							style={{
 								width: 32,

@@ -54,67 +54,67 @@ const ListenLivePlayer = ({ track, onPlay }: ListenLivePlayerProps) => {
 	}, [state, rotateAnim]);
 
 	const onPlayPausePress = async (track: AudioTrack) => {
-	try {
-		// Don't allow new actions while tracks are still loading
-		if (!tracksReady) {
-			Alert.alert(
-				'Please Wait',
-				'Audio streams are still loading. Please wait a moment and try again.'
-			);
-			return;
-		}
-
-		// Don't allow new actions while another track is loading
-		if (
-			(state === State.Loading || state === State.Buffering) &&
-			currentTrackId &&
-			currentTrackId !== track.id
-		) {
-			return;
-		}
-
-		// If this is a different stream, tell the parent screen
-		if (currentTrackId !== track.id) {
-			onPlay?.();
-		}
-
-		await togglePlayPause(track);
-	} catch (error) {
-		console.error('Error toggling play/pause:', error);
-
-		let errorMessage = 'Unable to play this track. Please try again.';
-
-		if (error instanceof Error) {
-			if (
-				error.message.includes('network') ||
-				error.message.includes('connection')
-			) {
-				errorMessage =
-					'Network error. Please check your internet connection and try again.';
-			} else if (
-				error.message.includes('format') ||
-				error.message.includes('codec')
-			) {
-				errorMessage =
-					'This audio format is not supported on your device.';
-			} else if (error.message.includes('timeout')) {
-				errorMessage =
-					'The stream is taking too long to load. Please try again.';
-			} else if (
-				error.message.includes('URL not found') ||
-				error.message.includes('not found')
-			) {
-				errorMessage =
-					'This stream is currently unavailable. Please try another one.';
-			} else if (error.message.includes('not loaded')) {
-				errorMessage =
-					'Audio streams are not ready yet. Please wait and try again.';
+		try {
+			// Don't allow new actions while tracks are still loading
+			if (!tracksReady) {
+				Alert.alert(
+					'Please Wait',
+					'Audio streams are still loading. Please wait a moment and try again.'
+				);
+				return;
 			}
-		}
 
-		Alert.alert('Playback Error', errorMessage);
-	}
-};
+			// Don't allow new actions while another track is loading
+			if (
+				(state === State.Loading || state === State.Buffering) &&
+				currentTrackId &&
+				currentTrackId !== track.id
+			) {
+				return;
+			}
+
+			// If this is a different stream, tell the parent screen
+			if (currentTrackId !== track.id) {
+				onPlay?.();
+			}
+
+			await togglePlayPause(track);
+		} catch (error) {
+			console.error('Error toggling play/pause:', error);
+
+			let errorMessage = 'Unable to play this track. Please try again.';
+
+			if (error instanceof Error) {
+				if (
+					error.message.includes('network') ||
+					error.message.includes('connection')
+				) {
+					errorMessage =
+						'Network error. Please check your internet connection and try again.';
+				} else if (
+					error.message.includes('format') ||
+					error.message.includes('codec')
+				) {
+					errorMessage =
+						'This audio format is not supported on your device.';
+				} else if (error.message.includes('timeout')) {
+					errorMessage =
+						'The stream is taking too long to load. Please try again.';
+				} else if (
+					error.message.includes('URL not found') ||
+					error.message.includes('not found')
+				) {
+					errorMessage =
+						'This stream is currently unavailable. Please try another one.';
+				} else if (error.message.includes('not loaded')) {
+					errorMessage =
+						'Audio streams are not ready yet. Please wait and try again.';
+				}
+			}
+
+			Alert.alert('Playback Error', errorMessage);
+		}
+	};
 
 
 	const renderItem = (item: AudioTrack) => {
