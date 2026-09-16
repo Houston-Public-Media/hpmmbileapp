@@ -46,7 +46,7 @@ const AudioFooter = () => {
 			Alert.alert('Playback Error', errorMessage);
 		}
 	};
-	if ( state !== State.Playing && state !== State.Paused && state !== State.Buffering && state !== State.Loading ) {
+	if ( state !== State.Playing && state !== State.Paused && state !== State.Buffering && state !== State.Loading && state !== State.Ready ) {
 		return;
 	}
 	if (currentTrack === null) {
@@ -105,7 +105,7 @@ const AudioFooter = () => {
 							) : (
 								<View style={styles.iconWrapper}>
 									<MaterialIcons
-										name={state === State.Playing ? 'pause' : 'play-arrow'}
+										name={(state === State.Paused || state === State.Ready) ? 'play-arrow' : 'pause'}
 										size={22}
 										color="#fff"
 									/>

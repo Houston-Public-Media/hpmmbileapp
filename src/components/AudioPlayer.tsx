@@ -40,8 +40,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, subtitle, thumbna
 		if (isThisAudio) {
 			setDuration(trackDuration);
 			setCurrentTime(position);
-			console.log("current Position: ", position);
-			console.log("Duration: ", trackDuration);
 		}
 	}, [isThisAudio, trackDuration, position]);
 

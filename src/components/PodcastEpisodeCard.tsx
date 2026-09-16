@@ -29,7 +29,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 	// Check if this is the current episode
 	const podcastId = `podcast_${episode.id}`;
 	const isCurrentEpisode = isCurrentTrack(podcastId);
-	const isPlayingNow = isCurrentEpisode && state === State.Playing;
+	const isPlayingNow = isCurrentEpisode && ( state === State.Playing || state === State.Paused || state === State.Ready );
 	const isLoadingAudio = isCurrentEpisode && ( state === State.Loading || state === State.Buffering );
 
 	// Optimized rotation animation for loading spinner
@@ -87,7 +87,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 		<TouchableOpacity
 			style={[
 				styles.card,
-				isCurrentEpisode && state === State.Playing && styles.activeCard
+				isCurrentEpisode && ( state === State.Playing || state === State.Paused || state === State.Ready || state === State.Buffering || state === State.Loading ) && styles.activeCard
 			]}
 			onPress={onPress ? onPress : () => Linking.openURL(episode.permalink)}
 			activeOpacity={0.7}
@@ -157,7 +157,6 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 							} else {
 								// Play the podcast episode
 								// Add podcast title as album to this function
-								console.log("Duration: ", episode.attachments?.duration_in_seconds ? parseInt(episode.attachments.duration_in_seconds) : '');
 								await playPodcast(
 									podcastId,
 									episode.attachments.url,
