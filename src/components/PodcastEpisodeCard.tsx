@@ -29,7 +29,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 	// Check if this is the current episode
 	const podcastId = `podcast_${episode.id}`;
 	const isCurrentEpisode = isCurrentTrack(podcastId);
-	const isPlayingNow = isCurrentEpisode && ( state === State.Playing || state === State.Paused || state === State.Ready );
+	const isPlayingNow = isCurrentEpisode && state === State.Playing;
 	const isLoadingAudio = isCurrentEpisode && ( state === State.Loading || state === State.Buffering );
 
 	// Optimized rotation animation for loading spinner
@@ -98,7 +98,7 @@ const PodcastEpisodeCard: React.FC<PodcastEpisodeCardProps> = ({ episode, podcas
 					style={styles.thumbnail}
 					resizeMode="cover"
 				/>
-				{isPlayingNow && (
+				{(isCurrentEpisode && ( state === State.Playing || state === State.Paused || state === State.Ready )) && (
 					<View style={styles.playingIndicator}>
 						<MaterialIcons name="volume-up" size={12} color="#fff" />
 					</View>
