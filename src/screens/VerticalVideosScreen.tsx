@@ -13,6 +13,8 @@ import { fetchBrightcoveVideos, fetchPriorityData } from '../services/newsApi';
 import { TalkshowEntry, BrightcoveVideo } from '../type';
 import AudioFooter from "../components/AudioFooter";
 import { useHPMAudio } from "../contexts/HPMAudioContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 
 const NUM_COLUMNS = 2;
 const ITEM_MARGIN = 8;
@@ -86,6 +88,7 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 	const [slidingValue, setSlidingValue] = useState(0);
 	const [seeking, setSeeking] = useState(false);
 	const [sliderWidth, setSliderWidth] = useState(0);
+	const insets = useSafeAreaInsets();
 
 	const loadedRef = useRef(false);
 	const seekingRef = useRef(false);
@@ -522,7 +525,7 @@ const ShortsPlayer = ({ video, onClose, onPlaybackStart }: ShortsPlayerProps) =>
 						</View>
 
 						{/* BOTTOM CONTROLS */}
-						<View style={styles.bottomControls}>
+						<View style={[ styles.bottomControls, { bottom: insets.bottom + 16, }, ]} >
 
 							<View style={styles.bottomControlRow}>
 
@@ -1033,10 +1036,11 @@ const styles = StyleSheet.create({
 		width: 72,
 	},
 	bottomControls: {
-		bottom: Platform.OS === 'ios' ? 36 : 24,
+		//bottom: Platform.OS === 'ios' ? 36 : 24,
 		left: 16,
 		position: "absolute",
 		right: 16,
+		
 	},
 	bottomControlRow: {
 		alignItems: "center",
