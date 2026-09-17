@@ -34,19 +34,14 @@ const getNewsDetailNotificationParams = (
 	remoteMessage?: RemoteMessage
 ): NewsDetailNotificationParams | null => {
 	const data = remoteMessage?.data;
-
-	if (data?.screen !== 'NewsDetail') {
-		return null;
-	}
-
-	const postId = Number(data.postId);
+	const postId = Number(data?.postId ?? data?.id ?? -1);
 
 	if (!Number.isInteger(postId) || postId <= 0) {
 		console.warn('Notification missing a valid NewsDetail postId:', data);
 		return null;
 	}
 
-	const title = typeof data.title === 'string' ? data.title.trim() : undefined;
+	const title = typeof remoteMessage?.notification?.body === 'string' ? remoteMessage?.notification.body.trim() : undefined;
 
 	return {
 		postId,
@@ -71,10 +66,9 @@ const getNotificationUrl = (
 
 		console.warn('External notification missing URL:', data);
 		return undefined;
-	}
-
+	} else {
 	// Internal notification
-	if (data.type === 'internal' || data.screen === 'NewsDetail') {
+	//if (data.type === 'internal' || data.screen === 'NewsDetail') {
 		const params = getNewsDetailNotificationParams(remoteMessage);
 
 		if (!params) {
@@ -87,8 +81,6 @@ const getNotificationUrl = (
 
 		return `${NOTIFICATION_LINK_PREFIX}news/${params.postId}${title}`;
 	}
-
-	return undefined;
 };
 
 const readInitialNotification = async (): Promise<RemoteMessage | null> => {
@@ -127,73 +119,71 @@ const notificationLinking: LinkingOptions<RootNavigationParamList> = {
 		},
 	},
 	async getInitialURL() {
-	const remoteMessage = await readInitialNotification();
+		const remoteMessage = await readInitialNotification();
 
-	if (remoteMessage?.data?.type === 'external') {
-		return Linking.getInitialURL();
-	}
-
-	const notificationUrl = getNotificationUrl(
-		remoteMessage ?? undefined
-	);
-
-	if (notificationUrl) {
-		return notificationUrl;
-	}
-
-	return Linking.getInitialURL();
-},
-
-	subscribe(listener) {
-	const linkingSubscription = Linking.addEventListener(
-		'url',
-		({url}) => {
-			listener(url);
+		if (remoteMessage?.data?.type === 'external') {
+			return Linking.getInitialURL();
 		}
-	);
 
-	const unsubscribeNotificationOpened = onNotificationOpenedApp(
-		PushNotificationService.getMessaging(),
-		async remoteMessage => {
-			const data = remoteMessage?.data;
+		const notificationUrl = getNotificationUrl(
+			remoteMessage ?? undefined
+		);
 
-			if (!data) {
-				return;
+		if (notificationUrl) {
+			return notificationUrl;
+		}
+
+		return Linking.getInitialURL();
+	},
+	subscribe(listener) {
+		const linkingSubscription = Linking.addEventListener(
+			'url',
+			({url}) => {
+				listener(url);
 			}
+		);
 
-			// External URL
-			if (data.type === 'external') {
-				if (data.url) {
-					try {
-						if (typeof data.url === 'string') {
-							await Linking.openURL(data.url);
-						}
-					} catch (error) {
-						console.error(
-							'Failed to open external notification URL:',
-							error
-						);
-					}
+		const unsubscribeNotificationOpened = onNotificationOpenedApp(
+			PushNotificationService.getMessaging(),
+			async remoteMessage => {
+				const data = remoteMessage?.data;
+
+				if (!data) {
+					return;
 				}
 
-				return;
+				// External URL
+				if (data.type === 'external') {
+					if (data.url) {
+						try {
+							if (typeof data.url === 'string') {
+								await Linking.openURL(data.url);
+							}
+						} catch (error) {
+							console.error(
+								'Failed to open external notification URL:',
+								error
+							);
+						}
+					}
+
+					return;
+				}
+
+				// Internal notification
+				const notificationUrl = getNotificationUrl(remoteMessage);
+
+				if (notificationUrl) {
+					listener(notificationUrl);
+				}
 			}
+		);
 
-			// Internal notification
-			const notificationUrl = getNotificationUrl(remoteMessage);
-
-			if (notificationUrl) {
-				listener(notificationUrl);
-			}
-		}
-	);
-
-	return () => {
-		linkingSubscription.remove();
-		unsubscribeNotificationOpened();
-	};
-},
-
+		return () => {
+			linkingSubscription.remove();
+			unsubscribeNotificationOpened();
+		};
+	}
 };
 
 function App() {
