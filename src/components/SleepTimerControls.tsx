@@ -98,7 +98,7 @@ const SleepTimerControls = () => {
 						{(selectedTimer !== 'Not Set') ? (
 						<MaterialIcons
 							name="snooze"
-							size={32}
+							size={28}
 							color={color.primary}
 						/>
 						) : ''}
@@ -107,8 +107,8 @@ const SleepTimerControls = () => {
 					<View style={styles.timerButton}>
 						<MaterialIcons
 							name="snooze"
-							size={32}
-							color='#fff'
+							size={28}
+							color='#808080'
 						/>
 					</View>
 					) : ''}
@@ -128,10 +128,11 @@ const SleepTimerControls = () => {
 						alignSelf: "center",
 						justifyContent: "flex-start",
 						borderTopStartRadius: 12,
-						borderTopEndRadius: 12
+						borderTopEndRadius: 12,
+						backgroundColor: color.primary
 					},
 					draggableIcon: {
-						backgroundColor: '#000',
+						backgroundColor: '#fff',
 					},
 				}}
 				customModalProps={{
@@ -143,7 +144,7 @@ const SleepTimerControls = () => {
 				customAvoidingViewProps={{
 					enabled: false,
 				}}
-				height={SCREEN_HEIGHT / 3}
+				height={SCREEN_HEIGHT / 2.25}
 				closeOnPressBack={true}
 			>
 				<View style={{
@@ -151,16 +152,18 @@ const SleepTimerControls = () => {
 					alignItems: 'center',
 					justifyContent: 'flex-end',
 					paddingHorizontal: 12,
-					paddingVertical: 8,
+					paddingTop: 4,
+					paddingBottom: 8,
 					gap: 24,
 					width: '100%',
-					position: 'relative'
+					position: 'relative',
+					backgroundColor: color.primary
 				}}>
 					<TouchableOpacity
 						style={{
-							width: 32,
-							height: 32,
-							borderRadius: 16,
+							width: 28,
+							height: 28,
+							borderRadius: 14,
 							justifyContent: 'center',
 							alignItems: 'center',
 							elevation: 5,
@@ -172,36 +175,40 @@ const SleepTimerControls = () => {
 						onPress={() => refRBSheet.current.close()}
 					>
 						<View style={{
-							width: 32,
-							height: 32,
+							width: 28,
+							height: 28,
 							alignItems: 'center',
 							justifyContent: 'center'
 						}}>
 							<MaterialIcons
-								name="close"
-								size={32}
-								color={'#808080'}
+								name="keyboard-double-arrow-down"
+								size={28}
+								color={'#fff'}
 							/>
 						</View>
 					</TouchableOpacity>
 				</View>
 				<View style={{
-					backgroundColor: '#fff',
+					backgroundColor: color.primary,
 					paddingHorizontal: 12,
 					paddingTop: 10,
 					elevation: 4,
 					paddingBottom: 100}}>
 					<View style={{display: 'flex', flexDirection: 'row', gap: 8}}>
-						<Text style={{fontWeight: "bold", fontSize: 16, flex: 1}}>Sleep Timer:</Text>
-						<Text style={{fontSize: 16, flex: 2}}>{selectedTimer}</Text>
+						<Text style={{fontWeight: "bold", fontSize: 16, flex: 1, color: '#fff'}}>Sleep Timer:</Text>
+						<Text style={{fontSize: 16, flex: 2, color: '#fff'}}>{selectedTimer}</Text>
 					</View>
 					<View style={styles.topRow}>
-						<View style={{width: '50%'}}>
+						<View style={{width: '46%', marginHorizontal: '2%'}}>
 							<Picker
 								selectedValue={selectedHour}
 								onValueChange={(itemValue, itemIndex) =>
 									setSelectedHour(itemValue)
-								}>
+								}
+								itemStyle={{color: "#fff"}}
+								selectionColor={'#fff'}
+								style={{borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 8}}
+							>
 								<Picker.Item label="0 Hours" value="0" />
 								<Picker.Item label="1 Hour" value="1" />
 								<Picker.Item label="2 Hours" value="2" />
@@ -214,15 +221,18 @@ const SleepTimerControls = () => {
 								<Picker.Item label="9 Hours" value="9" />
 								<Picker.Item label="10 Hours" value="10" />
 								<Picker.Item label="11 Hours" value="11" />
-								<Picker.Item label="12 Hours" value="12" />
 							</Picker>
 						</View>
-						<View style={{width: '50%'}}>
+						<View style={{width: '46%', marginHorizontal: '2%'}}>
 							<Picker
 								selectedValue={selectedMinute}
 								onValueChange={(itemValue, itemIndex) =>
 									setSelectedMinute(itemValue)
-								}>
+								}
+								itemStyle={{color: "#fff"}}
+								selectionColor={'#fff'}
+								style={{borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 4}}
+							>
 								<Picker.Item label="0 Minutes" value="0" />
 								<Picker.Item label="1 Minutes" value="1" />
 								<Picker.Item label="2 Minutes" value="2" />
@@ -290,20 +300,20 @@ const SleepTimerControls = () => {
 						<TouchableOpacity
 							style={[
 								styles.bottomRowButton,
-								{ backgroundColor: color.primary }
+								{ backgroundColor: "#f0f0f0" }
 							]}
 							onPress={() => setSleepTimer()}
 						>
-							<Text style={{fontSize: 14, fontWeight: 'bold', color: '#fff'}}>Set Timer</Text>
+							<Text style={{fontSize: 14, fontWeight: 'bold', color: color.primary}}>Set Timer</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={[
 								styles.bottomRowButton,
-								{ backgroundColor: "#C8102E" }
+								{ backgroundColor: "#f0f0f0" }
 							]}
 							onPress={() => cancelSleepTimer()}
 						>
-							<Text style={{fontSize: 14, fontWeight: 'bold', color: '#fff'}}>Cancel Timer</Text>
+							<Text style={{fontSize: 14, fontWeight: 'bold', color: "#C8102E"}}>Cancel Timer</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -325,8 +335,10 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 8,
 		paddingVertical: 8,
 		gap: 24,
-		width: '100%',
-		height: 100
+		width: 32,
+		height: 100,
+		position: 'absolute',
+		right: 0
 	},
 	bottomRow: {
 		flexDirection: 'row',
@@ -356,12 +368,16 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.25,
 		shadowRadius: 6,
 		elevation: 5,
+		backgroundColor: "#fff"
 	},
 	timerButton: {
 		width: 32,
 		height: 32,
 		alignItems: 'center',
-		justifyContent: 'center'
+		justifyContent: 'center',
+		position: 'absolute',
+		top: 0,
+		left: 0
 	},
 	enabledButton: {
 		backgroundColor: '#f0f0f0'

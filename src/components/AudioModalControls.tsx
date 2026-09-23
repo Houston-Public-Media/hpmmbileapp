@@ -215,28 +215,16 @@ const AudioModalControls = () => {
 						backgroundColor: 'rgba(0,0,0,0.35)',
 					},
 					container: {
-						width: '100%',
-						maxWidth: '100%',
-						height: 245,
-						maxHeight: 245,
-
-						alignSelf: 'center',
-
-						backgroundColor: '#287FBA',
-
-						borderTopLeftRadius: 0,
-						borderTopRightRadius: 0,
-						borderBottomLeftRadius: 0,
-						borderBottomRightRadius: 0,
-
-						padding: 0,
-
-						justifyContent: 'flex-start',
+						maxWidth: 600,
+						maxHeight: 350,
+						alignSelf: "center",
+						justifyContent: "flex-start",
+						borderTopStartRadius: 12,
+						borderTopEndRadius: 12,
+						backgroundColor: color.primary
 					},
 					draggableIcon: {
-						backgroundColor: 'transparent',
-						width: 0,
-						height: 0,
+						backgroundColor: '#fff',
 					},
 				}}
 				customModalProps={{
@@ -248,7 +236,7 @@ const AudioModalControls = () => {
 				customAvoidingViewProps={{
 					enabled: false,
 				}}
-				height={SCREEN_HEIGHT / 3}
+				height={(currentTrack.type === AudioType.LIVE_STREAM ? SCREEN_HEIGHT / 3.5 : SCREEN_HEIGHT / 3)}
 				closeOnPressBack={true}
 			>
 				<View style={styles.trackItem}>
@@ -257,16 +245,15 @@ const AudioModalControls = () => {
 						alignItems: 'center',
 						justifyContent: 'flex-end',
 						paddingHorizontal: 8,
-						paddingVertical: 8,
+						paddingVertical: 0,
 						gap: 24,
 						width: '100%',
 						position: 'relative'
 					}}>
 						<TouchableOpacity
 							style={{
-								width: 32,
-								height: 32,
-								borderRadius: 16,
+								width: 28,
+								height: 28,
 								justifyContent: 'center',
 								alignItems: 'center',
 								elevation: 5,
@@ -277,14 +264,14 @@ const AudioModalControls = () => {
 							onPress={() => refRBSheet.current.close()}
 						>
 							<View style={{
-								width: 32,
-								height: 32,
+								width: 28,
+								height: 28,
 								alignItems: 'center',
 								justifyContent: 'center'
 							}}>
 								<MaterialIcons
 									name="keyboard-double-arrow-down"
-									size={24}
+									size={28}
 									color={'#fff'}
 								/>
 							</View>
@@ -302,10 +289,10 @@ const AudioModalControls = () => {
 						</View>
 						<View style={styles.rightSection}>
 							<View style={styles.trackInfo}>
-								<Text style={[styles.title, styles.currentTrackTitle]} numberOfLines={1}>
+								<Text style={styles.title} numberOfLines={1}>
 									{currentTrack?.album}
 								</Text>
-								<Text style={[styles.artist, styles.currentTrackArtist]} numberOfLines={3}>
+								<Text style={styles.artist} numberOfLines={3}>
 									{nowPlay}
 								</Text>
 							</View>
@@ -351,122 +338,92 @@ const AudioModalControls = () => {
 					) : ''}
 
 					{/* Audio Controls */}
-					<View style={styles.bottomControlsRow}>
-						<View style={styles.controlsSection}>
-							{!currentTrack.isLiveStream ? (
-								<TouchableOpacity
-									style={[
-										styles.seekButton,
-										(state === State.Loading || state === State.Buffering) &&
-											styles.disabledButton
-									]}
-									onPress={() => seekBackward(10)}
-									disabled={
-										state === State.Loading ||
-										state === State.Buffering
-									}
-								>
-									<MaterialIcons
-										name="replay-10"
-										size={24}
-										color={
-											state !== State.Loading &&
-											state !== State.Buffering
-												? color.primary
-												: '#888'
-										}
-									/>
-								</TouchableOpacity>
-							) : ''}
-
+					<View style={styles.controlsSection}>
+					{!currentTrack.isLiveStream ? (
+						<TouchableOpacity
+							style={[
+								styles.seekButton,
+								(state === State.Loading || state === State.Buffering) && styles.disabledButton
+							]}
+							onPress={() => seekBackward(10)}
+							disabled={state === State.Loading || state === State.Buffering}
+						>
+							<MaterialIcons
+								name="replay-10"
+								size={40}
+								color={state !== State.Loading && state !== State.Buffering ? color.primary : '#888'}
+							/>
+						</TouchableOpacity>
+					) : ''}
+						<TouchableOpacity
+							style={[
+								styles.mainPlayButton,
+								state === State.Playing && styles.pauseButton,
+								(state === State.Loading || state === State.Buffering) && styles.disabledButton
+							]}
+							onPress={() => onPlayPausePress(currentTrack)}
+						>
+							<View style={styles.iconWrapper}>
+								{(state === State.Loading || state === State.Buffering) ? (
+									<Animated.View
+										style={[
+											styles.iconWrapper,
+											{
+												transform: [{
+													rotate: rotateAnim.interpolate({
+														inputRange: [0, 1],
+														outputRange: ['0deg', '360deg'],
+													}),
+												}],
+											}
+										]}
+									>
+										<FontAwesome6 name="rotate" size={32} color="#fff" iconStyle={"solid"} />
+									</Animated.View>
+								) : (
+									<View style={styles.iconWrapper}>
+										<MaterialIcons
+											name={(state === State.Paused || state === State.Ready) ? 'play-arrow' : 'pause'}
+											size={40}
+											color={color.primary}
+										/>
+									</View>
+								)}
+							</View>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={styles.mainPlayButton}
+							onPress={() => {
+								// @ts-ignore
+								refRBSheet.current.close();
+								stop();
+							}}
+						>
+							<View style={styles.iconWrapper}>
+								<MaterialIcons
+									name='stop'
+									size={40}
+									color={color.primary}
+								/>
+							</View>
+						</TouchableOpacity>
+						{!currentTrack.isLiveStream ? (
 							<TouchableOpacity
 								style={[
-									styles.mainPlayButton,
-									state === State.Playing && styles.pauseButton,
-									(state === State.Loading || state === State.Buffering) &&
-										styles.disabledButton
+									styles.seekButton,
+									(state === State.Loading || state === State.Buffering) && styles.disabledButton
 								]}
-								onPress={() => onPlayPausePress(currentTrack)}
+								onPress={() => seekForward(10)}
+								disabled={state === State.Loading || state === State.Buffering}
 							>
-								<View style={styles.buttonIconContainer}>
-									{state === State.Loading ||
-									state === State.Buffering ? (
-										<Animated.View
-											style={[
-												styles.iconWrapper,
-												{
-													transform: [
-														{
-															rotate: rotateAnim.interpolate({
-																inputRange: [0, 1],
-																outputRange: [
-																	'0deg',
-																	'360deg'
-																]
-															})
-														}
-													]
-												}
-											]}
-										>
-											<FontAwesome6 name="rotate" size={24} color="#fff" iconStyle="solid" />
-										</Animated.View>
-									) : (
-										<View style={styles.iconWrapper}>
-											<MaterialIcons name={
-													state === State.Paused ||
-													state === State.Ready
-														? 'play-arrow'
-														: 'pause'
-												}
-												size={24}
-												color="#287FBA"
-											/>
-										</View>
-									)}
-								</View>
+								<MaterialIcons
+									name="forward-10"
+									size={40}
+									color={state !== State.Loading && state !== State.Buffering ? color.primary : '#888'}
+								/>
 							</TouchableOpacity>
-
-							<TouchableOpacity
-								style={styles.mainPlayButton}
-								onPress={() => {
-									// @ts-ignore
-									refRBSheet.current.close();
-									stop();
-								}} >
-								<View style={styles.iconWrapper}>
-									<MaterialIcons name="stop" size={24} color="#287FBA" />
-								</View>
-							</TouchableOpacity>
-
-							{!currentTrack.isLiveStream ? (
-								<TouchableOpacity
-									style={[
-										styles.seekButton,
-										(state === State.Loading || state === State.Buffering) &&
-											styles.disabledButton
-									]}
-									onPress={() => seekForward(10)}
-									disabled={
-										state === State.Loading ||
-										state === State.Buffering
-									}
-								>
-									<MaterialIcons name="forward-10" size={24} color={
-											state !== State.Loading &&
-											state !== State.Buffering
-												? color.primary
-												: '#888'
-										}
-									/>
-								</TouchableOpacity>
-							) : ''}
-						</View>
-
-	
-						<View style={styles.sleepTimerContainer}>
-							<SleepTimerControls />
-						</View>
+						) : ''}
+						<SleepTimerControls />
 					</View>
 				</View>
 			</RBSheet>
@@ -475,281 +432,240 @@ const AudioModalControls = () => {
 };
 const styles = StyleSheet.create({
 	contentContainer: {
-		flex: 1,
+		flex: 1
 	},
 	trackItem: {
-		backgroundColor: '#287FBA',
-		paddingHorizontal: 34,
-		paddingTop: 42,
-		paddingBottom: 18,
-
-		borderTopLeftRadius: 0,
-		borderTopRightRadius: 0,
-
-		width: '100%',
-		height: '100%',
+		backgroundColor: color.primary,
+		paddingHorizontal: 16,
+		paddingTop: 10,
+		elevation: 4,
+		paddingBottom: 50
 	},
 	topRow: {
 		flexDirection: 'row',
-		paddingBottom: 5,
+		paddingBottom: 8,
 		justifyContent: 'space-between',
-		alignItems: 'center',
+		alignItems: 'center'
 	},
-
-	artworkContainer: {
-		width: 74,
-		height: 74,
-		borderRadius: 15,
-		overflow: 'hidden',
-		marginRight: 14,
-		backgroundColor: '#111',
+	sliderWrapper: {
+		flex: 1,
+		height: 40,
+		justifyContent: "center",
+		marginHorizontal: 8,
+	},
+	scrubberTrack: {
+		height: 4,
+		width: "100%",
+		backgroundColor: "rgba(0,0,0,0.5)",
+		borderRadius: 2,
+		position: "relative",
+	},
+	scrubberProgress: {
+		position: "absolute",
+		left: 0,
+		top: 0,
+		bottom: 0,
+		backgroundColor: "#fff",
+		borderRadius: 2,
+	},
+	scrubberThumb: {
+		position: "absolute",
+		top: -6,
+		width: 18,
+		height: 18,
+		borderRadius: 9,
+		backgroundColor: "#fff"
+	},
+	scrubberThumbTooltip: {
+		position: 'absolute',
+		top: -50,
+		width: 60,
+		left: -30,
+		padding: 8,
+		backgroundColor: '#000',
 		alignItems: 'center',
-		justifyContent: 'center',
-		shadowColor: '#000',
+		shadowColor: '#808080',
 		shadowOffset: {
-			width: 0,
+			width: 2,
 			height: 2,
 		},
-		shadowOpacity: 0.15,
+		shadowOpacity: 0.4,
 		shadowRadius: 4,
-		elevation: 3,
+		borderRadius: 4
 	},
-
+	scrubberThumbTooltipText: {
+		fontSize: 14,
+		color: '#fff',
+		fontWeight: "bold"
+	},
+	artworkContainer: {
+		position: 'relative',
+		width: 75,
+		height: 75,
+		borderRadius: 14,
+		overflow: 'hidden',
+		marginRight: 12,
+		backgroundColor: '#f5f7fa',
+		alignItems: 'center'
+	},
 	artwork: {
 		width: '100%',
 		height: '100%',
 		resizeMode: 'cover',
-		borderRadius: 15,
+		borderRadius: 14,
 	},
-
 	placeholderArtwork: {
 		flex: 1,
-		width: '100%',
-		height: '100%',
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: '#111',
+		backgroundColor: '#f5f7fa',
+		borderRadius: 14,
 	},
-
-	rightSection: {
-		flex: 1,
-		justifyContent: 'center',
-		paddingVertical: 2,
-	},
-	trackInfo: {
-		flex: 1,
-		justifyContent: 'center',
-		paddingRight: 4,
-	},
-	title: {
-		color: '#FFFFFF',
-		fontSize: 18,
-		fontWeight: '600',
-		marginBottom: 2,
-		lineHeight: 26,
-	},
-	artist: {
-		color: '#FFFFFF',
-		fontSize: 17,
-		fontWeight: '500',
-		lineHeight: 22,
-		fontStyle: 'italic',
-	},
-
-	currentTrackItem: {
-		borderColor: color.primary,
-		borderWidth: 1,
-		backgroundColor: '#F8FBFF',
-	},
-	currentTrackTitle: {
-		color: '#FFFFFF',
-		fontWeight: '600',
-		fontSize:18,
-	},
-	currentTrackArtist: {
-		color: '#FFFFFF',
-		opacity: 1,
-		fontWeight: '500',
-		fontStyle: 'italic',
-		fontSize:16,
-	},
-	sliderWrapper: {
-		flex: 1,
-		height: 30,
-		justifyContent: 'center',
-		marginHorizontal: 8,
-	},
-	scrubberTrack: {
-		height: 2,
-		width: '100%',
-		backgroundColor: 'rgba(255,255,255,0.65)',
-		borderRadius: 0,
-		position: 'relative',
-	},
-	scrubberProgress: {
+	playingIndicator: {
 		position: 'absolute',
-		left: 0,
-		top: 0,
-		bottom: 0,
-		backgroundColor: '#E31B23',
-		borderRadius: 0,
-	},
-
-	scrubberThumb: {
-		position: 'absolute',
-		top: -6,
-		width: 14,
-		height: 14,
-		borderRadius: 7,
-		backgroundColor: '#E31B23',
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 0,
-			height: 1,
-		},
-		shadowOpacity: 0.2,
-		shadowRadius: 2,
-		elevation: 3,
-	},
-	scrubberThumbTooltip: {
-		position: 'absolute',
-		top: -38,
-		width: 48,
-		left: -18,
-		paddingVertical: 5,
-		paddingHorizontal: 4,
-		borderRadius: 6,
-		backgroundColor: '#1F2937',
-		alignItems: 'center',
-		justifyContent: 'center',
-
-		shadowColor: '#000',
+		bottom: 8,
+		right: 8,
+		backgroundColor: color.primary,
+		borderRadius: 12,
+		padding: 6,
+		shadowColor: color.primary,
 		shadowOffset: {
 			width: 0,
 			height: 2,
 		},
-		shadowOpacity: 0.15,
-		shadowRadius: 3,
-		elevation: 3,
+		shadowOpacity: 0.4,
+		shadowRadius: 4,
+		elevation: 4,
 	},
-	scrubberThumbTooltipText: {
-		fontSize: 10,
-		color: '#FFFFFF',
-		fontWeight: '700',
+	loadingIndicator: {
+		position: 'absolute',
+		bottom: 8,
+		right: 8,
+		backgroundColor: '#6c757d',
+		borderRadius: 12,
+		padding: 6,
+		shadowColor: '#6c757d',
+		shadowOffset: {
+			width: 0,
+			height: 2,
+		},
+		shadowOpacity: 0.4,
+		shadowRadius: 4,
+		elevation: 4,
 	},
-
-	timeText: {
-		color: '#DCECF7',
-		fontSize: 13,
-		fontWeight: '500',
-		textAlign: 'center',
-		width: 42,
+	rightSection: {
+		flex: 2,
+		justifyContent: 'space-between',
+		paddingVertical: 4,
 	},
-	
-	bottomControlsRow: {
-		position: 'relative',
-		width: '100%',
-		height: 76,
-		alignItems: 'center',
+	trackInfo: {
+		flex: 2,
 		justifyContent: 'center',
+		paddingRight: 8,
+	},
+	title: {
+		color: '#fff',
+		fontSize: 12,
+		fontWeight: '500',
+		marginBottom: 2,
+		lineHeight: 16,
+	},
+	artist: {
+		color: '#fff',
+		fontSize: 16,
+		fontWeight: '700',
+		lineHeight: 20,
 	},
 	controlsSection: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'center',
-		height: 80,
 		paddingHorizontal: 8,
-		paddingVertical: 18,
-		gap: 10,
-		flexShrink: 1,
+		paddingVertical: 8,
+		gap: 16,
+		width: '100%',
+		height: 60,
+		position: "relative"
 	},
-
-	sleepTimerContainer: {
-		marginLeft: 10,
-		alignItems: 'center',
-		justifyContent: 'center',
-		flexShrink: 0,
-	},
-
 	seekButton: {
-		width: 34,
-		height: 34,
-		borderRadius: 29,
 		alignItems: 'center',
 		justifyContent: 'center',
-		backgroundColor: '#F5F5F5',
-		borderWidth: 0,
-		elevation: 0,
-		shadowOpacity: 0,
-	},
-
-	disabledButton: {
-		backgroundColor: '#f0f0f0',
-		shadowOpacity: 0.05,
-	},
-
-	mainPlayButton: 
-	{
-		width: 34,
-		height: 34,
-		borderRadius: 31,
-		backgroundColor: '#F5F5F5',
-		justifyContent: 'center',
-		alignItems: 'center',
-		shadowOpacity: 0.25,
-		shadowRadius: 4,
-		elevation: 4,
-	},
-
-	pauseButton: {
-		backgroundColor: '#287FBA',
-	},
-	buttonIconContainer: {
-		width: 62,
-		height: 62,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	iconWrapper: {
-		width: 52,
-		height: 52,
-
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	indicatorIconContainer: {
-		width: 12,
-		height: 12,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	modalButtonContainer: {
-		position: 'relative',
-		width: 34,
-		height: 34,
-		borderRadius: 17,
-		overflow: 'hidden',
-		marginLeft: 10,
-		backgroundColor: '#FFFFFF',
-		alignItems: 'center',
-		justifyContent: 'center',
-
+		width: 40,
+		height: 40,
+		backgroundColor: '#fff',
+		borderRadius: 20,
 		shadowColor: '#000',
 		shadowOffset: {
 			width: 0,
 			height: 1,
 		},
-		shadowOpacity: 0.10,
-		shadowRadius: 3,
+		shadowOpacity: 0.08,
+		shadowRadius: 2,
 		elevation: 2,
 	},
-
-	modalButton: {
-		width: 34,
-		height: 34,
-		alignItems: 'center',
-		justifyContent: 'center',
+	disabledButton: {
+		backgroundColor: '#f0f0f0',
+		shadowOpacity: 0.05,
 	},
+	mainPlayButton: {
+		width: 40,
+		height: 40,
+		backgroundColor: "#fff",
+		borderRadius: 20,
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: color.primary,
+		shadowOffset: {
+			width: 0,
+			height: 3,
+		},
+		shadowOpacity: 0.25,
+		shadowRadius: 6,
+		elevation: 5,
+	},
+	pauseButton: {
+		shadowColor: '#e74c3c',
+	},
+	loadingButton: {
+		backgroundColor: '#6c757d',
+		shadowColor: '#6c757d',
+	},
+	iconWrapper: {
+		width: 40,
+		height: 40,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	timeText: {
+		color: "#fff",
+		fontSize: 12,
+		fontWeight: "700",
+		textAlign: "center",
+		width: 44,
+	},
+	modalButtonContainer: {
+		position: 'relative',
+		width: 28,
+		height: 28,
+		borderRadius: 14,
+		overflow: 'hidden',
+		marginLeft: 12,
+		backgroundColor: '#f5f7fa',
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: {
+			width: 0,
+			height: 1,
+		},
+		shadowOpacity: 0.08,
+		shadowRadius: 2,
+		elevation: 2,
+	},
+	modalButton: {
+		width: 28,
+		height: 28,
+		alignItems: 'center',
+		justifyContent: 'center'
+	}
 });
-
 export default AudioModalControls;
