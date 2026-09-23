@@ -11,7 +11,7 @@ import TalkshowBanner from '../components/TalkshowBanner';
 import BreakingBanner from '../components/BreakingBanner';
 import { decodeHtmlEntities } from '../utils/htmlUtils';
 import AudioFooter from "../components/AudioFooter";
-import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
+import FontAwesome6 from "@react-native-vector-icons/ionicons";
 
 // Define the params expected for this screen
 type NewsDetailParams = {
@@ -20,8 +20,7 @@ type NewsDetailParams = {
 
 const NewsDetailScreen = () => {
 	const route = useRoute<RouteProp<NewsDetailParams, 'NewsDetail'>>();
-	const navigation =
-		useNavigation<StackNavigationProp<RootStackParamList, 'NewsDetail'>>();
+	const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'NewsDetail'>>();
 	const params = route.params ?? {};
 	const postId = Number(params.postId);
 	const title = params.title;
@@ -62,39 +61,51 @@ const NewsDetailScreen = () => {
 	}, [hasValidPostId, postId]);
 
 	useEffect(() => {
+	const init = async () => {
+		setLoading(true);
+		await loadPost();
+	};
+
+	init();
+}, [loadPost]);
+
+const handleShare = useCallback(async () => {
+	if (!post) return;
+
+	const articleUrl = decodeHtmlEntities(post.link);
+	const articleTitle = decodeHtmlEntities(post.title.rendered);
+
+	try {
+		await Share.share({
+			title: articleTitle,
+			message: `${articleTitle}\n\n${articleUrl}`,
+			url: articleUrl,
+		});
+	} catch (error) {
+		console.error('Error sharing article:', error);
+	}
+}, [post]);
+
+	useEffect(() => {
 		navigation.setOptions({
 			title: decodeHtmlEntities(title || ''),
+			headerRight: post
+				? () => (
+						<Pressable onPress={handleShare} style={{ marginRight: 15 }} hitSlop={10} accessibilityRole="button" accessibilityLabel="Share story" >
+							<FontAwesome6 name="share-outline" size={19} color="#fff" />
+						</Pressable>
+					)
+				: undefined,
 		});
-		const init = async () => {
-			setLoading(true);
-			await loadPost();
-			setLoading(false);
-		};
-		init();
-	}, [title, navigation, loadPost]);
+	}, [navigation, title, post, handleShare]);
+
 
 	const onRefresh = async () => {
 		setRefreshing(true);
 		await loadPost();
 		setRefreshing(false);
 	};
-	const handleShare = async () => {
-	if (!post) return;
-
-	const articleUrl = decodeHtmlEntities(post.link);
-
-	try {
-		await Share.share({
-			title: decodeHtmlEntities(post.title.rendered),
-			message: `${decodeHtmlEntities(post.title.rendered)}\n\n${articleUrl}`,
-			url: articleUrl,
-		});
-	} catch (error) {
-		console.error('Error sharing article:', error);
-	}
-};
-
-
+	
 	if (loading) {
 		return (
 			<View style={styles.loadingContainer}>
@@ -153,9 +164,7 @@ const NewsDetailScreen = () => {
 										hour12: true,
 									})}
 								</Text>
-								<Pressable onPress={handleShare} style={styles.shareButton} hitSlop={10} accessibilityRole="button" accessibilityLabel="Share story" >
-									<FontAwesome6 name="share-nodes" size={19} color="#000" iconStyle={"solid"} />
-								</Pressable>
+								
 							</View>
 						</View>
 						<HtmlRenderer

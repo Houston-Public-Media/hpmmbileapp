@@ -108,7 +108,7 @@ const SleepTimerControls = () => {
 						<MaterialIcons
 							name="snooze"
 							size={32}
-							color='#808080'
+							color='#fff'
 						/>
 					</View>
 					) : ''}
@@ -143,7 +143,7 @@ const SleepTimerControls = () => {
 				customAvoidingViewProps={{
 					enabled: false,
 				}}
-				height={SCREEN_HEIGHT / 2}
+				height={SCREEN_HEIGHT / 3}
 				closeOnPressBack={true}
 			>
 				<View style={{
