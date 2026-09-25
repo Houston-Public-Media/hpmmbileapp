@@ -224,7 +224,7 @@ class HPMAudioService {
 		TrackPlayer.addEventListener(Event.MetadataTimedReceived, (event) => {
 			const meta = event.metadata[0].raw;
 			meta.forEach((item) => {
-				if (item.keySpace === 'org.id3') {
+				if ( ( item.keySpace === 'org.id3' || item.keySpace === 'icy' ) && item.key.toLowerCase() === 'streamurl' ) {
 					const url = new URL('https://www.houstonpublicmedia.org/?' + item.value);
 					const artist= url.searchParams.get('artist') || '';
 					const title = url.searchParams.get('title') || '';
