@@ -457,6 +457,42 @@ const ProfileScreen = () => {
 						Donate Now
 					</Text>
 				</TouchableOpacity>
+				<TouchableOpacity style={styles.subMenuItem}>
+					<Text
+						style={styles.subMenuText}
+						onPress={() =>
+							Linking.openURL(
+								'https://www.houstonpublicmedia.org/news887'
+							)
+						}
+					>
+						News 88.7 Schedule
+					</Text>
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.subMenuItem}>
+					<Text
+						style={styles.subMenuText}
+						onPress={() =>
+							Linking.openURL(
+								'https://www.houstonpublicmedia.org/classical'
+							)
+						}
+					>
+						Classical Schedule
+					</Text>
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.subMenuItem}>
+					<Text
+						style={styles.subMenuText}
+						onPress={() =>
+							Linking.openURL(
+								'https://www.houstonpublicmedia.org/tv8'
+							)
+						}
+					>
+						TV 8 Schedule
+					</Text>
+				</TouchableOpacity>
 
 				<TouchableOpacity style={styles.subMenuItem}>
 					<Text style={styles.subMenuText}>
