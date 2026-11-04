@@ -10,6 +10,7 @@ import TrackPlayer, {
 	Track as TPTrack,
 } from 'react-native-track-player';
 import {Platform, AppState} from "react-native";
+import Constants from "expo-constants";
 
 // Audio source types
 export enum AudioType {
@@ -406,6 +407,7 @@ class HPMAudioService {
 				artwork: track.artwork,
 				isLiveStream: track.isLiveStream || false,
 				duration: track.duration,
+				userAgent: "HPM Mobile/" + ( Constants.expoConfig?.version ?? 'Unknown' ) + " (Build/" + ( Platform.OS === 'ios' ? Constants.expoConfig?.ios?.buildNumber ?? 'Unknown' : Constants.expoConfig?.android?.versionCode ?? 'Unknown' ) + "; " + Platform.OS + ")"
 			};
 
 			await TrackPlayer.add(tpTrack);
