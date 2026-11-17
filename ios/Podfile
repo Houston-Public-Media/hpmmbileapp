@@ -63,5 +63,26 @@ target 'HPM' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+    installer.aggregate_targets.map(&:user_project).uniq.each do |project|
+        project.native_targets.each do |target|
+          next unless target.name == 'HPM'
+
+          # Find the phase embedding .appex into PlugIns (dstSubfolderSpec 13)
+          embed_extensions = target.copy_files_build_phases.find do |phase|
+            phase.dst_subfolder_spec == '13' ||
+              phase.name == 'Embed App Extensions' ||
+              phase.name == 'Embed Foundation Extensions'
+          end
+
+          if embed_extensions
+            target.build_phases.delete(embed_extensions)
+            resources_idx = target.build_phases.index { |p| p.is_a?(Xcodeproj::Project::Object::PBXResourcesBuildPhase) }
+            insert_idx = resources_idx ? resources_idx + 1 : 0
+            target.build_phases.insert(insert_idx, embed_extensions)
+          end
+        end
+
+        project.save
+ 	 end
   end
 end
