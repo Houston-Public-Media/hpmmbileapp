@@ -2,25 +2,43 @@
   "expo": {
     "name": "HPM",
     "slug": "hpm",
-    "version": "10.1.0",
+    "owner": "houston-public-media",
+    "sdkVersion": "58",
+    "version": "10.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "launchMode": "most-recent",
+    "platforms": [ "ios", "android" ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "appleTeamId": "7CNNQ3255B",
       "supportsTablet": true,
       "bundleIdentifier": "com.jacapps.hpm",
-      "buildNumber": 32,
+      "buildNumber": "32",
+      "version": "10.2.0",
+      "deploymentTarget": "16.4",
       "googleServicesFile": "./GoogleService-Info.plist",
+      "icon": "./HouPubMed.icon",
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification",
+          "fetch",
+          "audio"
+        ],
+        "UIUserInterfaceStyle": "Light",
+        "UIViewControllerBasedStatusBarAppearance": false,
+        "LSMinimumSystemVersion": "16.4"
       },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "bitcode": "Release",
       "entitlements": {
         "aps-environment": "production"
       }
@@ -30,19 +48,13 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.jacobsmedia.KUHFV3",
-      "versionCode": 32,
-
+      "versionCode": "32",
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.CAMERA"
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-web-browser",
@@ -51,14 +63,27 @@
         {
           "androidAppId": "ca-app-pub-2797448917961410~9781974870",
           "iosAppId": "ca-app-pub-2797448917961410~9781974870",
-          "userTrackingDescription": "This identifier will be used to deliver personalized ads to you."
+          "userTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
         }
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       "@react-native-vector-icons/fontawesome6",
       "@react-native-vector-icons/material-icons",
-      "@react-native-vector-icons/ionicons"
+      "@react-native-vector-icons/ionicons",
+      [
+        "expo-build-properties", {
+          "android": {
+            "compileSdkVersion": 37,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "37.0.0"
+          },
+          "ios": {
+            "deploymentTarget": "16.4",
+            "useFrameworks": "dynamic"
+          }
+        }
+      ]
     ],
     "notification": {
       "icon": "./assets/notification-icon.png",
@@ -72,7 +97,6 @@
         "projectId": "cf763f1a-eb2d-47d1-a581-bc42dc2e6b55"
       }
     },
-    "owner": "houston-public-media",
     "updates": {
       "url": "https://u.expo.dev/cf763f1a-eb2d-47d1-a581-bc42dc2e6b55",
       "fallbackToCacheTimeout": 0,

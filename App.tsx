@@ -190,7 +190,7 @@ function App() {
 	const routeNameRef = useRef<string | undefined>(undefined);
 	const navigationRef = useRef<any>(null);
 	const appStateRef = useRef(AppState.currentState);
-	const sessionStartTime = useRef(Date.now());
+	const [sessionStartTime, setSessionStartTime] = useState(() => Date.now());
 	const [toastType, setToastType] = useState<RemoteMessage>();
 
 	const toastRef = useRef<ToastMessageRef>(null);
@@ -302,13 +302,16 @@ function App() {
 		const subscription = AppState.addEventListener(
 			'change',
 			async (nextAppState) => {
+				// @ts-ignore
 				if (appStateRef.current.match(/active/) && nextAppState === 'background') {
-					const sessionDuration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+					const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
 					await analyticsService.trackAppBackground(sessionDuration);
-				} else if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
-					await analyticsService.trackAppOpen();
-					sessionStartTime.current = Date.now();
-					await PushNotificationService.syncPushTokenWithServer();
+				} else { // @ts-ignore
+					if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
+						await analyticsService.trackAppOpen();
+						setSessionStartTime(Date.now());
+						await PushNotificationService.syncPushTokenWithServer();
+					}
 				}
 
 				appStateRef.current = nextAppState;

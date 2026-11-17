@@ -2,11 +2,11 @@
 //  NotificationService.swift
 //  ImageNotification
 //
-//  Created by Jared Counts on 5/8/26.
+//  Created by Jared Counts on 11/17/26.
 //
 
 import UserNotifications
-import Firebase
+import FirebaseMessaging
 
 class NotificationService: UNNotificationServiceExtension {
 
@@ -18,8 +18,10 @@ class NotificationService: UNNotificationServiceExtension {
         bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
         
         if let bestAttemptContent = bestAttemptContent {
-          Messaging.serviceExtension()
-              .populateNotificationContent(bestAttemptContent, withContentHandler: contentHandler)
+            // Modify the notification content here...
+            //bestAttemptContent.title = "\(bestAttemptContent.title) [modified]"
+            Messaging.serviceExtension().populateNotificationContent(bestAttemptContent, withContentHandler: contentHandler)
+            //contentHandler(bestAttemptContent)
         }
     }
     
